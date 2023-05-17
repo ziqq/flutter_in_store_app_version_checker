@@ -1,6 +1,6 @@
 ---
 name: Bug fix
-about: Fixing a problem with Flutter BB Lint Rules.
+about: Fixing a problem with flutter_in_store_app_version_checker.
 assignees: ziqq
 ---
 

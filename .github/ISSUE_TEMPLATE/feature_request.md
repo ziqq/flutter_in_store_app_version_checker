@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: I'd like Flutter BB Lint Rules to do something new.
+about: I'd like flutter_in_store_app_version_checker to do something new.
 labels: enhancement
 assignees: ziqq
 ---
