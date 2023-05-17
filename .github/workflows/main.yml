@@ -1,0 +1,19 @@
+name: "Main"
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+    tags-ignore:
+      - '**'
+
+jobs:
+  analysis:
+    uses: ziqq/flutter_ci_workflows/.github/workflows/analysis.yml@main
+
+  # run_example_app:
+  #   needs: analysis
+  #   uses: ziqq/flutter_ci_workflows/.github/workflows/run_dart_example_app.yml@main
