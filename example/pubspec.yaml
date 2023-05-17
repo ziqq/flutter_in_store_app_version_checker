@@ -1,0 +1,31 @@
+name: flutter_in_store_app_version_checker_example
+description: Demonstrates how to use the flutter_in_store_app_version_checker.
+
+version: 1.1.0+1
+publish_to: none
+
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.2
+
+  flutter_in_store_app_version_checker:
+    path: ../
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lint_rules:
+    git:
+      url: https://github.com/ziqq/flutter_lint_rules.git
+      ref: main
+
+
+flutter:
+  uses-material-design: true

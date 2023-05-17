@@ -1,0 +1,28 @@
+PODS:
+  - Flutter (1.0.0)
+  - flutter_in_store_app_version_checker (1.4.0):
+    - Flutter
+  - package_info_plus (0.4.5):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - flutter_in_store_app_version_checker (from `.symlinks/plugins/flutter_in_store_app_version_checker/ios`)
+  - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  flutter_in_store_app_version_checker:
+    :path: ".symlinks/plugins/flutter_in_store_app_version_checker/ios"
+  package_info_plus:
+    :path: ".symlinks/plugins/package_info_plus/ios"
+
+SPEC CHECKSUMS:
+  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  flutter_in_store_app_version_checker: 1cfb7a8fba7768a33009cee613919af4b1f8d041
+  package_info_plus: 6c92f08e1f853dc01228d6f553146438dafcd14e
+
+PODFILE CHECKSUM: f10c0438b63bc24e6bbc207956dc27d16c4408f2
+
+COCOAPODS: 1.12.1
