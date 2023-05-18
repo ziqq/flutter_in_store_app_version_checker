@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.5.2
+- Fixed bugs
+
+## 1.5.1
+- Fixed bugs
+
+## 1.5.0
+- Update GeneratedPluginRegistrant
+
 ## 1.4.0
 - Update dependencies
 
