@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.1
+- Removed dead code
+
 ## 1.5.0
 - Update `GeneratedPluginRegistrant`
 
