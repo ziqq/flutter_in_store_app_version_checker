@@ -1,4 +1,4 @@
-package com.example.flutter_in_store_app_version_checker
+package flutter_in_store_app_version_checker
 
 import androidx.annotation.NonNull
 
