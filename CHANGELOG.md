@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.3
+ - Update package_info_plus package
+
 ## 1.5.2
 - Fixed bugs
 
