@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.4
+  ### Update
+  - `http` package
+
 ## 1.5.3
  - Update package_info_plus package
 
