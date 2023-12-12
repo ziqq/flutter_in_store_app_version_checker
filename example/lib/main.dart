@@ -1,3 +1,5 @@
+// Autor - <a.a.ustinoff@gmail.com> Anton Ustinoff
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_in_store_app_version_checker/flutter_in_store_app_version_checker.dart';
 
@@ -18,8 +20,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _tikTokChecker = InStoreAppVersionChecker(
-      appId: 'com.zhiliaoapp.musically',
-      androidStore: AndroidStore.apkPure,
+      appId: 'ru.beautybox.twa',
     );
 
     checkVersion();
