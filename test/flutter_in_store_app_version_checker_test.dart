@@ -89,7 +89,7 @@ void main() {
             '1.0.0',
             null,
             '',
-            'The Web platform is not yet supported by this package.',
+            'This platform is not yet supported by this package. We support iOS or Android platrforms.',
           ),
         );
       });
