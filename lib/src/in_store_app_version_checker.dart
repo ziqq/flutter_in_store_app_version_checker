@@ -1,44 +1,65 @@
 // autor - <a.a.ustinoff@gmail.com> Anton Ustinoff
-// ignore_for_file: avoid_dynamic_calls, avoid_catches_without_on_clauses, prefer_final_locals
+// ignore_for_file: avoid_dynamic_calls
 
-import 'dart:io';
 import 'dart:convert';
 import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 
-enum AndroidStore { googlePlayStore, apkPure }
+/// Possible types of android store
+enum AndroidStore {
+  /// The default AAB
+  googlePlayStore,
 
-bool _kIsWeb = false;
+  /// The pure APK
+  apkPure
+}
 
+/// {@template in_store_app_version_checker}
+/// InStoreAppVersionChecker widget.
+/// {@endtemplate}
 class InStoreAppVersionChecker {
   /// The current version of the app.
-  /// if [currentVersion] is null the [currentVersion] will take the Flutter package version
+  /// Default take the Flutter package version.
   final String? currentVersion;
 
   /// The locale your app store
-  /// Default value is [ru]
+  /// Default value is `ru`
   final String? locale;
 
   /// The id of the app (com.exemple.your_app).
-  /// if [appId] is null the [appId] will take the Flutter package identifier
+  /// If [appId] is null the [appId] will take the Flutter package identifier.
   final String? appId;
 
-  /// Select The marketplace of your app
-  /// default will be `AndroidStore.GooglePlayStore`
+  /// Select The marketplace of your app.
+  /// Default will be `AndroidStore.GooglePlayStore`
   final AndroidStore androidStore;
 
+  /// This is http client.
+  final http.Client _httpClient;
+
+  /// {@macro in_store_app_version_checker}
   InStoreAppVersionChecker({
-    this.currentVersion,
     this.appId,
     this.locale = 'ru',
+    this.currentVersion,
     this.androidStore = AndroidStore.googlePlayStore,
-  });
+    http.Client? httpClient,
+  }) : _httpClient = httpClient ?? http.Client();
 
-  Future<MInStoreAppVersionCheckerResult> checkUpdate() async {
+  bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
+  bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
+
+  // ignore: unused_field
+  static bool _kIsWeb = false;
+
+  /// {@macro in_store_app_version_checker}
+  Future<InStoreAppVersionCheckerResult> checkUpdate() async {
     try {
-      if (Platform.isAndroid || Platform.isIOS) {
+      if (_isAndroid || _isIOS) {
         _kIsWeb = false;
       } else {
         _kIsWeb = true;
@@ -48,40 +69,35 @@ class InStoreAppVersionChecker {
     }
 
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    final currentVersion = this.currentVersion ?? packageInfo.version;
-    final packageName = appId ?? packageInfo.packageName;
 
-    if (_kIsWeb) {
-      return MInStoreAppVersionCheckerResult(
-        currentVersion,
-        null,
-        '',
-        'The Web platform is not yet supported by this package.',
-      );
-    } else if (Platform.isAndroid) {
+    final String currentVersion = this.currentVersion ?? packageInfo.version;
+    final String packageName = appId ?? packageInfo.packageName;
+
+    if (_isAndroid) {
       switch (androidStore) {
         case AndroidStore.apkPure:
-          return await _checkApkPureStore(currentVersion, packageName);
+          return _checkPlayStoreApkPure(currentVersion, packageName);
         default:
-          return await _checkPlayStore(currentVersion, packageName);
+          return _checkPlayStore(currentVersion, packageName);
       }
-    } else if (Platform.isIOS) {
-      return await _checkAppleStore(
+    } else if (_isIOS) {
+      return _checkAppleStore(
         currentVersion,
         packageName,
         locale: locale,
       );
     } else {
-      return MInStoreAppVersionCheckerResult(
+      return InStoreAppVersionCheckerResult(
         currentVersion,
         null,
         '',
-        'The target platform ${Platform.operatingSystem} is not yet supported by this package.',
+        'This platform is not yet supported by this package. We support iOS or Android platrforms.',
       );
     }
   }
 
-  Future<MInStoreAppVersionCheckerResult> _checkAppleStore(
+  /// {@macro in_store_app_version_checker}
+  Future<InStoreAppVersionCheckerResult> _checkAppleStore(
     String currentVersion,
     String packageName, {
     String? locale,
@@ -97,13 +113,17 @@ class InStoreAppVersionChecker {
     );
 
     try {
-      final response = await http.get(uri);
+      final response = await _httpClient.get(uri);
+
       if (response.statusCode != 200) {
         errorMsg =
             "Can't find an app in the Apple Store with the id: $packageName";
       } else {
         final jsonObj = jsonDecode(response.body);
-        final List results = List.from(jsonObj['results'] as Iterable<dynamic>);
+
+        final List<dynamic> results = List.from(
+          jsonObj['results'] as Iterable<dynamic>,
+        );
 
         if (results.isEmpty) {
           errorMsg =
@@ -116,7 +136,7 @@ class InStoreAppVersionChecker {
     } catch (e) {
       errorMsg = '$e';
     }
-    return MInStoreAppVersionCheckerResult(
+    return InStoreAppVersionCheckerResult(
       currentVersion,
       newVersion,
       url,
@@ -124,7 +144,8 @@ class InStoreAppVersionChecker {
     );
   }
 
-  Future<MInStoreAppVersionCheckerResult> _checkPlayStore(
+  /// {@macro in_store_app_version_checker}
+  Future<InStoreAppVersionCheckerResult> _checkPlayStore(
     String currentVersion,
     String packageName,
   ) async {
@@ -139,7 +160,7 @@ class InStoreAppVersionChecker {
     );
 
     try {
-      final response = await http.get(uri);
+      final response = await _httpClient.get(uri);
       if (response.statusCode != 200) {
         errorMsg =
             "Can't find an app in the Google Play Store with the id: $packageName";
@@ -152,7 +173,43 @@ class InStoreAppVersionChecker {
     } catch (e) {
       errorMsg = '$e';
     }
-    return MInStoreAppVersionCheckerResult(
+
+    return InStoreAppVersionCheckerResult(
+      currentVersion,
+      newVersion,
+      url,
+      errorMsg,
+    );
+  }
+
+  /// {@macro in_store_app_version_checker}
+  Future<InStoreAppVersionCheckerResult> _checkPlayStoreApkPure(
+    String currentVersion,
+    String packageName,
+  ) async {
+    String? errorMsg;
+    String? newVersion;
+    String? url;
+
+    final Uri uri = Uri.https('apkpure.com', '$packageName/$packageName');
+
+    try {
+      final response = await _httpClient.get(uri);
+      if (response.statusCode != 200) {
+        errorMsg =
+            "Can't find an app in the ApkPure Store with the id: $packageName";
+      } else {
+        debugPrint('[DEBUG]: ApkPure | response.body: ${response.body}');
+
+        newVersion = RegExp(
+          r'<div class="details-sdk"><span itemprop="version">(.*?)<\/span>for Android<\/div>',
+        ).firstMatch(response.body)!.group(1)!.trim();
+        url = uri.toString();
+      }
+    } catch (e) {
+      errorMsg = '$e';
+    }
+    return InStoreAppVersionCheckerResult(
       currentVersion,
       newVersion,
       url,
@@ -161,39 +218,10 @@ class InStoreAppVersionChecker {
   }
 }
 
-Future<MInStoreAppVersionCheckerResult> _checkApkPureStore(
-  String currentVersion,
-  String packageName,
-) async {
-  String? errorMsg;
-  String? newVersion;
-  String? url;
-
-  final Uri uri = Uri.https('apkpure.com', '$packageName/$packageName');
-
-  try {
-    final response = await http.get(uri);
-    if (response.statusCode != 200) {
-      errorMsg =
-          "Can't find an app in the ApkPure Store with the id: $packageName";
-    } else {
-      newVersion = RegExp(
-        r'<div class="details-sdk"><span itemprop="version">(.*?)<\/span>for Android<\/div>',
-      ).firstMatch(response.body)!.group(1)!.trim();
-      url = uri.toString();
-    }
-  } catch (e) {
-    errorMsg = '$e';
-  }
-  return MInStoreAppVersionCheckerResult(
-    currentVersion,
-    newVersion,
-    url,
-    errorMsg,
-  );
-}
-
-class MInStoreAppVersionCheckerResult {
+/// {@template in_store_app_version_checker_result}
+/// The result data model for [InStoreAppVersionChecker]
+/// {@endtemplate}
+class InStoreAppVersionCheckerResult {
   /// return current app version
   final String currentVersion;
 
@@ -206,7 +234,8 @@ class MInStoreAppVersionCheckerResult {
   /// return error message if found else it will return `null`
   final String? errorMessage;
 
-  MInStoreAppVersionCheckerResult(
+  /// {@macro in_store_app_version_checker_result}
+  InStoreAppVersionCheckerResult(
     this.currentVersion,
     this.newVersion,
     this.appURL,
@@ -225,7 +254,7 @@ class MInStoreAppVersionCheckerResult {
 
     final int versionASize = versionNumbersA.length;
     final int versionBSize = versionNumbersB.length;
-    int maxSize = math.max(versionASize, versionBSize);
+    final int maxSize = math.max(versionASize, versionBSize);
 
     for (int i = 0; i < maxSize; i++) {
       if ((i < versionASize ? versionNumbersA[i] : 0) >
@@ -240,7 +269,29 @@ class MInStoreAppVersionCheckerResult {
   }
 
   @override
-  String toString() {
-    return 'Current Version: $currentVersion\nNew Version: $newVersion\nApp URL: $appURL\ncan update: $canUpdate\nerror: $errorMessage';
+  String toString() => 'Current Version: $currentVersion\n'
+      'New Version: $newVersion\n'
+      'App URL: $appURL\n'
+      'can update: $canUpdate\n'
+      'error: $errorMessage';
+
+  @override
+  bool operator ==(covariant InStoreAppVersionCheckerResult other) {
+    if (identical(this, other)) return true;
+
+    return other.currentVersion == currentVersion &&
+        other.newVersion == newVersion &&
+        other.appURL == appURL &&
+        other.errorMessage == errorMessage;
   }
+
+  // coverage:ignore-start
+  @override
+  int get hashCode {
+    return currentVersion.hashCode ^
+        newVersion.hashCode ^
+        appURL.hashCode ^
+        errorMessage.hashCode;
+  }
+  // coverage:ignore-end
 }
