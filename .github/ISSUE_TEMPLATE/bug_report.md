@@ -1,45 +1,40 @@
 ---
 name: Bug report
-about: Something is wrong with flutter_in_store_app_version_checker.
-title: "[BUG] "
-labels: bug
-assignees: ziqq
+about: Create a report to help us improve
+title: ""
+labels: ""
+assignees: ""
 ---
 
-<!--
-    Thank you for contributing to our project!
-    This template is only for bug reports, otherwise please use another template.
-    The best bug report is a failing test in the repository as a pull request.
-    Run `flutter analyze` if there are any analysis errors, try resolving them before filing this issue.
--->
-
-## Prior Issues
-
-Are there any existing issues or PRs that relate to this problem? If so, link them here.
-
-## Describe the bug
-
+**Describe the bug**
 A clear and concise description of what the bug is.
-Please show the code you wrote as completely as possible.
 
-```dart
-/// your code here
-```
+**To Reproduce**
+Steps to reproduce the behavior:
 
-## Steps to Reproduce
+1. Go to '...'
+2. Click on '....'
+3. Scroll down to '....'
+4. See error
 
-If the current behavior is a bug, please provide the steps to reproduce.
-
-## What is the expected behavior?
-
+**Expected behavior**
 A clear and concise description of what you expected to happen.
 
-## Additional context
+**Screenshots**
+If applicable, add screenshots to help explain your problem.
 
-* What package and OS are affected by this issue? Did this work in previous versions of a package?
+**Desktop (please complete the following information):**
 
-* If applicable, add screenshots to help explain your problem.
+- OS: [e.g. iOS]
+- Browser [e.g. chrome, safari]
+- Version [e.g. 22]
 
-* Please provide output from `flutter doctor -v` and `flutter analyze`.
+**Smartphone (please complete the following information):**
 
-* Add any other context about the problem here.
+- Device: [e.g. iPhone6]
+- OS: [e.g. iOS8.1]
+- Browser [e.g. stock browser, safari]
+- Version [e.g. 22]
+
+**Additional context**
+Add any other context about the problem here.
