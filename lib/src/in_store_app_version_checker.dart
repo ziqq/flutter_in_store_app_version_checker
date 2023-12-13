@@ -2,12 +2,13 @@
 // ignore_for_file: avoid_dynamic_calls
 
 import 'dart:convert';
-import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
+
+import 'in_store_app_version_checker_result.dart';
 
 /// Possible types of android store
 enum AndroidStore {
@@ -19,36 +20,70 @@ enum AndroidStore {
 }
 
 /// {@template in_store_app_version_checker}
-/// InStoreAppVersionChecker widget.
+/// InStoreAppVersionChecker
 /// {@endtemplate}
-class InStoreAppVersionChecker {
-  /// The current version of the app.
-  /// Default take the Flutter package version.
-  final String? currentVersion;
-
-  /// The locale your app store
-  /// Default value is `ru`
-  final String? locale;
+abstract interface class InStoreAppVersionChecker {
+  factory InStoreAppVersionChecker({
+    String? appId,
+    String? locale,
+    String? currentVersion,
+    AndroidStore? androidStore,
+  }) = _InStoreAppVersionCheckerImpl;
 
   /// The id of the app (com.exemple.your_app).
   /// If [appId] is null the [appId] will take the Flutter package identifier.
-  final String? appId;
+  String? get appId;
+
+  /// The locale your app store
+  /// Default value is `ru`
+  String? get locale;
+
+  /// The current version of the app.
+  /// Default take the Flutter package version.
+  String? get currentVersion;
 
   /// Select The marketplace of your app.
   /// Default will be `AndroidStore.GooglePlayStore`
-  final AndroidStore androidStore;
+  AndroidStore? get androidStore;
 
-  /// This is http client.
-  final http.Client _httpClient;
+  /// The overriden http client.
+  void setHttpClient(http.Client client);
 
+  /// Check update current store type.
+  Future<InStoreAppVersionCheckerResult> checkUpdate();
+}
+
+/// {@template in_store_app_version_checker}
+/// InStoreAppVersionChecker implementation
+/// {@endtemplate}
+final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
   /// {@macro in_store_app_version_checker}
-  InStoreAppVersionChecker({
+  _InStoreAppVersionCheckerImpl({
     this.appId,
     this.locale = 'ru',
     this.currentVersion,
     this.androidStore = AndroidStore.googlePlayStore,
-    http.Client? httpClient,
-  }) : _httpClient = httpClient ?? http.Client();
+  }) : _httpClient = http.Client();
+
+  @override
+  final AndroidStore? androidStore;
+
+  @override
+  final String? currentVersion;
+
+  @override
+  final String? locale;
+
+  @override
+  final String? appId;
+
+  @override
+  void setHttpClient(http.Client client) {
+    _httpClient = client;
+  }
+
+  /// This is http client.
+  late http.Client _httpClient;
 
   bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
   bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
@@ -57,6 +92,7 @@ class InStoreAppVersionChecker {
   static bool _kIsWeb = false;
 
   /// {@macro in_store_app_version_checker}
+  @override
   Future<InStoreAppVersionCheckerResult> checkUpdate() async {
     try {
       if (_isAndroid || _isIOS) {
@@ -216,82 +252,4 @@ class InStoreAppVersionChecker {
       errorMsg,
     );
   }
-}
-
-/// {@template in_store_app_version_checker_result}
-/// The result data model for [InStoreAppVersionChecker]
-/// {@endtemplate}
-class InStoreAppVersionCheckerResult {
-  /// return current app version
-  final String currentVersion;
-
-  /// return the new app version
-  final String? newVersion;
-
-  /// return the app url
-  final String? appURL;
-
-  /// return error message if found else it will return `null`
-  final String? errorMessage;
-
-  /// {@macro in_store_app_version_checker_result}
-  InStoreAppVersionCheckerResult(
-    this.currentVersion,
-    this.newVersion,
-    this.appURL,
-    this.errorMessage,
-  );
-
-  /// return `true` if update is available
-  bool get canUpdate =>
-      _shouldUpdate(currentVersion, newVersion ?? currentVersion);
-
-  bool _shouldUpdate(String versionA, String versionB) {
-    final versionNumbersA =
-        versionA.split('.').map((e) => int.tryParse(e) ?? 0).toList();
-    final versionNumbersB =
-        versionB.split('.').map((e) => int.tryParse(e) ?? 0).toList();
-
-    final int versionASize = versionNumbersA.length;
-    final int versionBSize = versionNumbersB.length;
-    final int maxSize = math.max(versionASize, versionBSize);
-
-    for (int i = 0; i < maxSize; i++) {
-      if ((i < versionASize ? versionNumbersA[i] : 0) >
-          (i < versionBSize ? versionNumbersB[i] : 0)) {
-        return false;
-      } else if ((i < versionASize ? versionNumbersA[i] : 0) <
-          (i < versionBSize ? versionNumbersB[i] : 0)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  @override
-  String toString() => 'Current Version: $currentVersion\n'
-      'New Version: $newVersion\n'
-      'App URL: $appURL\n'
-      'can update: $canUpdate\n'
-      'error: $errorMessage';
-
-  @override
-  bool operator ==(covariant InStoreAppVersionCheckerResult other) {
-    if (identical(this, other)) return true;
-
-    return other.currentVersion == currentVersion &&
-        other.newVersion == newVersion &&
-        other.appURL == appURL &&
-        other.errorMessage == errorMessage;
-  }
-
-  // coverage:ignore-start
-  @override
-  int get hashCode {
-    return currentVersion.hashCode ^
-        newVersion.hashCode ^
-        appURL.hashCode ^
-        errorMessage.hashCode;
-  }
-  // coverage:ignore-end
 }

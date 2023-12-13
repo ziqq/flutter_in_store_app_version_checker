@@ -78,14 +78,13 @@ void main() {
         final checker = InStoreAppVersionChecker(
           currentVersion: '1.0.0',
           appId: 'com.example.app',
-          httpClient: mockHttpClient,
-        );
+        )..setHttpClient(mockHttpClient);
 
         final result = await checker.checkUpdate();
 
         expect(
           result,
-          InStoreAppVersionCheckerResult(
+          const InStoreAppVersionCheckerResult(
             '1.0.0',
             null,
             '',
@@ -111,8 +110,7 @@ void main() {
         final checker = InStoreAppVersionChecker(
           currentVersion: '1.0.0',
           appId: 'com.example.app',
-          httpClient: mockHttpClient,
-        );
+        )..setHttpClient(mockHttpClient);
 
         final result = await checker.checkUpdate();
 
@@ -134,8 +132,7 @@ void main() {
         final checker = InStoreAppVersionChecker(
           currentVersion: '1.0.0',
           appId: 'com.example.app',
-          httpClient: mockHttpClient,
-        );
+        )..setHttpClient(mockHttpClient);
 
         final result = await checker.checkUpdate();
 
@@ -156,8 +153,7 @@ void main() {
         final checker = InStoreAppVersionChecker(
           currentVersion: '1.0.0',
           appId: 'com.example.app',
-          httpClient: mockHttpClient,
-        );
+        )..setHttpClient(mockHttpClient);
 
         final result = await checker.checkUpdate();
 
@@ -175,8 +171,7 @@ void main() {
         final checker = InStoreAppVersionChecker(
           currentVersion: '1.0.0',
           appId: 'com.example.app',
-          httpClient: mockHttpClient,
-        );
+        )..setHttpClient(mockHttpClient);
 
         final result = await checker.checkUpdate();
 
@@ -197,8 +192,7 @@ void main() {
           final checker = InStoreAppVersionChecker(
             currentVersion: '1.0.0',
             appId: 'com.example.app',
-            httpClient: mockHttpClient,
-          );
+          )..setHttpClient(mockHttpClient);
 
           final result = await checker.checkUpdate();
 
@@ -215,8 +209,7 @@ void main() {
           final checker = InStoreAppVersionChecker(
             currentVersion: '1.0.0',
             appId: 'com.example.app',
-            httpClient: mockHttpClient,
-          );
+          )..setHttpClient(mockHttpClient);
 
           final result = await checker.checkUpdate();
 
@@ -234,8 +227,7 @@ void main() {
           final checker = InStoreAppVersionChecker(
             currentVersion: '1.0.0',
             appId: 'com.example.app',
-            httpClient: mockHttpClient,
-          );
+          )..setHttpClient(mockHttpClient);
 
           final result = await checker.checkUpdate();
 
@@ -258,9 +250,8 @@ void main() {
           final checker = InStoreAppVersionChecker(
             currentVersion: '1.0.0',
             appId: 'com.example.app',
-            httpClient: mockHttpClient,
             androidStore: AndroidStore.apkPure,
-          );
+          )..setHttpClient(mockHttpClient);
 
           final result = await checker.checkUpdate();
 
@@ -277,9 +268,8 @@ void main() {
           final checker = InStoreAppVersionChecker(
             currentVersion: '1.0.0',
             appId: 'com.example.app',
-            httpClient: mockHttpClient,
             androidStore: AndroidStore.apkPure,
-          );
+          )..setHttpClient(mockHttpClient);
 
           final result = await checker.checkUpdate();
 
@@ -297,9 +287,8 @@ void main() {
           final checker = InStoreAppVersionChecker(
             currentVersion: '1.0.0',
             appId: 'com.example.app',
-            httpClient: mockHttpClient,
             androidStore: AndroidStore.apkPure,
-          );
+          )..setHttpClient(mockHttpClient);
 
           final result = await checker.checkUpdate();
 
