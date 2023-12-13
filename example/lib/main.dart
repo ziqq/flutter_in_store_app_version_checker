@@ -1,4 +1,4 @@
-// Autor - <a.a.ustinoff@gmail.com> Anton Ustinoff, 11 December 2023
+// Autor - <a.a.ustinoff@gmail.com> Anton Ustinoff
 
 import 'dart:io';
 
