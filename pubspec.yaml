@@ -12,8 +12,8 @@ repository: https://github.com/ziqq/flutter_in_store_app_version_checker
 issue_tracker: https://github.com/ziqq/flutter_in_store_app_version_checker/issues
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
-  flutter: ">=3.0.0"
+  sdk: '>=3.2.0 <4.0.0'
+  flutter: ">=3.6.0"
 
 dependencies:
   flutter:
