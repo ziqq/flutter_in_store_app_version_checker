@@ -1,4 +1,6 @@
-// Autor - <a.a.ustinoff@gmail.com> Anton Ustinoff
+// Autor - <a.a.ustinoff@gmail.com> Anton Ustinoff, 11 December 2023
+
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_in_store_app_version_checker/flutter_in_store_app_version_checker.dart';
@@ -13,14 +15,23 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late InStoreAppVersionChecker _tikTokChecker;
+  late final InStoreAppVersionChecker _tikTokChecker;
+  late final InStoreAppVersionChecker _tetradkaChecker;
+
   String? tikTokValue;
+  String? tetradkaValue;
 
   @override
   void initState() {
     super.initState();
-    _tikTokChecker = InStoreAppVersionChecker(
+
+    _tetradkaChecker = InStoreAppVersionChecker(
       appId: 'ru.beautybox.twa',
+    );
+
+    _tikTokChecker = InStoreAppVersionChecker(
+      appId: 'com.zhiliaoapp.musically',
+      androidStore: AndroidStore.apkPure,
     );
 
     checkVersion();
@@ -31,6 +42,9 @@ class _MyAppState extends State<MyApp> {
       _tikTokChecker
           .checkUpdate()
           .then((value) => tikTokValue = value.toString()),
+      _tetradkaChecker
+          .checkUpdate()
+          .then((value) => tetradkaValue = value.toString()),
     ]).then((_) => setState(() {}));
   }
 
@@ -46,12 +60,21 @@ class _MyAppState extends State<MyApp> {
           padding: const EdgeInsets.all(16.0),
           child: ListView(
             children: [
-              const Text(
-                "TikTok: (apkPure)",
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 10.0),
-              Text(tikTokValue ?? 'Loading ...'),
+              if (Platform.isAndroid) ...[
+                const Text(
+                  "Tetradka (beauty box)",
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 10.0),
+                Text(tetradkaValue ?? 'Loading...'),
+              ] else ...[
+                const Text(
+                  "TikTok: (apkPure)",
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 10.0),
+                Text(tikTokValue ?? 'Loading...'),
+              ],
             ],
           ),
         ),
