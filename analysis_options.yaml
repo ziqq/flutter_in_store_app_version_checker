@@ -1,1 +1,9 @@
-include: package:flutter_lint_rules/analysis_options_easy.yaml
+##################################################################################
+##                      Linter rules for all packages                           ##
+##                      -----------------------------                           ##
+## Note that there is no need to define another                                 ##
+## analysis-options.yaml in each package because they will                      ##
+## automatically go up the tree if not found in the package. See here:          ##
+## https://dart.dev/guides/language/analysis-options#the-analysis-options-file  ##
+##################################################################################
+include: package:flutter_lints/flutter.yaml
