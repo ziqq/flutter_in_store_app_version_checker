@@ -30,5 +30,5 @@ check: analyze
 # Publish package
 publish:
 	@echo "╠ RUN PUBLISHING..."
-	@dart pub publish || (echo "▓▓ Publish error ▓▓"; exit 1)
+	@dart pub publish --server=https://pub.dartlang.org || (echo "▓▓ Publish error ▓▓"; exit 1)
 	@echo "╠ PUBLISH PACKAGE SUCCESSFULLY"
