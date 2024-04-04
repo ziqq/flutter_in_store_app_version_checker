@@ -31,7 +31,7 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 .packages
 .pub-cache/
-/pubspec.lock
+# /pubspec.lock
 build/
 
 # Pana

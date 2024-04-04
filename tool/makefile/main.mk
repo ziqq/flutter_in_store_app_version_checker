@@ -1,4 +1,4 @@
-.PHONY: doctor version get clean clean-all clean-cache clean-and-generate fluttergen l10n build_runner codegen gen upgrade upgrade outdated dependencies locales run-build-runner run-build-runner-watch
+.PHONY: doctor version get clean-cache clean-and-generate fluttergen l10n build-runner codegen gen upgrade upgrade outdated dependencies locales run-build-runner run-build-runner-watch
 
 # Check flutter doctor
 doctor:
