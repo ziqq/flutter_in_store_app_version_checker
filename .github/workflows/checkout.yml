@@ -26,8 +26,8 @@ jobs:
     defaults:
       run:
         working-directory: ./
-    # container:
-    #   image: cirrusci/flutter:stable
+    container:
+      image: ghcr.io/cirruslabs/flutter:latest
     env:
       pub-cache-name: pub
     timeout-minutes: 10
@@ -43,11 +43,6 @@ jobs:
             test
             analysis_options.yaml
             CHANGELOG.md
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.0.0'
 
       - name: 📤 Restore Pub modules
         id: cache-pub-restore
