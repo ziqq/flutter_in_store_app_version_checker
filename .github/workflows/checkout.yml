@@ -75,7 +75,7 @@ jobs:
       - name: 🔎 Check format
         id: check-format
         timeout-minutes: 1
-        run: dart format --set-exit-if-changed -l 100 -o none lib/**
+        run: dart format --set-exit-if-changed -l 100 -o none lib/ !lib/src/model/pubspec.yaml.g.dart
 
       - name: 📈 Check analyzer
         id: check-analyzer
