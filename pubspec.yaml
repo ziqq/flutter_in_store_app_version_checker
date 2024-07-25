@@ -32,6 +32,10 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  # Utilities
+  collection: any
+  path: any
+
   build_runner: ^2.4.11
   pubspec_generator: ^4.0.0
 
