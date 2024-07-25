@@ -1,0 +1,76 @@
+{
+  "[dart]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.suggestSelection": "first",
+    "editor.tabCompletion": "onlySnippets",
+    "editor.wordBasedSuggestions": "off",
+    "editor.selectionHighlight": false,
+    "editor.defaultFormatter": "Dart-Code.dart-code",
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.formatOnPaste": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    },
+    "editor.quickSuggestions": {
+      "comments": "on",
+      "strings": "on",
+      "other": "on"
+    },
+    "editor.links": true,
+    "editor.rulers": [
+      100
+    ]
+  },
+  "dart.lineLength": 100,
+  "dart.doNotFormat": [
+    "**.g.dart",
+    "**.gql.dart",
+    "**.freezed.dart",
+    "**.config.dart",
+    "**.mocks.dart",
+    "**.gen.dart",
+    "**.pb.dart",
+    "**.pbenum.dart",
+    "**.pbjson.dart",
+    "**/generated/**"
+  ],
+  "dart.flutterSdkPath": ".fvm/versions/stable",
+  "search.exclude": {
+    "**/.fvm": true,
+    ".dart_tool": true,
+    "coverage": true,
+    "build": true
+  },
+  "files.watcherExclude": {
+    "**/.fvm": true,
+    ".dart_tool": true,
+    "coverage": true,
+    "build": true
+  },
+  "debug.openDebug": "openOnDebugBreak",
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    "pubspec.yaml": ".flutter-plugins, .packages, .dart_tool, .flutter-plugins-dependencies, .metadata, .packages, pubspec.lock, build.yaml, analysis_options.yaml, all_lint_rules.yaml, dart*.yaml, flutter*.yaml, icons_launcher.yaml",
+    ".gitignore": ".gitattributes, .gitmodules, .gitmessage, .mailmap, .git-blame*",
+    "readme*": "authors, backers.md, changelog*, citation*, code_of_conduct.md, codeowners, contributing.md, contributors, copying, credits, governance.md, history.md, license*, maintainers, readme*, security.md, sponsors.md",
+    "*.dart": "$(capture).g.dart, $(capture).gr.dart, $(capture).freezed.dart, $(capture).config.dart, $(capture).mocks.dart, $(capture).router.dart, $(capture).locator.dart, $(capture)_skeleton.dart"
+  },
+  "highlight.regexes": {
+    "(\"@\\s*.+\":\\s{0,1}{},)": {
+      "filterFileRegex": ".*\\.arb",
+      "decorations": [
+        {
+          "overviewRulerColor": "#d19a66",
+          "backgroundColor": "#d19a66",
+          "color": "#282c34",
+          "fontWeight": "bold"
+        }
+      ]
+    }
+  }
+}

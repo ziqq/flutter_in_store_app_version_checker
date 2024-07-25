@@ -1,6 +1,6 @@
 // Autor - <a.a.ustinoff@gmail.com> Anton Ustinoff
 
-import 'dart:io';
+import 'dart:io' as io;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_in_store_app_version_checker/flutter_in_store_app_version_checker.dart';
@@ -8,7 +8,7 @@ import 'package:flutter_in_store_app_version_checker/flutter_in_store_app_versio
 void main() => runApp(const MyApp());
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -24,27 +24,20 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-
     _tetradkaChecker = InStoreAppVersionChecker(
       appId: 'ru.beautybox.twa',
     );
-
     _tikTokChecker = InStoreAppVersionChecker(
       appId: 'com.zhiliaoapp.musically',
       androidStore: AndroidStore.apkPure,
     );
-
-    checkVersion();
+    _checkVersion();
   }
 
-  void checkVersion() async {
+  void _checkVersion() async {
     Future.wait([
-      _tikTokChecker
-          .checkUpdate()
-          .then((value) => tikTokValue = value.toString()),
-      _tetradkaChecker
-          .checkUpdate()
-          .then((value) => tetradkaValue = value.toString()),
+      _tikTokChecker.checkUpdate().then((value) => tikTokValue = value.toString()),
+      _tetradkaChecker.checkUpdate().then((value) => tetradkaValue = value.toString()),
     ]).then((_) => setState(() {}));
   }
 
@@ -60,7 +53,7 @@ class _MyAppState extends State<MyApp> {
           padding: const EdgeInsets.all(16.0),
           child: ListView(
             children: [
-              if (Platform.isAndroid) ...[
+              if (io.Platform.isAndroid) ...[
                 const Text(
                   "Tetradka (beauty box)",
                   style: TextStyle(fontWeight: FontWeight.w600),
