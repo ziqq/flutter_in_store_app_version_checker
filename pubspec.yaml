@@ -25,7 +25,7 @@ dependencies:
   collection: ^1.18.0
 
   http: ^1.2.1
-  package_info_plus: ^6.0.0
+  package_info_plus: ^8.0.0
 
 dev_dependencies:
   flutter_test:
