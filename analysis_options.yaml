@@ -2,6 +2,10 @@ include: package:flutter_lints/flutter.yaml
 
 analyzer:
   exclude:
+    # Build
+    - "build/**"
+    # Codegen
+    - "lib/src/model/pubspec.yaml.g.dart"
     # Tests
     - "test/**.mocks.dart"
     - ".test_coverage.dart"
