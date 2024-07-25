@@ -19,17 +19,16 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Utility
-  path: any
-  meta: any
-  collection: any
-
   http: ^1.2.2
   package_info_plus: ^8.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+  # Utility
+  path: any
+  collection: any
 
   build_runner: ^2.4.11
   mockito: ^5.4.4
