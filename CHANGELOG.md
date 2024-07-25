@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.7.0
+- **ADDED**: `pubspec_generator`
+- **REMOVED**: `package_info_plus`
+
+
 ## 1.6.2
 - **ADDED**: `fvm`
 - **CHANGED**: `analysis_options`

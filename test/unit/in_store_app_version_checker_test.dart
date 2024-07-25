@@ -6,7 +6,6 @@ import 'package:flutter_in_store_app_version_checker/flutter_in_store_app_versio
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:mockito/mockito.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
 import '../util/mocks.dart';
 
@@ -19,14 +18,14 @@ void main() => group(
           setUp(() {
             TestWidgetsFlutterBinding.ensureInitialized();
 
-            PackageInfo.setMockInitialValues(
-              installerStore: 'installerStore',
-              buildNumber: '2',
-              version: '2.0.0',
-              appName: 'appName',
-              packageName: 'packageName',
-              buildSignature: 'buildSignature',
-            );
+            // PackageInfo.setMockInitialValues(
+            //   installerStore: 'installerStore',
+            //   buildNumber: '2',
+            //   version: '2.0.0',
+            //   appName: 'appName',
+            //   packageName: 'packageName',
+            //   buildSignature: 'buildSignature',
+            // );
 
             TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
                 .setMockMethodCallHandler(

@@ -1,12 +1,10 @@
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
+import 'package:meta/meta.dart';
 
 /// {@template in_store_app_version_checker_result}
 /// The result data model
 /// {@endtemplate}
-@Deprecated(
-    'Use InStoreAppVersionCheckerResult instead from package:flutter_in_store_app_version_checker')
 @immutable
 class InStoreAppVersionCheckerResult {
   /// {@macro in_store_app_version_checker_result}
@@ -38,7 +36,7 @@ class InStoreAppVersionCheckerResult {
 
     final versionASize = versionNumbersA.length;
     final versionBSize = versionNumbersB.length;
-    final maxSize = math.max(versionASize, versionBSize);
+    final int maxSize = math.max(versionASize, versionBSize);
 
     for (var i = 0; i < maxSize; i++) {
       if ((i < versionASize ? versionNumbersA[i] : 0) >

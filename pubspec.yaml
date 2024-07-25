@@ -3,7 +3,7 @@ name: flutter_in_store_app_version_checker
 description: >
   A lightweight flutter plugin to check if your app is up-to-date on GooglePlay or AppStore.
 
-version: 1.6.2
+version: 1.7.0
 
 publish_to: 'https://pub.dartlang.org'
 
@@ -21,18 +21,21 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # Annotations
+  meta: ^1.9.1
+
+  # Http
   http: ^1.2.2
-  package_info_plus: ^8.0.0
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  # Utility
-  path: any
-  collection: any
-
   build_runner: ^2.4.11
+  pubspec_generator: ^4.0.0
+
+  # Testing
   mockito: ^5.4.4
 
   # Linting

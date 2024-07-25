@@ -1,16 +1,11 @@
 // Autor - <a.a.ustinoff@gmail.com> Anton Ustinoff, 11 December 2023
-// ignore_for_file: require_trailing_commas, directives_ordering
 
 import 'package:http/http.dart' as http;
 import 'package:mockito/annotations.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
 export 'mocks.mocks.dart';
 
-@GenerateMocks([], customMocks: [
-  MockSpec<http.Client>(),
-  MockSpec<PackageInfo>(),
-])
+@GenerateMocks([], customMocks: [MockSpec<http.Client>()])
 void getGenerateMocks() {}
 
 const fakeAndroidBuildVersion = <String, dynamic>{
