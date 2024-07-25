@@ -96,10 +96,14 @@ jobs:
           echo "$version_dart" > /tmp/version_dart
           diff /tmp/version_pubspec /tmp/version_dart
 
-      - name: 🧪 Run unit tests
-        id: run-unit-tests
+      - name: 🧪 Run tests
         timeout-minutes: 2
         run: |
-          dart test --color --platform=vm --concurrency=12 \
-            --timeout=60s --reporter=github --file-reporter=json:coverage/tests.json \
-            --coverage=coverage -- test/unit_test.dart
+          flutter test -r github -j 6 --coverage test/flutter_in_store_app_version_checker_test.dart
+
+      - name: 📥 Upload coverage to Codecov
+        timeout-minutes: 1
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+      #   token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos

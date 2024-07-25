@@ -62,12 +62,6 @@ dependencies: upgrade
 	@fvm flutter pub outdated --dependency-overrides \
 		--dev-dependencies --prereleases --show-all --transitive
 
-# Runs generate locales
-locales:
-	@echo "╠ CREATE LOCALES"
-	@fvm flutter gen-l10n
-	@echo "╠ LOCALES CREATED SUCCESSFULLY"
-
 # Run build_runner:build
 build-runner:
 	@echo "╠ RUN BUILD RUNNER:BUILD"
