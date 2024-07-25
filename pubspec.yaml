@@ -5,8 +5,6 @@ description: >
 
 version: 1.7.0
 
-publish_to: 'https://pub.dartlang.org'
-
 homepage: https://github.com/ziqq/flutter_in_store_app_version_checker
 
 repository: https://github.com/ziqq/flutter_in_store_app_version_checker
