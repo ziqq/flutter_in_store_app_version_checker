@@ -62,7 +62,7 @@ jobs:
       - name: 👷 Install Dependencies
         id: install-dependencies
         timeout-minutes: 1
-        run: flutter pub get --no-example
+        run: flutter pub get
 
       - name: 📥 Save Pub modules
         id: cache-pub-save
