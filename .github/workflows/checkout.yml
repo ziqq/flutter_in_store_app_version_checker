@@ -75,10 +75,7 @@ jobs:
       - name: 🔎 Check format
         id: check-format
         timeout-minutes: 1
-        run: |
-          excluded_file="lib/src/model/pubspec.yaml.g.dart"
-          dart_files=$(find lib -name '*.dart' ! -path "./$excluded_file")
-          dart format --set-exit-if-changed -l 100 -o none $dart_files
+        run: dart format --set-exit-if-changed -l 100 -o none "lib/**"
 
       - name: 📈 Check analyzer
         id: check-analyzer
