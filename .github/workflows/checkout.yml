@@ -27,7 +27,7 @@ jobs:
       run:
         working-directory: ./
     container:
-      image: cirrusci/flutter:stable
+      image: cirrusci/flutter:3.0.0
     env:
       pub-cache-name: pub
     timeout-minutes: 10
@@ -62,7 +62,7 @@ jobs:
       - name: 👷 Install Dependencies
         id: install-dependencies
         timeout-minutes: 1
-        run: flutter pub get
+        run: dart pub get --no-example
 
       - name: 📥 Save Pub modules
         id: cache-pub-save
@@ -70,17 +70,17 @@ jobs:
         with:
           path: |
             $PWD/.pub_cache/
-          key: ${{ runner.os }}-spinify-${{ env.pub-cache-name }}-${{ hashFiles('**/pubspec.yaml') }}
+          key: ${{ runner.os }}-flutter_in_store_app_version_checker-${{ env.pub-cache-name }}-${{ hashFiles('**/pubspec.yaml') }}
 
       - name: 🔎 Check format
         id: check-format
         timeout-minutes: 1
-        run: flutter format --set-exit-if-changed -l 100 -o none lib/
+        run: dart format --set-exit-if-changed -l 100 -o none lib/
 
       - name: 📈 Check analyzer
         id: check-analyzer
         timeout-minutes: 1
-        run: flutter analyze --fatal-infos --fatal-warnings lib/
+        run: dart analyze --fatal-infos --fatal-warnings lib/
 
       - name: 👀 Verify versions
         id: verify-versions
@@ -100,6 +100,6 @@ jobs:
         id: run-unit-tests
         timeout-minutes: 2
         run: |
-          flutter test --color --platform=vm --concurrency=12 \
+          dart test --color --platform=vm --concurrency=12 \
             --timeout=60s --reporter=github --file-reporter=json:coverage/tests.json \
             --coverage=coverage -- test/unit_test.dart
