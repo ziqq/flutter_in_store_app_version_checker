@@ -9,8 +9,8 @@ get:
 # Format code
 format:
 	@echo "╠ RUN FORMAT THE CODE..."
-	@dart format --fix -l 80 . || (echo "▓▓ Format code error ▓▓"; exit 1)
-	@(dart format --fix -l 80 . || (echo "▓▓ Format code error ▓▓"; exit 2))
+	@dart format --fix -l 100 . || (echo "▓▓ Format code error ▓▓"; exit 1)
+	@(dart format --fix -l 100 . || (echo "▓▓ Format code error ▓▓"; exit 2))
 	@echo "╠ CODE FORMATED SUCCESSFULLY"
 
 # Analyze code
@@ -30,5 +30,6 @@ check: analyze
 # Publish package
 publish:
 	@echo "╠ RUN PUBLISHING..."
-	@dart pub publish --server=https://pub.dartlang.org || (echo "▓▓ Publish error ▓▓"; exit 1)
+#@dart pub publish --server=https://pub.dartlang.org || (echo "▓▓ Publish error ▓▓"; exit 1)
+	@dart pub publish || (echo "▓▓ Publish error ▓▓"; exit 1)
 	@echo "╠ PUBLISH PACKAGE SUCCESSFULLY"
