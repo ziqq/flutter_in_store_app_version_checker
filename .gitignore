@@ -23,32 +23,28 @@ migrate_working_dir/
 
 # Flutter/Dart/Pub related
 # Libraries should not include pubspec.lock, per https://dart.dev/guides/libraries/private-files#pubspeclock.
+/pubspec.lock
 .dart_tool
-.fvm/flutter_sdk
+build/
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .flutter-plugins
 .flutter-plugins-dependencies
 .packages
 .pub-cache/
-# /pubspec.lock
-build/
 
 # Pana
 log.pana.json
 
 # Test
-coverage/
 .coverage/
+coverage/
 /test/**/*.json
-!/test/**/fixtures/*.json
 /test/.test_coverage.dart
 
 # Temp
 /tmp
 /temp
 
-# GeneratedPluginRegistrant
-**/android/**/GeneratedPluginRegistrant.java
-**/ios/Runner/GeneratedPluginRegistrant.*
-**/macos/Flutter/GeneratedPluginRegistrant.swift
+# FVM
+.fvm/flutter_sdk
