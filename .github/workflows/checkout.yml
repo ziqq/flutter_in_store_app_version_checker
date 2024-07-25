@@ -50,7 +50,7 @@ jobs:
         with:
           path: |
             $PWD/.pub_cache/
-          key: ${{ runner.os }}-spinify-${{ env.pub-cache-name }}-${{ hashFiles('**/pubspec.yaml') }}
+          key: ${{ runner.os }}-flutter_in_store_app_version_checker-${{ env.pub-cache-name }}-${{ hashFiles('**/pubspec.yaml') }}
 
       - name: 🗄️ Export Pub cache directory
         id: export-pub-cache
