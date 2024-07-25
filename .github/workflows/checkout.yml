@@ -27,7 +27,7 @@ jobs:
       run:
         working-directory: ./
     container:
-      image: ziqq/flutter:stable
+      image: plugfox/flutter:stable
     env:
       pub-cache-name: pub
     timeout-minutes: 10
