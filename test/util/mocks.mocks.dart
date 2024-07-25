@@ -10,6 +10,7 @@ import 'dart:typed_data' as _i6;
 import 'package:http/http.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i5;
+import 'package:package_info_plus/package_info_plus.dart' as _i7;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -279,4 +280,64 @@ class MockClient extends _i1.Mock implements _i2.Client {
         ),
         returnValueForMissingStub: null,
       );
+}
+
+/// A class which mocks [PackageInfo].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockPackageInfo extends _i1.Mock implements _i7.PackageInfo {
+  MockPackageInfo() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  String get appName => (super.noSuchMethod(
+        Invocation.getter(#appName),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#appName),
+        ),
+      ) as String);
+
+  @override
+  String get packageName => (super.noSuchMethod(
+        Invocation.getter(#packageName),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#packageName),
+        ),
+      ) as String);
+
+  @override
+  String get version => (super.noSuchMethod(
+        Invocation.getter(#version),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#version),
+        ),
+      ) as String);
+
+  @override
+  String get buildNumber => (super.noSuchMethod(
+        Invocation.getter(#buildNumber),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#buildNumber),
+        ),
+      ) as String);
+
+  @override
+  String get buildSignature => (super.noSuchMethod(
+        Invocation.getter(#buildSignature),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#buildSignature),
+        ),
+      ) as String);
+
+  @override
+  Map<String, dynamic> get data => (super.noSuchMethod(
+        Invocation.getter(#data),
+        returnValue: <String, dynamic>{},
+      ) as Map<String, dynamic>);
 }
