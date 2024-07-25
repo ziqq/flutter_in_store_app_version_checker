@@ -28,11 +28,14 @@ class InStoreAppVersionCheckerResult {
   final String? errorMessage;
 
   /// Return `true` if update is available
-  bool get canUpdate => _shouldUpdate(currentVersion, newVersion ?? currentVersion);
+  bool get canUpdate =>
+      _shouldUpdate(currentVersion, newVersion ?? currentVersion);
 
   bool _shouldUpdate(String versionA, String versionB) {
-    final versionNumbersA = versionA.split('.').map((e) => int.tryParse(e) ?? 0).toList();
-    final versionNumbersB = versionB.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    final versionNumbersA =
+        versionA.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    final versionNumbersB =
+        versionB.split('.').map((e) => int.tryParse(e) ?? 0).toList();
 
     final versionASize = versionNumbersA.length;
     final versionBSize = versionNumbersB.length;
@@ -68,5 +71,8 @@ class InStoreAppVersionCheckerResult {
 
   @override
   int get hashCode =>
-      currentVersion.hashCode ^ newVersion.hashCode ^ appURL.hashCode ^ errorMessage.hashCode;
+      currentVersion.hashCode ^
+      newVersion.hashCode ^
+      appURL.hashCode ^
+      errorMessage.hashCode;
 }

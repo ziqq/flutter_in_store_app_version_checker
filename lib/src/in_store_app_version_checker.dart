@@ -106,11 +106,16 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
 
     if (_isAndroid) {
       return await switch (androidStore) {
-        AndroidStore.apkPure => _checkPlayStoreApkPure(currentVersion, packageName),
+        AndroidStore.apkPure =>
+          _checkPlayStore$ApkPure(currentVersion, packageName),
         _ => _checkPlayStore(currentVersion, packageName),
       };
     } else if (_isIOS) {
-      return await _checkAppleStore(currentVersion, packageName, locale: locale);
+      return await _checkAppleStore(
+        currentVersion,
+        packageName,
+        locale: locale,
+      );
     } else {
       return InStoreAppVersionCheckerResult(
         currentVersion,
@@ -132,15 +137,23 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
     String? url;
 
     try {
-      final uri = Uri.https('itunes.apple.com', '/$locale/lookup', {'bundleId': packageName});
+      final uri = Uri.https(
+        'itunes.apple.com',
+        '/$locale/lookup',
+        {'bundleId': packageName},
+      );
       final response = await _httpClient.get(uri);
       if (response.statusCode != 200) {
-        errorMsg = "Can't find an app in the Apple Store with the id: $packageName";
+        errorMsg =
+            "Can't find an app in the Apple Store with the id: $packageName";
       } else {
         final jsonObj = jsonDecode(response.body);
-        final results = List<dynamic>.from(jsonObj['results'] as Iterable<dynamic>);
+        final results =
+            List<dynamic>.from(jsonObj['results'] as Iterable<dynamic>);
+
         if (results.isEmpty) {
-          errorMsg = "Can't find an app in the Apple Store with the id: $packageName";
+          errorMsg =
+              "Can't find an app in the Apple Store with the id: $packageName";
         } else {
           newVersion = jsonObj['results'][0]['version'].toString();
           url = jsonObj['results'][0]['trackViewUrl'].toString();
@@ -149,7 +162,12 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
     } on Object catch (error, __) {
       errorMsg = '$error';
     }
-    return InStoreAppVersionCheckerResult(currentVersion, newVersion, url, errorMsg);
+    return InStoreAppVersionCheckerResult(
+      currentVersion,
+      newVersion,
+      url,
+      errorMsg,
+    );
   }
 
   /// {@macro in_store_app_version_checker}
@@ -162,22 +180,34 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
     String? url;
 
     try {
-      final uri = Uri.https('play.google.com', '/store/apps/details', {'id': packageName});
+      final uri = Uri.https(
+        'play.google.com',
+        '/store/apps/details',
+        {'id': packageName},
+      );
       final response = await _httpClient.get(uri);
       if (response.statusCode != 200) {
-        errorMsg = "Can't find an app in the Google Play Store with the id: $packageName";
+        errorMsg =
+            "Can't find an app in the Google Play Store with the id: $packageName";
       } else {
-        newVersion = RegExp(r',\[\[\["([0-9,\.]*)"]],').firstMatch(response.body)?.group(1);
+        newVersion = RegExp(r',\[\[\["([0-9,\.]*)"]],')
+            .firstMatch(response.body)
+            ?.group(1);
         url = uri.toString();
       }
     } on Object catch (error, __) {
       errorMsg = '$error';
     }
-    return InStoreAppVersionCheckerResult(currentVersion, newVersion, url, errorMsg);
+    return InStoreAppVersionCheckerResult(
+      currentVersion,
+      newVersion,
+      url,
+      errorMsg,
+    );
   }
 
   /// {@macro in_store_app_version_checker}
-  Future<InStoreAppVersionCheckerResult> _checkPlayStoreApkPure(
+  Future<InStoreAppVersionCheckerResult> _checkPlayStore$ApkPure(
     String currentVersion,
     String packageName,
   ) async {
@@ -189,7 +219,8 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
       final uri = Uri.https('apkpure.com', '$packageName/$packageName');
       final response = await _httpClient.get(uri);
       if (response.statusCode != 200) {
-        errorMsg = "Can't find an app in the ApkPure Store with the id: $packageName";
+        errorMsg =
+            "Can't find an app in the ApkPure Store with the id: $packageName";
       } else {
         newVersion = RegExp(
           r'<div class="details-sdk"><span itemprop="version">(.*?)<\/span>for Android<\/div>',
@@ -199,6 +230,11 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
     } on Object catch (error, __) {
       errorMsg = '$error';
     }
-    return InStoreAppVersionCheckerResult(currentVersion, newVersion, url, errorMsg);
+    return InStoreAppVersionCheckerResult(
+      currentVersion,
+      newVersion,
+      url,
+      errorMsg,
+    );
   }
 }
