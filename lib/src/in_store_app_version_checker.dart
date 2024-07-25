@@ -1,14 +1,11 @@
 // autor - <a.a.ustinoff@gmail.com> Anton Ustinoff
-// ignore_for_file: avoid_dynamic_calls
 
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
-
-import 'in_store_app_version_checker_result.dart';
 
 /// Possible types of android store
 enum AndroidStore {
@@ -100,28 +97,21 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
       } else {
         _kIsWeb = true;
       }
-    } catch (e) {
+    } on Object catch (_, __) {
       _kIsWeb = true;
     }
 
-    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-
-    final String currentVersion = this.currentVersion ?? packageInfo.version;
-    final String packageName = appId ?? packageInfo.packageName;
+    final packageInfo = await PackageInfo.fromPlatform();
+    final packageName = appId ?? packageInfo.packageName;
+    final currentVersion = this.currentVersion ?? packageInfo.version;
 
     if (_isAndroid) {
-      switch (androidStore) {
-        case AndroidStore.apkPure:
-          return _checkPlayStoreApkPure(currentVersion, packageName);
-        default:
-          return _checkPlayStore(currentVersion, packageName);
-      }
+      return await switch (androidStore) {
+        AndroidStore.apkPure => _checkPlayStoreApkPure(currentVersion, packageName),
+        _ => _checkPlayStore(currentVersion, packageName),
+      };
     } else if (_isIOS) {
-      return _checkAppleStore(
-        currentVersion,
-        packageName,
-        locale: locale,
-      );
+      return await _checkAppleStore(currentVersion, packageName, locale: locale);
     } else {
       return InStoreAppVersionCheckerResult(
         currentVersion,
@@ -142,42 +132,25 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
     String? newVersion;
     String? url;
 
-    final uri = Uri.https(
-      'itunes.apple.com',
-      '/$locale/lookup',
-      {'bundleId': packageName},
-    );
-
     try {
+      final uri = Uri.https('itunes.apple.com', '/$locale/lookup', {'bundleId': packageName});
       final response = await _httpClient.get(uri);
-
       if (response.statusCode != 200) {
-        errorMsg =
-            "Can't find an app in the Apple Store with the id: $packageName";
+        errorMsg = "Can't find an app in the Apple Store with the id: $packageName";
       } else {
         final jsonObj = jsonDecode(response.body);
-
-        final List<dynamic> results = List.from(
-          jsonObj['results'] as Iterable<dynamic>,
-        );
-
+        final results = List<dynamic>.from(jsonObj['results'] as Iterable<dynamic>);
         if (results.isEmpty) {
-          errorMsg =
-              "Can't find an app in the Apple Store with the id: $packageName";
+          errorMsg = "Can't find an app in the Apple Store with the id: $packageName";
         } else {
           newVersion = jsonObj['results'][0]['version'].toString();
           url = jsonObj['results'][0]['trackViewUrl'].toString();
         }
       }
-    } catch (e) {
-      errorMsg = '$e';
+    } on Object catch (error, __) {
+      errorMsg = '$error';
     }
-    return InStoreAppVersionCheckerResult(
-      currentVersion,
-      newVersion,
-      url,
-      errorMsg,
-    );
+    return InStoreAppVersionCheckerResult(currentVersion, newVersion, url, errorMsg);
   }
 
   /// {@macro in_store_app_version_checker}
@@ -185,37 +158,23 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
     String currentVersion,
     String packageName,
   ) async {
-    String? errorMsg;
     String? newVersion;
+    String? errorMsg;
     String? url;
 
-    final uri = Uri.https(
-      'play.google.com',
-      '/store/apps/details',
-      {'id': packageName},
-    );
-
     try {
+      final uri = Uri.https('play.google.com', '/store/apps/details', {'id': packageName});
       final response = await _httpClient.get(uri);
       if (response.statusCode != 200) {
-        errorMsg =
-            "Can't find an app in the Google Play Store with the id: $packageName";
+        errorMsg = "Can't find an app in the Google Play Store with the id: $packageName";
       } else {
-        newVersion = RegExp(r',\[\[\["([0-9,\.]*)"]],')
-            .firstMatch(response.body)
-            ?.group(1);
+        newVersion = RegExp(r',\[\[\["([0-9,\.]*)"]],').firstMatch(response.body)?.group(1);
         url = uri.toString();
       }
-    } catch (e) {
-      errorMsg = '$e';
+    } on Object catch (error, __) {
+      errorMsg = '$error';
     }
-
-    return InStoreAppVersionCheckerResult(
-      currentVersion,
-      newVersion,
-      url,
-      errorMsg,
-    );
+    return InStoreAppVersionCheckerResult(currentVersion, newVersion, url, errorMsg);
   }
 
   /// {@macro in_store_app_version_checker}
@@ -223,33 +182,93 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
     String currentVersion,
     String packageName,
   ) async {
-    String? errorMsg;
     String? newVersion;
+    String? errorMsg;
     String? url;
 
-    final Uri uri = Uri.https('apkpure.com', '$packageName/$packageName');
-
     try {
+      final uri = Uri.https('apkpure.com', '$packageName/$packageName');
       final response = await _httpClient.get(uri);
       if (response.statusCode != 200) {
-        errorMsg =
-            "Can't find an app in the ApkPure Store with the id: $packageName";
+        errorMsg = "Can't find an app in the ApkPure Store with the id: $packageName";
       } else {
-        debugPrint('[DEBUG]: ApkPure | response.body: ${response.body}');
-
         newVersion = RegExp(
           r'<div class="details-sdk"><span itemprop="version">(.*?)<\/span>for Android<\/div>',
         ).firstMatch(response.body)!.group(1)!.trim();
         url = uri.toString();
       }
-    } catch (e) {
-      errorMsg = '$e';
+    } on Object catch (error, __) {
+      errorMsg = '$error';
     }
-    return InStoreAppVersionCheckerResult(
-      currentVersion,
-      newVersion,
-      url,
-      errorMsg,
-    );
+    return InStoreAppVersionCheckerResult(currentVersion, newVersion, url, errorMsg);
   }
+}
+
+/// {@template in_store_app_version_checker_result}
+/// The result data model
+/// {@endtemplate}
+@immutable
+class InStoreAppVersionCheckerResult {
+  /// {@macro in_store_app_version_checker_result}
+  const InStoreAppVersionCheckerResult(
+    this.currentVersion,
+    this.newVersion,
+    this.appURL,
+    this.errorMessage,
+  );
+
+  /// Return current app version
+  final String currentVersion;
+
+  /// Return the new app version
+  final String? newVersion;
+
+  /// Return the app url
+  final String? appURL;
+
+  /// Return error message if found else it will return `null`
+  final String? errorMessage;
+
+  /// Return `true` if update is available
+  bool get canUpdate => _shouldUpdate(currentVersion, newVersion ?? currentVersion);
+
+  bool _shouldUpdate(String versionA, String versionB) {
+    final versionNumbersA = versionA.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    final versionNumbersB = versionB.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+
+    final versionASize = versionNumbersA.length;
+    final versionBSize = versionNumbersB.length;
+    final int maxSize = math.max(versionASize, versionBSize);
+
+    for (var i = 0; i < maxSize; i++) {
+      if ((i < versionASize ? versionNumbersA[i] : 0) >
+          (i < versionBSize ? versionNumbersB[i] : 0)) {
+        return false;
+      } else if ((i < versionASize ? versionNumbersA[i] : 0) <
+          (i < versionBSize ? versionNumbersB[i] : 0)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @override
+  String toString() => 'Current Version: $currentVersion\n'
+      'New Version: $newVersion\n'
+      'App URL: $appURL\n'
+      'can update: $canUpdate\n'
+      'error: $errorMessage';
+
+  @override
+  bool operator ==(covariant InStoreAppVersionCheckerResult other) {
+    if (identical(this, other)) return true;
+    return other.currentVersion == currentVersion &&
+        other.newVersion == newVersion &&
+        other.appURL == appURL &&
+        other.errorMessage == errorMessage;
+  }
+
+  @override
+  int get hashCode =>
+      currentVersion.hashCode ^ newVersion.hashCode ^ appURL.hashCode ^ errorMessage.hashCode;
 }
