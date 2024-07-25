@@ -126,11 +126,11 @@ sealed class Pubspec {
     2024,
     7,
     25,
-    9,
-    16,
-    1,
-    638,
-    966,
+    11,
+    3,
+    21,
+    559,
+    322,
   );
 
   /// Name
@@ -165,7 +165,8 @@ sealed class Pubspec {
   /// Think of the description as the sales pitch for your package.
   /// Users see it when they [browse for packages](https://pub.dev/packages).
   /// The description is plain text: no markdown or HTML.
-  static const String description = r'A lightweight flutter plugin to check if your app is up-to-date on GooglePlay or AppStore.';
+  static const String description =
+      r'A lightweight flutter plugin to check if your app is up-to-date on GooglePlay or AppStore.';
 
   /// Homepage
   ///
@@ -177,7 +178,8 @@ sealed class Pubspec {
   /// While providing a homepage is optional,
   /// please provide it or repository (or both).
   /// It helps users understand where your package is coming from.
-  static const String homepage = r'https://github.com/ziqq/flutter_in_store_app_version_checker';
+  static const String homepage =
+      r'https://github.com/ziqq/flutter_in_store_app_version_checker';
 
   /// Repository
   ///
@@ -192,7 +194,8 @@ sealed class Pubspec {
   /// While providing a repository is optional,
   /// please provide it or homepage (or both).
   /// It helps users understand where your package is coming from.
-  static const String repository = r'https://github.com/ziqq/flutter_in_store_app_version_checker';
+  static const String repository =
+      r'https://github.com/ziqq/flutter_in_store_app_version_checker';
 
   /// Issue tracker
   ///
@@ -205,7 +208,8 @@ sealed class Pubspec {
   /// If issue_tracker is missing but repository is present and points to GitHub,
   /// then the pub.dev site uses the default issue tracker
   /// (https://github.com/<user>/<repository>/issues).
-  static const String issueTracker = r'https://github.com/ziqq/flutter_in_store_app_version_checker/issues';
+  static const String issueTracker =
+      r'https://github.com/ziqq/flutter_in_store_app_version_checker/issues';
 
   /// Documentation
   ///
@@ -419,6 +423,8 @@ sealed class Pubspec {
     'flutter_test': <String, Object>{
       'sdk': r'flutter',
     },
+    'collection': r'any',
+    'path': r'any',
     'build_runner': r'^2.4.11',
     'pubspec_generator': r'^4.0.0',
     'mockito': r'^5.4.4',
@@ -491,5 +497,4 @@ sealed class Pubspec {
       },
     },
   };
-
 }

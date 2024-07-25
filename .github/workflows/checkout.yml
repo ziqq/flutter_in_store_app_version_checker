@@ -27,7 +27,7 @@ jobs:
       run:
         working-directory: ./
     container:
-      image: ghcr.io/cirruslabs/flutter:latest
+      image: ziqq/flutter:stable
     env:
       pub-cache-name: pub
     timeout-minutes: 10
@@ -50,7 +50,7 @@ jobs:
         with:
           path: |
             $PWD/.pub_cache/
-          key: ${{ runner.os }}-flutter_in_store_app_version_checker-${{ env.pub-cache-name }}-${{ hashFiles('**/pubspec.yaml') }}
+          key: ${{ runner.os }}-pub-${{ env.pub-cache-name }}-${{ hashFiles('**/pubspec.yaml') }}
 
       - name: 🗄️ Export Pub cache directory
         id: export-pub-cache
@@ -70,7 +70,7 @@ jobs:
         with:
           path: |
             $PWD/.pub_cache/
-          key: ${{ runner.os }}-flutter_in_store_app_version_checker-${{ env.pub-cache-name }}-${{ hashFiles('**/pubspec.yaml') }}
+          key: ${{ runner.os }}-pub-${{ env.pub-cache-name }}-${{ hashFiles('**/pubspec.yaml') }}
 
       - name: 🔎 Check format
         id: check-format

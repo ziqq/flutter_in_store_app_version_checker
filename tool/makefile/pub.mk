@@ -9,8 +9,8 @@ get:
 # Format code
 format:
 	@echo "╠ RUN FORMAT THE CODE..."
-	@dart format --fix -l 100 . || (echo "▓▓ Format code error ▓▓"; exit 1)
-	@(dart format --fix -l 100 . || (echo "▓▓ Format code error ▓▓"; exit 2))
+	@dart format --fix -l 80 . || (echo "▓▓ Format code error ▓▓"; exit 1)
+	@(dart format --fix -l 80 . || (echo "▓▓ Format code error ▓▓"; exit 2))
 	@echo "╠ CODE FORMATED SUCCESSFULLY"
 
 # Analyze code

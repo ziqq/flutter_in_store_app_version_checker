@@ -12,7 +12,8 @@ import '../util/mocks.dart';
 void main() => group(
     'Unit_tests -',
     () => group('InStoreAppVersionChecker', () {
-          const channel = MethodChannel('dev.fluttercommunity.plus/package_info');
+          const channel =
+              MethodChannel('dev.fluttercommunity.plus/package_info');
           late MockClient mockHttpClient;
 
           setUp(() {
@@ -66,7 +67,8 @@ void main() => group(
           });
 
           group('Check is web -', () {
-            test('When called, should return <InStoreAppVersionCheckerResult> with error message',
+            test(
+                'When called, should return <InStoreAppVersionCheckerResult> with error message',
                 () async {
               debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
 
@@ -139,7 +141,8 @@ void main() => group(
 
               expect(result_1.hashCode == result_2.hashCode, isFalse);
             });
-            test('When results is empty, should get error response with error message as <String>',
+            test(
+                'When results is empty, should get error response with error message as <String>',
                 () async {
               debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
 
@@ -186,7 +189,8 @@ void main() => group(
             test('Error response from Apple Store', () async {
               debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
 
-              when(mockHttpClient.get(any)).thenAnswer((_) async => http.Response('Error', 404));
+              when(mockHttpClient.get(any))
+                  .thenAnswer((_) async => http.Response('Error', 404));
 
               final checker = InStoreAppVersionChecker(
                 currentVersion: '1.0.0',
@@ -220,7 +224,8 @@ void main() => group(
                 expect(result.newVersion, equals(vesion));
                 expect(result.canUpdate, isTrue);
               });
-              test('Error response as <String> from Google Play Store', () async {
+              test('Error response as <String> from Google Play Store',
+                  () async {
                 debugDefaultTargetPlatformOverride = TargetPlatform.android;
                 const errorMessage = "It's error";
 
@@ -241,7 +246,8 @@ void main() => group(
               test('Error response from Google Play Store', () async {
                 debugDefaultTargetPlatformOverride = TargetPlatform.android;
 
-                when(mockHttpClient.get(any)).thenAnswer((_) async => http.Response('Error', 404));
+                when(mockHttpClient.get(any))
+                    .thenAnswer((_) async => http.Response('Error', 404));
 
                 final checker = InStoreAppVersionChecker(
                   currentVersion: '1.0.0',
@@ -278,7 +284,8 @@ void main() => group(
                 expect(result.newVersion, equals(vesion));
                 expect(result.canUpdate, isTrue);
               });
-              test('Error response as <String> from Google Play Store', () async {
+              test('Error response as <String> from Google Play Store',
+                  () async {
                 debugDefaultTargetPlatformOverride = TargetPlatform.android;
                 const errorMessage = "It's error";
 
@@ -300,7 +307,8 @@ void main() => group(
               test('Error response from Google Play Store', () async {
                 debugDefaultTargetPlatformOverride = TargetPlatform.android;
 
-                when(mockHttpClient.get(any)).thenAnswer((_) async => http.Response('Error', 404));
+                when(mockHttpClient.get(any))
+                    .thenAnswer((_) async => http.Response('Error', 404));
 
                 final checker = InStoreAppVersionChecker(
                   currentVersion: '1.0.0',

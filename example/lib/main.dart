@@ -36,8 +36,12 @@ class _MyAppState extends State<MyApp> {
 
   void _checkVersion() async {
     Future.wait([
-      _tikTokChecker.checkUpdate().then((value) => tikTokValue = value.toString()),
-      _tetradkaChecker.checkUpdate().then((value) => tetradkaValue = value.toString()),
+      _tikTokChecker
+          .checkUpdate()
+          .then((value) => tikTokValue = value.toString()),
+      _tetradkaChecker
+          .checkUpdate()
+          .then((value) => tetradkaValue = value.toString()),
     ]).then((_) => setState(() {}));
   }
 
