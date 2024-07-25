@@ -97,11 +97,13 @@ jobs:
           diff /tmp/version_pubspec /tmp/version_dart
 
       - name: 🧪 Run tests
+        id: run-tests
         timeout-minutes: 2
         run: |
           flutter test -r github -j 6 --coverage test/flutter_in_store_app_version_checker_test.dart
 
       - name: 📥 Upload coverage to Codecov
+        id: upload-coverage-to-codecov
         timeout-minutes: 1
         uses: codecov/codecov-action@v3
         with:
