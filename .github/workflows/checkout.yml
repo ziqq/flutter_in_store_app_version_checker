@@ -27,7 +27,7 @@ jobs:
       run:
         working-directory: ./
     container:
-      image: dart:stable
+      image: cirrusci/flutter:stable
     env:
       pub-cache-name: pub
     timeout-minutes: 10
@@ -62,7 +62,7 @@ jobs:
       - name: 👷 Install Dependencies
         id: install-dependencies
         timeout-minutes: 1
-        run: dart pub get --no-example
+        run: flutter pub get
 
       - name: 📥 Save Pub modules
         id: cache-pub-save
@@ -75,12 +75,12 @@ jobs:
       - name: 🔎 Check format
         id: check-format
         timeout-minutes: 1
-        run: dart format --set-exit-if-changed -l 100 -o none lib/
+        run: flutter format --set-exit-if-changed -l 100 -o none lib/
 
       - name: 📈 Check analyzer
         id: check-analyzer
         timeout-minutes: 1
-        run: dart analyze --fatal-infos --fatal-warnings lib/
+        run: flutter analyze --fatal-infos --fatal-warnings lib/
 
       - name: 👀 Verify versions
         id: verify-versions
@@ -100,6 +100,6 @@ jobs:
         id: run-unit-tests
         timeout-minutes: 2
         run: |
-          dart test --color --platform=vm --concurrency=12 \
+          flutter test --color --platform=vm --concurrency=12 \
             --timeout=60s --reporter=github --file-reporter=json:coverage/tests.json \
             --coverage=coverage -- test/unit_test.dart
