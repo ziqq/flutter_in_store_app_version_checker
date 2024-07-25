@@ -2,10 +2,14 @@
 
 import 'package:http/http.dart' as http;
 import 'package:mockito/annotations.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 export 'mocks.mocks.dart';
 
-@GenerateMocks([], customMocks: [MockSpec<http.Client>()])
+@GenerateMocks([], customMocks: [
+  MockSpec<http.Client>(),
+  MockSpec<PackageInfo>(),
+])
 void getGenerateMocks() {}
 
 const fakeAndroidBuildVersion = <String, dynamic>{

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.7.1
+- **REMOVED**: `pubspec_generator`
+- **ADDED**: `package_info_plus`
+
+
 ## 1.7.0
 - **ADDED**: `pubspec_generator`
 - **REMOVED**: `package_info_plus`

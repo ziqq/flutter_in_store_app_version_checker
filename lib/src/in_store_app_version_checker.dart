@@ -4,8 +4,8 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_in_store_app_version_checker/src/model/in_store_app_version_checker_result.dart';
-import 'package:flutter_in_store_app_version_checker/src/model/pubspec.yaml.g.dart';
 import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
 
 /// Possible types of android store
 enum AndroidStore {
@@ -101,21 +101,19 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
       _kIsWeb = true;
     }
 
-    final packageName = appId ?? Pubspec.name;
-    final currentVersion = this.currentVersion ?? Pubspec.version.canonical;
+    final packageInfo = await PackageInfo.fromPlatform();
+    final packageName = appId ?? packageInfo.packageName;
+    final currentVersion = this.currentVersion ?? packageInfo.version;
 
     if (_isAndroid) {
       return await switch (androidStore) {
         AndroidStore.apkPure =>
-          _checkPlayStore$ApkPure(currentVersion, packageName),
+          _checkPlayStoreApkPure(currentVersion, packageName),
         _ => _checkPlayStore(currentVersion, packageName),
       };
     } else if (_isIOS) {
-      return await _checkAppleStore(
-        currentVersion,
-        packageName,
-        locale: locale,
-      );
+      return await _checkAppleStore(currentVersion, packageName,
+          locale: locale);
     } else {
       return InStoreAppVersionCheckerResult(
         currentVersion,
@@ -207,7 +205,7 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
   }
 
   /// {@macro in_store_app_version_checker}
-  Future<InStoreAppVersionCheckerResult> _checkPlayStore$ApkPure(
+  Future<InStoreAppVersionCheckerResult> _checkPlayStoreApkPure(
     String currentVersion,
     String packageName,
   ) async {
