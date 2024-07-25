@@ -27,7 +27,7 @@ jobs:
       run:
         working-directory: ./
     container:
-      image: cirrusci/flutter:3.0.0
+      image: cirrusci/flutter:stable
     env:
       pub-cache-name: pub
     timeout-minutes: 10
@@ -62,7 +62,7 @@ jobs:
       - name: 👷 Install Dependencies
         id: install-dependencies
         timeout-minutes: 1
-        run: dart pub get --no-example
+        run: flutter pub get --no-example
 
       - name: 📥 Save Pub modules
         id: cache-pub-save
