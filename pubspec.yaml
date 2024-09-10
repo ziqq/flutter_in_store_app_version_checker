@@ -53,7 +53,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.example.in_store_app_version_checker
+        package: flutter_in_store_app_version_checker
         pluginClass: InStoreAppVersionCheckerPlugin
       ios:
         pluginClass: InStoreAppVersionCheckerPlugin

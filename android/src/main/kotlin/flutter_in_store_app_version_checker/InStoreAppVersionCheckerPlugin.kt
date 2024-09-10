@@ -1,4 +1,4 @@
-package com.example.in_store_app_version_checker
+package flutter_in_store_app_version_checker
 
 import androidx.annotation.NonNull
 
@@ -17,7 +17,7 @@ class InStoreAppVersionCheckerPlugin: FlutterPlugin, MethodCallHandler {
   private lateinit var channel : MethodChannel
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "in_store_app_version_checker")
+    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "flutter_in_store_app_version_checker")
     channel.setMethodCallHandler(this)
   }
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.0
+- **ADDED**: `namespace` to android build.gradle
+
+
 ## 1.7.1
 - **REMOVED**: `pubspec_generator`
 - **ADDED**: `package_info_plus`
