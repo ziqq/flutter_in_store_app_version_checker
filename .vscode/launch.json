@@ -2,14 +2,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "[debug] Run app (development)",
+      "name": "Run Example",
       "type": "dart",
       "request": "launch",
       "cwd": "${workspaceFolder}/example",
       "args": [
         // "--dart-define-from-file=config/development.json",
-        // "--dart-define=octopus.logs=true",
-        // "--dart-define=octopus.measure=false"
       ],
       "env": {}
     },
