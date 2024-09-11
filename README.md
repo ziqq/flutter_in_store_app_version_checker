@@ -35,11 +35,11 @@ The package supports checking for updates through the following Android stores:
 -   `AndroidStore.apkPure`:  The alternative ApkPure store.
 
 You can specify the store using the `androidStore` parameter:
+
 ```dart
 final _checker = InStoreAppVersionChecker(
   androidStore: AndroidStore.apkPure, // Use apkPure instead of Google Play
 );
-
 ```
 
 
@@ -50,7 +50,7 @@ Add InStoreAppVersionChecker to your pubspec:
 
 ```yaml
 dependencies:
-	flutter_in_store_app_version_checker:  any  # Or the latest version on Pub
+  flutter_in_store_app_version_checker:  any  # Or the latest version on Pub
 ```
 
 
@@ -68,8 +68,8 @@ final _checker =  InStoreAppVersionChecker();
 
 ```dart
 final _checker =  InStoreAppVersionChecker(
-	appId:  'Specify the app id',  // Optional
-	currentVersion:  'Specify the current version',  // Optional
+  appId:  'Specify the app id',                    // Optional
+  currentVersion:  'Specify the current version',  // Optional
 );
 
 ```
@@ -80,17 +80,17 @@ final _checker =  InStoreAppVersionChecker(
 ```dart
 @override
 void  initState() {
-	super.initState();
-	checkVersion();
+  super.initState();
+  checkVersion();
 }
 
 Future<void> checkVersion() async {
-	final result = await _checker.checkUpdate();
-	print('App URL: ${result.appURL}');
-	print('Can update: ${result.canUpdate}');
-	print('Current version: ${result.currentVersion}');
-	print('New version: ${result.newVersion}');
-	if (result.errorMessage != null) print('Error: ${result.errorMessage}');
+  final result = await _checker.checkUpdate();
+  print('App URL: ${result.appURL}');
+  print('Can update: ${result.canUpdate}');
+  print('Current version: ${result.currentVersion}');
+  print('New version: ${result.newVersion}');
+  if (result.errorMessage != null) print('Error: ${result.errorMessage}');
 };
 ```
 
@@ -107,8 +107,8 @@ Future<void> checkVersion() async {
 
 ```dart
 final _checker =  InStoreAppVersionChecker(
-	appId:  'Specify the app id',
-	androidStore:  AndroidStore.apkPure,
+  appId:  'Specify the app id',
+  androidStore:  AndroidStore.apkPure,
 );
 
 ```
