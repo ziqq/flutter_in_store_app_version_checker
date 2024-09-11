@@ -12,6 +12,16 @@
       "env": {}
     },
     {
+      "name": "Run Example Gradle 8",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/example_gradle_8",
+      "args": [
+        // "--dart-define-from-file=config/development.json",
+      ],
+      "env": {}
+    },
+    {
       "name": "Flutter Test (VM)",
       "request": "launch",
       "type": "dart",
