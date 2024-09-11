@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Dependencies",
+      "label": "dart:pub:get",
       "type": "shell",
       "command": [
         "flutter pub get"
@@ -14,10 +14,10 @@
       "problemMatcher": []
     },
     {
-      "label": "Format",
+      "label": "dart:format",
       "type": "shell",
       "command": [
-        "dart format --fix -l 120"
+        "dart format --fix -l 80"
       ],
       "group": {
         "kind": "none",
@@ -26,22 +26,37 @@
       "problemMatcher": []
     },
     {
-      "label": "Codegeneration",
+      "label": "dart:build_runner:dir",
       "type": "shell",
+      "command": [
+        "dart run build_runner build --build-filter '${fileDirname}/*.dart'"
+      ],
+      "group": {
+        "kind": "none",
+        "isDefault": true
+      },
+      "problemMatcher": [],
       "dependsOn": [
-        "Dependencies"
-      ],
+        "dart:pub:get"
+      ]
+    },{
+      "label": "example:dart:build_runner:dir",
+      "type": "shell",
       "command": [
-        "dart run build_runner build --delete-conflicting-outputs"
+        "dart run build_runner build --build-filter '${fileDirname}/*.dart'",
+        "&& dart format --fix -l 80 '${fileDirname}'"
       ],
       "group": {
         "kind": "none",
         "isDefault": true
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "dependsOn": [
+        "dart:pub:get"
+      ]
     },
     {
-      "label": "Clear build",
+      "label": "clear:example:build",
       "type": "shell",
       "command": "make clear-client",
       "windows": {
@@ -51,24 +66,19 @@
           "-ExecutionPolicy",
           "Bypass",
           "-Command",
-          "Remove-Item -Path '${workspaceFolder}\\build' -Recurse -Force -ErrorAction Ignore"
+          "Remove-Item -Path '${workspaceFolder}\\example\\build' -Recurse -Force -ErrorAction Ignore"
         ]
-        /* "options": {
-          "shell": {
-            "executable": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
-          }
-        } */
       },
       "linux": {
         "command": "rm -rf",
         "args": [
-          "${workspaceFolder}/build"
+          "${workspaceFolder}/example/build"
         ]
       },
       "osx": {
         "command": "rm -rf",
         "args": [
-          "${workspaceFolder}/build"
+          "${workspaceFolder}/example/build"
         ]
       },
       "problemMatcher": [],
@@ -80,6 +90,21 @@
         "kind": "build",
         "isDefault": true
       }
+    },
+    {
+      "label": "dart:build_runner:test_dir",
+      "type": "shell",
+      "command": [
+        "dart run build_runner build --build-filter 'test/**'"
+      ],
+      "group": {
+        "kind": "none",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "dependsOn": [
+        "dart:pub:get"
+      ]
     }
   ]
 }

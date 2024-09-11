@@ -1,4 +1,4 @@
-group 'com.example.in_store_app_version_checker'
+group 'flutter_in_store_app_version_checker'
 version '1.0-SNAPSHOT'
 
 buildscript {
@@ -25,7 +25,8 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 33
+    namespace 'flutter_in_store_app_version_checker'
+    compileSdkVersion 34 // flutter.compileSdkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8

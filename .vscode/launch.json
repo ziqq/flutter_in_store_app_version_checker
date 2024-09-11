@@ -2,14 +2,22 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "[debug] Run app (development)",
+      "name": "Run Example",
       "type": "dart",
       "request": "launch",
       "cwd": "${workspaceFolder}/example",
       "args": [
         // "--dart-define-from-file=config/development.json",
-        // "--dart-define=octopus.logs=true",
-        // "--dart-define=octopus.measure=false"
+      ],
+      "env": {}
+    },
+    {
+      "name": "Run Example Gradle 8",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/example_gradle_8",
+      "args": [
+        // "--dart-define-from-file=config/development.json",
       ],
       "env": {}
     },
@@ -27,7 +35,7 @@
       "toolArgs": [
         "--color",
         "--reporter=expanded",
-        "--file-reporter=json:.coverage/tests.json",
+        "--file-reporter=json:coverage/tests.json",
         "--timeout=30s",
         "--concurrency=12"
         /* "--name=handles failed connection attempts" */

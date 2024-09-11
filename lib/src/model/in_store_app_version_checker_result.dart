@@ -54,11 +54,15 @@ class InStoreAppVersionCheckerResult {
   }
 
   @override
-  String toString() => 'Current Version: $currentVersion\n'
-      'New Version: $newVersion\n'
-      'App URL: $appURL\n'
-      'can update: $canUpdate\n'
-      'error: $errorMessage';
+  String toString() {
+    final buffer = StringBuffer()
+      ..write('Current version: $currentVersion\n')
+      ..write('New version: $newVersion\n')
+      ..write('App url: $appURL\n')
+      ..write('Can update: $canUpdate');
+    if (errorMessage != null) buffer.write('\nError: $errorMessage, ');
+    return buffer.toString();
+  }
 
   @override
   bool operator ==(covariant InStoreAppVersionCheckerResult other) {
@@ -66,6 +70,7 @@ class InStoreAppVersionCheckerResult {
     return other.currentVersion == currentVersion &&
         other.newVersion == newVersion &&
         other.appURL == appURL &&
+        other.canUpdate == canUpdate &&
         other.errorMessage == errorMessage;
   }
 
