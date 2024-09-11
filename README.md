@@ -4,67 +4,117 @@
 [![codecov](https://codecov.io/gh/ziqq/flutter_in_store_app_version_checker/graph/badge.svg?token=S5CVNZKDAE)](https://codecov.io/gh/ziqq/flutter_in_store_app_version_checker)
 [![style: flutter lints](https://img.shields.io/badge/style-flutter__lints-blue)](https://pub.dev/packages/flutter_lints)
 
-# flutter_in_store_app_version_checker
 
-## Description
+
+#  flutter_in_store_app_version_checker
+
+
+
+##  Description
 
 This package is used to check if your app has a new version on playstore or apple app store. Or you can even check what is the latest version of another app on playstore or apple app store.
 
-## Installation
+
+
+##  Supported Platforms
+
+This package supports checking for app updates only on the following platforms:
+
+-   Android (GooglePlay, ApkPure)
+-   iOS (Apple AppStore)
+
+Other platforms, such as Web, Windows, Linux, etc., are not supported.
+
+
+
+## Supported Android Stores
+
+The package supports checking for updates through the following Android stores:
+
+-   `AndroidStore.googlePlayStore`:  The default Google Play Store.
+-   `AndroidStore.apkPure`:  The alternative ApkPure store.
+
+You can specify the store using the `androidStore` parameter:
+```dart
+final _checker = InStoreAppVersionChecker(
+  androidStore: AndroidStore.apkPure, // Use apkPure instead of Google Play
+);
+
+```
+
+
+
+##  Installation
 
 Add InStoreAppVersionChecker to your pubspec:
 
 ```yaml
 dependencies:
-  flutter_in_store_app_version_checker: any # or the latest version on Pub
+	flutter_in_store_app_version_checker:  any  # Or the latest version on Pub
 ```
 
-## Example
 
-### Initialize
+
+##  Example
+
+
+###  Initialize
 
 ```dart
-final _checker = InStoreAppVersionChecker();
+final _checker =  InStoreAppVersionChecker();
 ```
 
-#### Or
+####  Or
 
 ```dart
-final _checker = InStoreAppVersionChecker(
-  appId: 'Specify the app id',                   // Optional
-  currentVersion: 'Specify the current version', // Optional
+final _checker =  InStoreAppVersionChecker(
+	appId:  'Specify the app id',  // Optional
+	currentVersion:  'Specify the current version',  // Optional
 );
+
 ```
 
-### Usage
+
+###  Usage
 
 ```dart
 @override
-void initState() {
-  super.initState();
-  checkVersion();
+void  initState() {
+	super.initState();
+	checkVersion();
 }
 
-void checkVersion() async {
-  _checker.checkUpdate().then((value) {
-    log(value.appURL);         // Return the app url
-    log(value.canUpdate);      // Return true if update is available
-    log(value.currentVersion); // Return current app version
-    log(value.errorMessage);   // Return error message if found else it will return null
-    log(value.newVersion);     // Return the new app version
-  });
-}
+Future<void> checkVersion() async {
+	final result = await _checker.checkUpdate();
+	print('App URL: ${result.appURL}');
+	print('Can update: ${result.canUpdate}');
+	print('Current version: ${result.currentVersion}');
+	print('New version: ${result.newVersion}');
+	if (result.errorMessage != null) print('Error: ${result.errorMessage}');
+};
 ```
 
-### Use on Apk Pure Store
+**The results of the `checkUpdate()` method**:
+
+-   `appURL`: The link to the app’s store page.
+-   `canUpdate`: `true` if an update is available.
+-   `currentVersion`: The current version of the app.
+-   `newVersion`: The new version if available.
+-   `errorMessage`: An error message (if any).
+
+
+###  Use on Apk Pure Store
 
 ```dart
-final _checker = InStoreAppVersionChecker(
-  appId: 'Specify the app id',
-  androidStore: AndroidStore.apkPure,
+final _checker =  InStoreAppVersionChecker(
+	appId:  'Specify the app id',
+	androidStore:  AndroidStore.apkPure,
 );
+
 ```
 
-## Coverage
-<img src="https://codecov.io/gh/ziqq/flutter_in_store_app_version_checker/graphs/sunburst.svg?token=S5CVNZKDAE" width="375">
 
+
+##  Coverage
+
+<img  src="https://codecov.io/gh/ziqq/flutter_in_store_app_version_checker/graphs/sunburst.svg?token=S5CVNZKDAE"  width="375">
