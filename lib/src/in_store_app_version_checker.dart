@@ -7,7 +7,9 @@ import 'package:flutter_in_store_app_version_checker/src/model/in_store_app_vers
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 
+/// {@template android_store}
 /// Possible types of android store
+/// {@endtemplate}
 enum AndroidStore {
   /// The default AAB
   googlePlayStore,
@@ -17,13 +19,31 @@ enum AndroidStore {
 }
 
 /// {@template in_store_app_version_checker}
-/// InStoreAppVersionChecker
+/// [InStoreAppVersionChecker] is an interface for checking the current version
+/// of an app available in app stores such as Google Play and ApkPure,
+/// comparing it with the installed version on the device.
+/// It supports both Android and iOS platforms.
+///
+/// Properties:
+/// - [appId]: The app's identifier (if not provided, Flutter's app ID is used).
+/// - [locale]: The language/locale of the app store (default is "ru").
+/// - [currentVersion]: The current version of the app (if not provided, it is fetched from Flutter).
+/// - [androidStore]: Specifies the Android app store (Google Play or ApkPure).
+/// - [httpClient]: A custom HTTP client for making API requests.
+///
+/// Methods:
+/// - `checkUpdate()`: Checks for app updates in the selected app store.
+///
+/// This class simplifies the process of checking for app updates by automating API
+/// requests to app stores and is compatible with popular mobile platforms.
 /// {@endtemplate}
 abstract interface class InStoreAppVersionChecker {
+  /// {@macro in_store_app_version_checker}
   factory InStoreAppVersionChecker({
     String? appId,
     String? locale,
     String? currentVersion,
+    http.Client? httpClient,
     AndroidStore? androidStore,
   }) = _InStoreAppVersionCheckerImpl;
 
@@ -43,16 +63,11 @@ abstract interface class InStoreAppVersionChecker {
   /// Default will be `AndroidStore.GooglePlayStore`
   AndroidStore? get androidStore;
 
-  /// The overriden http client.
-  void setHttpClient(http.Client client);
-
   /// Check update current store type.
   Future<InStoreAppVersionCheckerResult> checkUpdate();
 }
 
-/// {@template in_store_app_version_checker}
-/// InStoreAppVersionChecker implementation
-/// {@endtemplate}
+/// {@macro in_store_app_version_checker}
 final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
   /// {@macro in_store_app_version_checker}
   _InStoreAppVersionCheckerImpl({
@@ -60,7 +75,8 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
     this.locale = 'ru',
     this.currentVersion,
     this.androidStore = AndroidStore.googlePlayStore,
-  }) : _httpClient = http.Client();
+    http.Client? httpClient,
+  }) : _httpClient = httpClient ?? http.Client();
 
   @override
   final AndroidStore? androidStore;
@@ -74,37 +90,18 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
   @override
   final String? appId;
 
-  @override
-  void setHttpClient(http.Client client) {
-    _httpClient = client;
-  }
-
   /// This is http client.
-  late http.Client _httpClient;
+  late final http.Client _httpClient;
 
   bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
   bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
 
-  // ignore: unused_field
-  static bool _kIsWeb = false;
-
   /// {@macro in_store_app_version_checker}
   @override
   Future<InStoreAppVersionCheckerResult> checkUpdate() async {
-    try {
-      if (_isAndroid || _isIOS) {
-        _kIsWeb = false;
-      } else {
-        _kIsWeb = true;
-      }
-    } on Object catch (_, __) {
-      _kIsWeb = true;
-    }
-
     final packageInfo = await PackageInfo.fromPlatform();
     final packageName = appId ?? packageInfo.packageName;
     final currentVersion = this.currentVersion ?? packageInfo.version;
-
     if (_isAndroid) {
       return await switch (androidStore) {
         AndroidStore.apkPure =>
@@ -112,8 +109,11 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
         _ => _checkPlayStore(currentVersion, packageName),
       };
     } else if (_isIOS) {
-      return await _checkAppleStore(currentVersion, packageName,
-          locale: locale);
+      return await _checkAppleStore(
+        currentVersion,
+        packageName,
+        locale: locale,
+      );
     } else {
       return InStoreAppVersionCheckerResult(
         currentVersion,
@@ -181,7 +181,7 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
       final uri = Uri.https(
         'play.google.com',
         '/store/apps/details',
-        {'id': packageName},
+        {'id': packageName, 'hl': locale},
       );
       final response = await _httpClient.get(uri);
       if (response.statusCode != 200) {
