@@ -12,6 +12,13 @@ doctor: ## Check fvm flutter doctor
 version: ## Check fvm flutter version
 	@fvm flutter --version
 
+
+.PHONY: format
+format: ## Format code
+				@echo "╠ RUN FORMAT THE CODE"
+				@fvm dart format --fix -l 80 . || (echo "👀 Format code error 👀"; exit 1)
+				@echo "╠ CODE FORMATED SUCCESSFULLY"
+
 .PHONY: fix
 fix: format ## Fix code
 	@fvm dart fix --apply lib

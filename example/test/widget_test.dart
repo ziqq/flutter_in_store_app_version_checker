@@ -13,7 +13,7 @@ import '../lib/main.dart';
 
 void main() {
   testWidgets('Check MyApp', (WidgetTester tester) async {
-    await tester.pumpWidget(const MyApp());
-    expect(find.byWidget(const MyApp()), findsOneWidget);
+    await tester.pumpWidget(const App());
+    expect(find.byWidget(const App()), findsOneWidget);
   });
 }
