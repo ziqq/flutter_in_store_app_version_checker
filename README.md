@@ -1,7 +1,7 @@
 [![Pub Version](https://img.shields.io/pub/v/flutter_in_store_app_version_checker?color=blueviolet)](https://pub.dev/packages/flutter_in_store_app_version_checker)
 [![popularity](https://img.shields.io/pub/popularity/flutter_in_store_app_version_checker?logo=dart)](https://pub.dev/packages/flutter_in_store_app_version_checker/score)
 [![likes](https://img.shields.io/pub/likes/flutter_in_store_app_version_checker?logo=dart)](https://pub.dev/packages/flutter_in_store_app_version_checker/score)
-[![codecov](https://codecov.io/gh/ziqq/flutter_in_store_app_version_checker/graph/badge.svg?token=9NB42HWAF2)](https://codecov.io/gh/ziqq/flutter_in_store_app_version_checker)
+[![codecov](https://codecov.io/gh/ziqq/flutter_in_store_app_version_checker/graph/badge.svg?token=S5CVNZKDAE)](https://codecov.io/gh/ziqq/flutter_in_store_app_version_checker)
 [![style: flutter lints](https://img.shields.io/badge/style-flutter__lints-blue)](https://pub.dev/packages/flutter_lints)
 
 # flutter_in_store_app_version_checker
@@ -66,5 +66,5 @@ final _checker = InStoreAppVersionChecker(
 ```
 
 ## Coverage
-<img src="https://codecov.io/gh/ziqq/flutter_check_box_rounded/graphs/sunburst.svg?token=9NB42HWAF2" width="375">
+<img src="https://codecov.io/gh/ziqq/flutter_in_store_app_version_checker/graphs/sunburst.svg?token=S5CVNZKDAE" width="375">
 
