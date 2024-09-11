@@ -1,8 +1,22 @@
 name: Checkout
 
 on:
-  workflow_dispatch:
   pull_request:
+    branches:
+      - "main"
+      - "master"
+      - "dev"
+      - "develop"
+      - "feature/**"
+      - "bugfix/**"
+      - "hotfix/**"
+      - "support/**"
+    paths:
+      - "lib/**.dart"
+      - "test/**.dart"
+      - "example/**.dart"
+      - .github/workflows/*.yml
+      - "pubspec.yaml"
   push:
     branches:
       - "main"
