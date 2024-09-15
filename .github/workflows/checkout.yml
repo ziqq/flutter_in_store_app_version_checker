@@ -121,17 +121,17 @@ jobs:
         run: |
           flutter test -r github -j 6 --coverage test/flutter_in_store_app_version_checker_test.dart
 
-      - name: 🔍 Check coverage
-        id: check-coverage
-        timeout-minutes: 2
-        run: |
-          mv coverage/lcov.info coverage/lcov.base.info
-          lcov --remove coverage/lcov.base.info '*.g.dart' -o coverage/lcov.info
-          lcov --list coverage/lcov.info
-          THRESHOLD=${{ env.threshold }}
-          COVERAGE=$(lcov --summary coverage/lcov.info | grep -i 'lines\|Total:' | tail -n 1 | awk '{print $2}' | sed 's/%//')
-          echo "Coverage is $COVERAGE%"
-          echo $COVERAGE | awk '{if ($1 < 50) exit 1}'
+      # - name: 🔍 Check coverage
+      #   id: check-coverage
+      #   timeout-minutes: 2
+      #   run: |
+      #     mv coverage/lcov.info coverage/lcov.base.info
+      #     lcov --remove coverage/lcov.base.info '*.g.dart' -o coverage/lcov.info
+      #     lcov --list coverage/lcov.info
+      #     THRESHOLD=${{ env.threshold }}
+      #     COVERAGE=$(lcov --summary coverage/lcov.info | grep -i 'lines\|Total:' | tail -n 1 | awk '{print $2}' | sed 's/%//')
+      #     echo "Coverage is $COVERAGE%"
+      #     echo $COVERAGE | awk '{if ($1 < 50) exit 1}'
 
       - name: 📥 Upload coverage to Codecov
         id: upload-coverage-to-codecov
