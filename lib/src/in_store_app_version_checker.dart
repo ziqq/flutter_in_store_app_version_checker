@@ -105,7 +105,7 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
     if (_isAndroid) {
       return await switch (androidStore) {
         AndroidStore.apkPure =>
-          _checkPlayStoreApkPure(currentVersion, packageName),
+          _checkPlayStore$ApkPure(currentVersion, packageName),
         _ => _checkPlayStore(currentVersion, packageName),
       };
     } else if (_isIOS) {
@@ -116,10 +116,12 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
       );
     } else {
       return InStoreAppVersionCheckerResult(
-        currentVersion,
-        null,
-        '',
-        'This platform is not yet supported by this package. We support iOS or Android platrforms.',
+        currentVersion: currentVersion,
+        newVersion: null,
+        appURL: '',
+        errorMessage:
+            'This platform is not yet supported by this package. We support iOS or Android platrforms.',
+        stackTrace: StackTrace.current,
       );
     }
   }
@@ -130,9 +132,8 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
     String packageName, {
     String? locale,
   }) async {
-    String? errorMsg;
-    String? newVersion;
-    String? url;
+    String? newVersion, errorMsg, url;
+    StackTrace? stackTrace;
 
     try {
       final uri = Uri.https(
@@ -157,14 +158,16 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
           url = jsonObj['results'][0]['trackViewUrl'].toString();
         }
       }
-    } on Object catch (error, __) {
+    } on Object catch (error, st) {
       errorMsg = '$error';
+      stackTrace = st;
     }
     return InStoreAppVersionCheckerResult(
-      currentVersion,
-      newVersion,
-      url,
-      errorMsg,
+      currentVersion: currentVersion,
+      newVersion: newVersion,
+      appURL: url,
+      errorMessage: errorMsg,
+      stackTrace: stackTrace,
     );
   }
 
@@ -173,9 +176,8 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
     String currentVersion,
     String packageName,
   ) async {
-    String? newVersion;
-    String? errorMsg;
-    String? url;
+    String? newVersion, errorMsg, url;
+    StackTrace? stackTrace;
 
     try {
       final uri = Uri.https(
@@ -193,25 +195,26 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
             ?.group(1);
         url = uri.toString();
       }
-    } on Object catch (error, __) {
+    } on Object catch (error, st) {
       errorMsg = '$error';
+      stackTrace = st;
     }
     return InStoreAppVersionCheckerResult(
-      currentVersion,
-      newVersion,
-      url,
-      errorMsg,
+      currentVersion: currentVersion,
+      newVersion: newVersion,
+      appURL: url,
+      errorMessage: errorMsg,
+      stackTrace: stackTrace,
     );
   }
 
   /// {@macro in_store_app_version_checker}
-  Future<InStoreAppVersionCheckerResult> _checkPlayStoreApkPure(
+  Future<InStoreAppVersionCheckerResult> _checkPlayStore$ApkPure(
     String currentVersion,
     String packageName,
   ) async {
-    String? newVersion;
-    String? errorMsg;
-    String? url;
+    String? newVersion, errorMsg, url;
+    StackTrace? stackTrace;
 
     try {
       final uri = Uri.https('apkpure.com', '$packageName/$packageName');
@@ -225,14 +228,16 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
         ).firstMatch(response.body)!.group(1)!.trim();
         url = uri.toString();
       }
-    } on Object catch (error, __) {
+    } on Object catch (error, st) {
       errorMsg = '$error';
+      stackTrace = st;
     }
     return InStoreAppVersionCheckerResult(
-      currentVersion,
-      newVersion,
-      url,
-      errorMsg,
+      currentVersion: currentVersion,
+      newVersion: newVersion,
+      appURL: url,
+      errorMessage: errorMsg,
+      stackTrace: stackTrace,
     );
   }
 }

@@ -71,10 +71,10 @@ void main() {
         expect(
           result,
           const InStoreAppVersionCheckerResult(
-            '1.0.0',
-            null,
-            '',
-            'This platform is not yet supported by this package. We support iOS or Android platrforms.',
+            currentVersion: '1.0.0',
+            appURL: '',
+            errorMessage:
+                'This platform is not yet supported by this package. We support iOS or Android platrforms.',
           ),
         );
       });

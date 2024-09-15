@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+- **ADDED**: `stackTrace` to [InStoreAppVersionCheckerResult]
+- **CHANGED**: parametrs of [InStoreAppVersionCheckerResult] to named
+
 
 ## 1.8.0
 - **ADDED**: `namespace` to android build.gradle

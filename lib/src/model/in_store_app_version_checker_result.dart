@@ -3,17 +3,18 @@ import 'dart:math' as math;
 import 'package:meta/meta.dart';
 
 /// {@template in_store_app_version_checker_result}
-/// The result data model
+/// The result of check app version in AppStore or GooglePlay.
 /// {@endtemplate}
 @immutable
 class InStoreAppVersionCheckerResult {
   /// {@macro in_store_app_version_checker_result}
-  const InStoreAppVersionCheckerResult(
-    this.currentVersion,
+  const InStoreAppVersionCheckerResult({
+    required this.currentVersion,
     this.newVersion,
     this.appURL,
     this.errorMessage,
-  );
+    this.stackTrace,
+  });
 
   /// Return current app version
   final String currentVersion;
@@ -26,6 +27,9 @@ class InStoreAppVersionCheckerResult {
 
   /// Return error message if found else it will return `null`
   final String? errorMessage;
+
+  /// Return error stack trace
+  final StackTrace? stackTrace;
 
   /// Return `true` if update is available
   bool get canUpdate =>
@@ -56,11 +60,12 @@ class InStoreAppVersionCheckerResult {
   @override
   String toString() {
     final buffer = StringBuffer()
-      ..write('Current version: $currentVersion\n')
-      ..write('New version: $newVersion\n')
-      ..write('App url: $appURL\n')
-      ..write('Can update: $canUpdate');
-    if (errorMessage != null) buffer.write('\nError: $errorMessage, ');
+      ..write('CURRENT VERSION: $currentVersion\n')
+      ..write('NEW VERSION: $newVersion\n')
+      ..write('APP URL: $appURL\n')
+      ..write('CAN UPDATE: $canUpdate');
+    if (errorMessage != null) buffer.write('\nERROR: $errorMessage, ');
+    if (stackTrace != null) buffer.write('\nSTACK TRACE: $stackTrace, ');
     return buffer.toString();
   }
 

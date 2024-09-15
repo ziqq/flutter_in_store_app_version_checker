@@ -59,15 +59,15 @@ publish: ## Publish package
 coverage: ## Runs get coverage
 				@lcov --summary coverage/lcov.info
 
-.PHONY: genhtml
-genhtml: ## Runs generage coverage html
+.PHONY: run-genhtml
+run-genhtml: ## Runs generage coverage html
 				@genhtml coverage/lcov.info -o coverage/html
 
 .PHONY: test-unit
 test-unit: ## Runs unit tests
 				@echo "╠ RUNNING UNIT TESTS..."
 				@flutter test --coverage || (echo "Error while running tests"; exit 1)
-				@genhtml coverage/lcov.info --output=coverage -o coverage/html || (echo "Error while running tests"; exit 2)
+				@genhtml coverage/lcov.info --output=coverage -o coverage/html || (echo "Error while running genhtml with coverage"; exit 2)
 				@echo "╠ UNIT TESTS SUCCESSFULLY"
 
 .PHONY: tag-add
