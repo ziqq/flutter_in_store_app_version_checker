@@ -7,11 +7,11 @@
   <key>CFBundleExecutable</key>
   <string>App</string>
   <key>CFBundleIdentifier</key>
-  <string>io.flutter.flutter.app</string>
+  <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundleName</key>
-  <string>flutter_in_store_app_version_checker</string>
+  <string>Example</string>
   <key>CFBundlePackageType</key>
   <string>FMWK</string>
   <key>CFBundleShortVersionString</key>

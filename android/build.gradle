@@ -1,4 +1,4 @@
-group 'flutter_in_store_app_version_checker'
+group 'com.flutter.instoreappversionchecker'
 version '1.0-SNAPSHOT'
 
 buildscript {
@@ -25,7 +25,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    namespace 'flutter_in_store_app_version_checker'
+    namespace 'com.flutter.instoreappversionchecker'
     compileSdkVersion 34 // flutter.compileSdkVersion
 
     compileOptions {

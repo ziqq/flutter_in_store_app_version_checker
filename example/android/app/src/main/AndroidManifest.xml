@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="flutter_in_store_app_version_checker.example">
+    package="com.flutter.instoreappversionchecker.example">
    <application
-        android:label="flutter_in_store_app_version_checker"
+        android:label="Flutter in store app version checker"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

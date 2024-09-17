@@ -1,4 +1,4 @@
-package flutter_in_store_app_version_checker.example
+package com.flutter.instoreappversionchecker.example
 
 import io.flutter.embedding.android.FlutterActivity
 
