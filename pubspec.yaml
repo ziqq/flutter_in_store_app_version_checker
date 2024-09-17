@@ -3,7 +3,7 @@ name: flutter_in_store_app_version_checker
 description: >
   "A lightweight flutter plugin to check if your app is up-to-date on GooglePlay or AppStore. Made with ❤️ by ziqq."
 
-version: 1.8.0
+version: 1.9.0
 
 homepage: https://github.com/ziqq/flutter_in_store_app_version_checker
 
@@ -45,10 +45,6 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  # Utilities
-  collection: any
-  path: any
-
   build_runner: ^2.4.12
 
   # Testing
@@ -61,7 +57,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: flutter_in_store_app_version_checker
+        package: com.flutter.instoreappversionchecker
         pluginClass: InStoreAppVersionCheckerPlugin
       ios:
         pluginClass: InStoreAppVersionCheckerPlugin

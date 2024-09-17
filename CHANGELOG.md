@@ -1,8 +1,9 @@
 # Changelog
 
-## Unreleased
+## 1.9.0
 - **ADDED**: `stackTrace` to [InStoreAppVersionCheckerResult]
 - **CHANGED**: parametrs of [InStoreAppVersionCheckerResult] to named
+- **CHANGED**: Android package name [#7](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/7)
 
 
 ## 1.8.0

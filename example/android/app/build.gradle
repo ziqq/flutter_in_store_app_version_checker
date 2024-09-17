@@ -23,7 +23,7 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace 'flutter_in_store_app_version_checker.example'
+    namespace 'com.flutter.instoreappversionchecker.example'
     compileSdkVersion 34 // flutter.compileSdkVersion
 
     compileOptions {
@@ -40,7 +40,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "flutter_in_store_app_version_checker.example"
+        applicationId "com.flutter.instoreappversionchecker.example"
         minSdkVersion flutter.minSdkVersion
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion

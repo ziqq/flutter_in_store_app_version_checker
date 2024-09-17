@@ -1,4 +1,4 @@
-package com.example.example_gradle_8
+package com.flutter.instoreappversionchecker.example
 
 import io.flutter.embedding.android.FlutterActivity
 
