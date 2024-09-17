@@ -29,6 +29,12 @@ clean-cache: ## Clean the pub cache
 				@fvm flutter pub cache repair
 				@echo "╠ PUB CACHE CLEANED SUCCESSFULLY"
 
+.PHONY: clean
+clean: ## Clean flutter
+				@echo "╠ RUN FLUTTER CLEAN"
+				@fvm flutter clean
+				@echo "╠ FLUTTER CLEANED SUCCESSFULLY"
+
 .PHONY: get
 get: ## Get dependencies
 				@echo "╠ RUN GET DEPENDENCIES..."
@@ -94,3 +100,16 @@ tag-remove: ## Make command to delete TAG. E.g: make tag-delete TAG=v1.0.0
 				@echo "DELETED TAG $(TAG) LOCALLY AND REMOTELY"
 				@echo ""
 
+.PHONY: build
+build: clean analyze test-unit ## Build test apk for android on example apps
+				@echo "╠ START BUILD EXAMPLES..."
+				@echo "║"
+				@echo "╠ START BUILD ANDROID APK & IOS IPA FOR GRADLE < 8..."
+				@cd example && fvm flutter clean && fvm flutter pub get && fvm flutter build apk --release && fvm flutter build ios --release --no-codesign
+				@echo "╠ FINISHED BUILD ANDROID APK FOR GRADLE < 8..."
+				@echo "║"
+				@echo "╠ START BUILD ANDROID APK & IOS IPA FOR GRADLE > 8..."
+				@cd example_gradle_8 && fvm flutter clean && fvm flutter pub get && fvm flutter build apk --release && fvm flutter build ios --release --no-codesign
+				@echo "╠ FINISH BUILD ANDROID APK FOR GRADLE > 8..."
+				@echo "║"
+				@echo "╠ FINISH BUILD EXAMPLES..."
