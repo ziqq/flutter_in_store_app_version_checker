@@ -16,14 +16,16 @@ This package is used to check if your app has a new version on playstore or appl
 
 
 
-##  Supported Platforms
+ ## Supported platforms
 
-This package supports checking for app updates only on the following platforms:
+ This package supports checking for app updates only on the following platforms:
 
--   Android (GooglePlay, ApkPure)
--   iOS (Apple AppStore)
+ |   Platform   |              Description              |
+ |--------------|---------------------------------------|
+ | [Android]    | GooglePlay, ApkPure                   |
+ | [IOS]        | Apple AppStore                        |
 
-Other platforms, such as Web, Windows, Linux, etc., are not supported.
+ Other platforms, such as [Web], [Windows], [Linux], etc., are not supported.
 
 
 
@@ -31,8 +33,11 @@ Other platforms, such as Web, Windows, Linux, etc., are not supported.
 
 The package supports checking for updates through the following Android stores:
 
--   `AndroidStore.googlePlayStore`:  The default Google Play Store.
--   `AndroidStore.apkPure`:  The alternative ApkPure store.
+ |             Store              |          Description          |
+ |--------------------------------|-------------------------------|
+ | [AndroidStore.googlePlayStore] | The default Google Play Store |
+ | [AndroidStore.apkPure]         | The alternative ApkPure store |
+
 
 You can specify the store using the `androidStore` parameter:
 
@@ -86,21 +91,24 @@ void  initState() {
 
 Future<void> checkVersion() async {
   final result = await _checker.checkUpdate();
-  print('App URL: ${result.appURL}');
-  print('Can update: ${result.canUpdate}');
-  print('Current version: ${result.currentVersion}');
-  print('New version: ${result.newVersion}');
+  print('App url         : ${result.appURL}');
+  print('Can update      : ${result.canUpdate}');
+  print('Current version : ${result.currentVersion}');
+  print('New version     : ${result.newVersion}');
   if (result.errorMessage != null) print('Error: ${result.errorMessage}');
 };
 ```
 
-**The results of the `checkUpdate()` method**:
+#### The results:
 
--   `appURL`: The link to the app’s store page.
--   `canUpdate`: `true` if an update is available.
--   `currentVersion`: The current version of the app.
--   `newVersion`: The new version if available.
--   `errorMessage`: An error message (if any).
+ |             Result             |            Description            |
+ |--------------------------------|-----------------------------------|
+ | [appURL]                       | The link to the app’s store page  |
+ | [canUpdate]                    | `true` if an update is available  |
+ | [currentVersion]               | The current version of the app    |
+ | [newVersion]                   | The new version if available      |
+ | [errorMessage]                 | An error message (if any)         |
+
 
 
 ###  Use on Apk Pure Store
@@ -112,6 +120,24 @@ final _checker =  InStoreAppVersionChecker(
 );
 
 ```
+
+
+
+## Changelog
+
+Refer to the [Changelog](https://github.com/ziqq/flutter_in_store_app_version_checker/blob/main/CHANGELOG.md) to get all release notes.
+
+
+
+## Maintainers
+
+[Anton Ustinoff (ziqq)](https://github.com/ziqq)
+
+
+
+## License
+
+[MIT](https://github.com/ziqq/flutter_in_store_app_version_checker/blob/main/LICENSE)
 
 
 
