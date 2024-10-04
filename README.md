@@ -18,7 +18,7 @@ This package is used to check if your app has a new version on playstore or appl
 
  ## Supported platforms
 
- This package supports checking for app updates only on the following platforms:
+ #### This package supports checking for app updates only on the following platforms:
 
  |   Platform   |              Description              |
  |--------------|---------------------------------------|
@@ -31,15 +31,15 @@ This package is used to check if your app has a new version on playstore or appl
 
 ## Supported Android Stores
 
-The package supports checking for updates through the following Android stores:
+#### The package supports checking for updates through the following Android store types:
 
- |             Store              |          Description          |
- |--------------------------------|-------------------------------|
+ | Android store type             | Description                   |
+ | ------------------------------ | ----------------------------- |
  | [AndroidStore.googlePlayStore] | The default Google Play Store |
  | [AndroidStore.apkPure]         | The alternative ApkPure store |
 
 
-You can specify the store using the `androidStore` parameter:
+#### You can specify the store using the `androidStore` parameter:
 
 ```dart
 final _checker = InStoreAppVersionChecker(
@@ -101,8 +101,8 @@ Future<void> checkVersion() async {
 
 #### The results:
 
- |             Result             |            Description            |
- |--------------------------------|-----------------------------------|
+ | Result                         | Description                       |
+ | ------------------------------ | --------------------------------- |
  | [appURL]                       | The link to the app’s store page  |
  | [canUpdate]                    | `true` if an update is available  |
  | [currentVersion]               | The current version of the app    |
@@ -138,6 +138,16 @@ Refer to the [Changelog](https://github.com/ziqq/flutter_in_store_app_version_ch
 ## License
 
 [MIT](https://github.com/ziqq/flutter_in_store_app_version_checker/blob/main/LICENSE)
+
+
+
+## Funding
+
+If you want to support the development of our library, there are several ways you can do it:
+
+- [Buy me a coffee](https://www.buymeacoffee.com/ziqq)
+- [Support on Patreon](https://www.patreon.com/ziqq)
+- [Subscribe through Boosty](https://boosty.to/ziqq)
 
 
 
