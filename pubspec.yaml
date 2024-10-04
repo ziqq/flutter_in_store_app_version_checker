@@ -21,7 +21,7 @@ platforms:
   ios:
 
 #screenshots:
-#  - description: 'Example of using the ws library to check app version.'
+#  - description: 'Example of using the library to check app version.'
 #    path: example.png
 
 environment:
