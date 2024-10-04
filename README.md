@@ -18,7 +18,7 @@ This package is used to check if your app has a new version on playstore or appl
 
  ## Supported platforms
 
- #### This package supports checking for app updates only on the following platforms:
+ This package supports checking for app updates only on the following platforms:
 
  |   Platform   |              Description              |
  |--------------|---------------------------------------|
@@ -31,7 +31,7 @@ This package is used to check if your app has a new version on playstore or appl
 
 ## Supported Android Stores
 
-#### The package supports checking for updates through the following Android store types:
+The package supports checking for updates through the following Android store types:
 
  | Android store type             | Description                   |
  | ------------------------------ | ----------------------------- |
@@ -39,7 +39,7 @@ This package is used to check if your app has a new version on playstore or appl
  | [AndroidStore.apkPure]         | The alternative ApkPure store |
 
 
-#### You can specify the store using the `androidStore` parameter:
+You can specify the store using the `androidStore` parameter:
 
 ```dart
 final _checker = InStoreAppVersionChecker(
@@ -99,7 +99,7 @@ Future<void> checkVersion() async {
 };
 ```
 
-#### The results:
+### The results
 
  | Result                         | Description                       |
  | ------------------------------ | --------------------------------- |
