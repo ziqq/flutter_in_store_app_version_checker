@@ -1,16 +1,52 @@
+##################################################################################
+##                      Linter rules for all packages                           ##
+##                      -----------------------------                           ##
+## Note that there is no need to define another                                 ##
+## analysis-options.yaml in each package because they will                      ##
+## automatically go up the tree if not found in the package. See here:          ##
+## https://dart.dev/guides/language/analysis-options#the-analysis-options-file  ##
+##################################################################################
 include: package:flutter_lints/flutter.yaml
+
+# formatter:
+#   trailing_commas: preserve
 
 analyzer:
   exclude:
     # Build
     - "build/**"
-    # Codegen
-    - "lib/src/model/pubspec.yaml.g.dart"
     # Tests
     - "test/**.mocks.dart"
     - ".test_coverage.dart"
+    - ".coverage/**"
+    - "coverage/**"
     # Assets
     - "assets/**"
+    # Generated
+    - "**/generated/**"
+    - "**.g.dart"
+    - "**.gr.dart"
+    - "**.gql.dart"
+    - "**.freezed.dart"
+    - "**.config.dart"
+    - "**.mocks.dart"
+    - "**.gen.dart"
+    - "**.pb.dart"
+    - "**.pbenum.dart"
+    - "**.pbjson.dart"
+    # Flutter Version Manager
+    - ".fvm/**"
+    # Tools
+    - ".dart_tool/**"
+    - "scripts/**"
+    - "tool/**"
+    # Platform
+    - "ios/**"
+    - "android/**"
+    - "web/**"
+    - "macos/**"
+    - "windows/**"
+    - "linux/**"
 
   # Enable the following options to enable strong mode.
   language:
@@ -19,7 +55,7 @@ analyzer:
     strict-inference: true
 
   errors:
-    # Allow having TODOs in the code
+    # Allow having TODO's in the code
     todo: ignore
 
     # Info
@@ -44,8 +80,8 @@ analyzer:
 linter:
   rules:
     # Public packages
-    public_member_api_docs: true
-    # lines_longer_than_80_chars: true
+    #public_member_api_docs: true
+    #lines_longer_than_80_chars: true
 
     # Enabling rules
     always_use_package_imports: true
@@ -57,6 +93,7 @@ linter:
     prefer_final_locals: false
     avoid_escaping_inner_quotes: false
     curly_braces_in_flow_control_structures: false
+    one_member_abstracts: false
 
     # Enabled
     use_named_constants: true
@@ -74,6 +111,7 @@ linter:
     avoid_js_rounded_ints: true
     avoid_print: true
     avoid_renaming_method_parameters: true
+    # avoid_returning_null_for_future: true
     avoid_returning_null_for_void: true
     avoid_single_cascade_in_expression_statements: true
     avoid_slow_async_io: true
@@ -118,6 +156,7 @@ linter:
     prefer_void_to_null: true
     provide_deprecation_message: true
     sized_box_for_whitespace: true
+    sized_box_shrink_expand: true
     sort_child_properties_last: true
     test_types_in_equals: true
     throw_in_finally: true
@@ -128,7 +167,9 @@ linter:
     unnecessary_statements: true
     unnecessary_string_escapes: true
     unnecessary_string_interpolations: true
-    unsafe_html: true
+    # unsafe_html: true
+    use_colored_box: true
+    use_decorated_box: true
     use_full_hex_values_for_flutter_colors: true
     use_raw_strings: true
     use_string_buffers: true
@@ -137,10 +178,12 @@ linter:
 
     # Pedantic 1.9.0
     always_declare_return_types: true
+    # always_require_non_null_named_parameters: true
     annotate_overrides: true
     avoid_empty_else: true
     avoid_init_to_null: true
     avoid_null_checks_in_equality_operators: true
+    # avoid_redundant_argument_values: true
     avoid_return_types_on_setters: true
     avoid_shadowing_type_parameters: true
     avoid_types_as_parameter_names: true
@@ -151,7 +194,10 @@ linter:
     library_prefixes: true
     no_duplicate_case_values: true
     null_closures: true
-    omit_local_variable_types: true
+
+    # omit_local_variable_types: true
+    omit_local_variable_types: false
+
     prefer_adjacent_string_concatenation: true
     prefer_collection_literals: true
     prefer_conditional_assignment: true
@@ -180,26 +226,34 @@ linter:
     # Effective_dart 1.2.0
     camel_case_types: true
     file_names: true
-    non_constant_identifier_names: true
-    constant_identifier_names: true
+
+    # shoudl set to true
+    non_constant_identifier_names: false
+
+    # shoudl set to true
+    constant_identifier_names: false
+
     directives_ordering: true
-    package_api_docs: true
+    # package_api_docs: true
     implementation_imports: true
     prefer_interpolation_to_compose_strings: true
     unnecessary_brace_in_string_interps: true
     avoid_function_literals_in_foreach_calls: true
     prefer_function_declarations_over_variables: true
-    unnecessary_lambdas: true
+
+    # unnecessary_lambdas: true
+    unnecessary_lambdas: false
+
     unnecessary_getters_setters: true
     prefer_initializing_formals: true
     avoid_catches_without_on_clauses: true
     avoid_catching_errors: true
     use_to_and_as_if_applicable: true
-    one_member_abstracts: true
     avoid_classes_with_only_static_members: true
     prefer_mixin: true
     use_setters_to_change_properties: true
     avoid_setters_without_getters: true
+    # avoid_returning_null: true
     avoid_returning_this: true
     type_annotate_public_apis: true
     avoid_types_on_closure_parameters: true
