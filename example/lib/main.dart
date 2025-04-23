@@ -38,7 +38,7 @@ const StoreIDPair kOzonStoreIDPair = (
   appleStoreID: 'ru.ozon.app',
 );
 
-const _verticalSpacing = SizedBox(height: 16.0);
+const _verticalSpacing = SizedBox(height: 16);
 
 void main() => runZonedGuarded<void>(
       () => runApp(const App()),
@@ -126,79 +126,77 @@ class _ExampleState extends State<Example> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        forceMaterialTransparency: false,
-        centerTitle: true,
-        title: const Text(
-          'In Store App Version Checker Example',
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(
+          forceMaterialTransparency: false,
+          centerTitle: true,
+          title: const Text(
+            'In Store App Version Checker Example',
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+            ),
           ),
+          actions: [
+            IconButton(
+              iconSize: 20,
+              padding: EdgeInsets.zero,
+              onPressed: _checkVersion,
+              icon: const Icon(CupertinoIcons.refresh),
+            )
+          ],
         ),
-        actions: [
-          IconButton(
-            iconSize: 20,
-            padding: EdgeInsets.zero,
-            onPressed: _checkVersion,
-            icon: const Icon(CupertinoIcons.refresh),
-          )
-        ],
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: FutureBuilder(
-            future: _checkVersion(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator.adaptive(),
-                );
-              }
-              if (snapshot.hasError) {
-                return Center(
-                  child: Text(
-                    'Error: ${snapshot.error}',
-                    style: const TextStyle(color: Colors.red),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: FutureBuilder(
+              future: _checkVersion(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator.adaptive(),
+                  );
+                }
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      'Error: ${snapshot.error}',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  );
+                }
+
+                return SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      if (_tiktok != null) ...[
+                        _AppSection(title: 'Tik Tok', item: _tiktok!),
+                        _verticalSpacing,
+                      ],
+                      if (_roblox != null) ...[
+                        _AppSection(title: 'Roblox', item: _roblox!),
+                        _verticalSpacing,
+                      ],
+                      if (_freefireth != null) ...[
+                        _AppSection(title: 'Freefeireth', item: _freefireth!),
+                        _verticalSpacing,
+                      ],
+                      if (_wildberries != null) ...[
+                        _AppSection(title: 'Willberies', item: _wildberries!),
+                        _verticalSpacing,
+                      ],
+                      if (_ozon != null) ...[
+                        _AppSection(title: 'Ozon', item: _ozon!),
+                        _verticalSpacing,
+                      ],
+                    ],
                   ),
                 );
-              }
-
-              return SingleChildScrollView(
-                child: Column(
-                  children: [
-                    if (_tiktok != null) ...[
-                      _AppSection(title: "Tik Tok", item: _tiktok!),
-                      _verticalSpacing,
-                    ],
-                    if (_roblox != null) ...[
-                      _AppSection(title: "Roblox", item: _roblox!),
-                      _verticalSpacing,
-                    ],
-                    if (_freefireth != null) ...[
-                      _AppSection(title: "Freefeireth", item: _freefireth!),
-                      _verticalSpacing,
-                    ],
-                    if (_wildberries != null) ...[
-                      _AppSection(title: "Willberies", item: _wildberries!),
-                      _verticalSpacing,
-                    ],
-                    if (_ozon != null) ...[
-                      _AppSection(title: "Ozon", item: _ozon!),
-                      _verticalSpacing,
-                    ],
-                  ],
-                ),
-              );
-            },
+              },
+            ),
           ),
         ),
-      ),
-    );
-  }
+      );
 }
 
 /// {@template main}
@@ -209,7 +207,7 @@ class _AppSection extends StatelessWidget {
   const _AppSection({
     required this.title,
     required this.item,
-    super.key, // ignore: unused_element
+    super.key, // ignore: unused_element_parameter
   });
 
   final String title;
@@ -225,7 +223,7 @@ class _AppSection extends StatelessWidget {
               title,
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
             ),
-            const SizedBox(height: 5.0),
+            const SizedBox(height: 5),
             Text(
               item.toString(),
               style: const TextStyle(
