@@ -1,6 +1,8 @@
 ignore:
-  - dart_code_metrics
+  - integration_test
   - flutter_lints
+  - build_runner
+  - l
 
 exclude:
   - "example/**"
