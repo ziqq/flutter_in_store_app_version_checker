@@ -6,23 +6,11 @@
       "type": "dart",
       "request": "launch",
       "cwd": "${workspaceFolder}/example",
-      "args": [
-        // "--dart-define-from-file=config/development.json",
-      ],
+      "args": [],
       "env": {}
     },
     {
-      "name": "Run Example Gradle 8",
-      "type": "dart",
-      "request": "launch",
-      "cwd": "${workspaceFolder}/example_gradle_8",
-      "args": [
-        // "--dart-define-from-file=config/development.json",
-      ],
-      "env": {}
-    },
-    {
-      "name": "Flutter Test",
+      "name": "Run Tests",
       "request": "launch",
       "type": "dart",
       "program": "test/flutter_in_store_app_version_checker_test.dart",

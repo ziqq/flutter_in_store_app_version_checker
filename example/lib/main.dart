@@ -54,7 +54,7 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-        title: 'In Store App Version Checker Example',
+        title: 'In Store App Version Checker Example Gradle 8',
         theme: ThemeData.dark(),
         home: const Example(),
       );
@@ -131,7 +131,7 @@ class _ExampleState extends State<Example> {
           forceMaterialTransparency: false,
           centerTitle: true,
           title: const Text(
-            'In Store App Version Checker Example',
+            'Example with gradle 8',
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w600,
