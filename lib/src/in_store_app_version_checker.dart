@@ -139,7 +139,10 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
       final uri = Uri.https(
         'itunes.apple.com',
         '/$locale/lookup',
-        {'bundleId': packageName},
+        {
+          'bundleId': packageName,
+          '_ts': DateTime.now().millisecondsSinceEpoch.toString(),
+        },
       );
       final response = await _httpClient.get(uri);
       if (response.statusCode != 200) {
@@ -183,7 +186,11 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
       final uri = Uri.https(
         'play.google.com',
         '/store/apps/details',
-        {'id': packageName, 'hl': locale},
+        {
+          'id': packageName,
+          'hl': locale,
+          '_ts': DateTime.now().millisecondsSinceEpoch.toString(),
+        },
       );
       final response = await _httpClient.get(uri);
       if (response.statusCode != 200) {
