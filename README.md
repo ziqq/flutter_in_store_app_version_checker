@@ -22,10 +22,10 @@ This package is used to check if your app has a new version on playstore or appl
 
  |   Platform   |              Description              |
  |--------------|---------------------------------------|
- | [Android]    | GooglePlay, ApkPure                   |
- | [IOS]        | Apple AppStore                        |
+ | `Android`    | GooglePlay, ApkPure                   |
+ | `IOS`        | Apple AppStore                        |
 
- Other platforms, such as [Web], [Windows], [Linux], etc., are not supported.
+ Other platforms, such as `Web`, `Windows`, `Linux`, etc., are not supported.
 
 
 
@@ -35,8 +35,8 @@ The package supports checking for updates through the following Android store ty
 
  | Android store type             | Description                   |
  | ------------------------------ | ----------------------------- |
- | [AndroidStore.googlePlayStore] | The default Google Play Store |
- | [AndroidStore.apkPure]         | The alternative ApkPure store |
+ | `AndroidStore.googlePlayStore` | The default Google Play Store |
+ | `AndroidStore.apkPure`         | The alternative ApkPure store |
 
 
 You can specify the store using the `androidStore` parameter:
