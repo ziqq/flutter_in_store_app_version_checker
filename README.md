@@ -103,11 +103,11 @@ Future<void> checkVersion() async {
 
  | Result                         | Description                       |
  | ------------------------------ | --------------------------------- |
- | [appURL]                       | The link to the app’s store page  |
- | [canUpdate]                    | `true` if an update is available  |
- | [currentVersion]               | The current version of the app    |
- | [newVersion]                   | The new version if available      |
- | [errorMessage]                 | An error message (if any)         |
+ | `appURL`                       | The link to the app’s store page  |
+ | `canUpdate`                    | `true` if an update is available  |
+ | `currentVersion`               | The current version of the app    |
+ | `newVersion`                   | The new version if available      |
+ | `errorMessage`                 | An error message (if any)         |
 
 
 
