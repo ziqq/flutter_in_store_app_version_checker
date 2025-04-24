@@ -1,3 +1,19 @@
+SHELL :=/bin/bash -e -o pipefail
+PWD   :=$(shell pwd)
+
+.DEFAULT_GOAL := all
+.PHONY: all
+all: ## build pipeline
+all: get format check test-unit build
+
+.PHONY: ci
+ci: ## CI build pipeline
+ci: all
+
+.PHONY: precommit
+precommit: ## validate the branch before commit
+precommit: all
+
 .PHONY: help
 help: ## Help dialog
 				@echo 'Usage: make <OPTIONS> ... <TARGETS>'
@@ -12,7 +28,6 @@ doctor: ## Check fvm flutter doctor
 version: ## Check fvm flutter version
 				@fvm flutter --version
 
-
 .PHONY: format
 format: ## Format code
 				@fvm dart format . --set-exit-if-changed --line-length 80 -o none || (echo "¯\_(ツ)_/¯ Format code error"; exit 1)
@@ -21,13 +36,10 @@ format: ## Format code
 fix: format ## Fix code
 				@fvm dart fix --apply lib
 
-.PHONY: clean-cache
-clean-cache: ## Clean the pub cache
-				@fvm flutter pub cache repair
-
 .PHONY: clean
 clean: ## Clean flutter
 				@fvm flutter clean
+				@cd example && fvm flutter clean
 
 .PHONY: get
 get: ## Get dependencies
@@ -62,7 +74,7 @@ test-unit: ## Runs unit tests
 
 .PHONY: tag
 tag: ## Add a tag to the current commit
-	@dart run tool/tag.dart
+				@dart run tool/tag.dart
 
 .PHONY: tag-add
 tag-add: ## Make command to add TAG. E.g: make tag-add TAG=v1.0.0
@@ -77,6 +89,5 @@ tag-remove: ## Make command to delete TAG. E.g: make tag-delete TAG=v1.0.0
 				@git push origin --delete $(TAG)
 
 .PHONY: build
-build: clean analyze test-unit ## Build test apk for android on example apps
+build:  ## Build test apk for android on example apps
 				@cd example && fvm flutter clean && fvm flutter pub get && fvm flutter build apk --release && fvm flutter build ios --release --no-codesign
-				@cd example_gradle_8 && fvm flutter clean && fvm flutter pub get && fvm flutter build apk --release && fvm flutter build ios --release --no-codesign
