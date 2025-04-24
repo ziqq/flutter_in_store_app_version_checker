@@ -2,6 +2,7 @@ ignore:
   - integration_test
   - flutter_lints
   - build_runner
+  - collection
   - l
 
 exclude:

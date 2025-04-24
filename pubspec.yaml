@@ -58,6 +58,9 @@ dev_dependencies:
   # Linting
   flutter_lints: ^5.0.0
 
+  # Utilities
+  collection: ^1.19.1
+
   # Logging
   l: ^5.0.0
 

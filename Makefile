@@ -15,7 +15,7 @@ version: ## Check fvm flutter version
 
 .PHONY: format
 format: ## Format code
-				@fvm dart format --fix -l 80 . || (echo "¯\_(ツ)_/¯ Format code error"; exit 1)
+				@fvm dart format . --set-exit-if-changed --line-length 80 -o none || (echo "¯\_(ツ)_/¯ Format code error"; exit 1)
 
 .PHONY: fix
 fix: format ## Fix code
