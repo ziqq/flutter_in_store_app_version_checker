@@ -39,6 +39,11 @@ on:
       - "example/pubspec.yaml"
 
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+
 jobs:
   checkout:
     name: Checkout
@@ -50,6 +55,9 @@ jobs:
       pub-cache-name: pub
       threshold: 50
     timeout-minutes: 15
+    concurrency:
+      group: checkout-${{ github.workflow }}-${{ github.ref_name }}
+      cancel-in-progress: true
     steps:
       - name: Checkout repository
         id: checkout_repository
@@ -60,6 +68,7 @@ jobs:
             pubspec.yaml
             lib
             test
+            example
             analysis_options.yaml
             CHANGELOG.md
 
