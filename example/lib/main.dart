@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:developer' as d;
-import 'dart:io' as io;
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_in_store_app_version_checker/flutter_in_store_app_version_checker.dart';
 
+/// A pair of store IDs for Google Play Store and Apple App Store.
 typedef StoreIDPair = ({String googlePlayID, String appleStoreID});
 
 //? Has in Pure Store and Google Play Store
@@ -38,8 +39,6 @@ const StoreIDPair kOzonStoreIDPair = (
   appleStoreID: 'ru.ozon.app',
 );
 
-const _verticalSpacing = SizedBox(height: 16);
-
 void main() => runZonedGuarded<void>(
       () => runApp(const App()),
       (error, stackTrace) => d.log('Top level exception: $error\n$stackTrace'),
@@ -54,7 +53,7 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-        title: 'In Store App Version Checker Example Gradle 8',
+        title: 'In Store App Version Checker Example',
         theme: ThemeData.dark(),
         home: const Example(),
       );
@@ -85,44 +84,51 @@ class _ExampleState extends State<Example> {
   InStoreAppVersionCheckerResult? _wildberries;
   InStoreAppVersionCheckerResult? _ozon;
 
+  /// Whether the app is running on Android.
+  bool get _asAndroid => defaultTargetPlatform == TargetPlatform.android;
+
+  /// Whether the app is running on iOS.
+  // ignore: unused_element
+  bool get _asIOS => defaultTargetPlatform == TargetPlatform.iOS;
+
   @override
   void initState() {
     super.initState();
     _tiktokChecker = InStoreAppVersionChecker(
-      appId: io.Platform.isAndroid
+      appId: _asAndroid
           ? kTikTokStoreIDPair.googlePlayID
           : kTikTokStoreIDPair.appleStoreID,
     );
     _robloxChecker = InStoreAppVersionChecker(
-      appId: io.Platform.isAndroid
+      appId: _asAndroid
           ? kRobloxStoreIDPair.googlePlayID
           : kRobloxStoreIDPair.appleStoreID,
     );
     _freefirethChecker = InStoreAppVersionChecker(
-      appId: io.Platform.isAndroid
+      appId: _asAndroid
           ? kFreefirethStoreIDPair.googlePlayID
           : kFreefirethStoreIDPair.appleStoreID,
     );
     _wildberriesChecker = InStoreAppVersionChecker(
-      appId: io.Platform.isAndroid
+      appId: _asAndroid
           ? kWildberriesStoreIDPair.googlePlayID
           : kWildberriesStoreIDPair.appleStoreID,
     );
     _ozonChecker = InStoreAppVersionChecker(
-      appId: io.Platform.isAndroid
+      appId: _asAndroid
           ? kOzonStoreIDPair.googlePlayID
           : kOzonStoreIDPair.appleStoreID,
     );
   }
 
   Future<void> _checkVersion() async {
-    await Future.wait([
+    await [
       _tiktokChecker.checkUpdate().then((result) => _tiktok = result),
       _robloxChecker.checkUpdate().then((result) => _roblox = result),
       _freefirethChecker.checkUpdate().then((result) => _freefireth = result),
       _wildberriesChecker.checkUpdate().then((result) => _wildberries = result),
       _ozonChecker.checkUpdate().then((result) => _ozon = result),
-    ]);
+    ].wait;
   }
 
   @override
@@ -131,15 +137,15 @@ class _ExampleState extends State<Example> {
           forceMaterialTransparency: false,
           centerTitle: true,
           title: const Text(
-            'Example with gradle 8',
+            'In Store App Version Checker Example',
             style: TextStyle(
-              fontSize: 17,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
           ),
           actions: [
             IconButton(
-              iconSize: 20,
+              iconSize: 24,
               padding: EdgeInsets.zero,
               onPressed: _checkVersion,
               icon: const Icon(CupertinoIcons.refresh),
@@ -168,26 +174,22 @@ class _ExampleState extends State<Example> {
 
                 return SingleChildScrollView(
                   child: Column(
+                    spacing: 16,
                     children: [
                       if (_tiktok != null) ...[
                         _AppSection(title: 'Tik Tok', item: _tiktok!),
-                        _verticalSpacing,
                       ],
                       if (_roblox != null) ...[
                         _AppSection(title: 'Roblox', item: _roblox!),
-                        _verticalSpacing,
                       ],
                       if (_freefireth != null) ...[
                         _AppSection(title: 'Freefeireth', item: _freefireth!),
-                        _verticalSpacing,
                       ],
                       if (_wildberries != null) ...[
                         _AppSection(title: 'Willberies', item: _wildberries!),
-                        _verticalSpacing,
                       ],
                       if (_ozon != null) ...[
                         _AppSection(title: 'Ozon', item: _ozon!),
-                        _verticalSpacing,
                       ],
                     ],
                   ),
@@ -199,9 +201,8 @@ class _ExampleState extends State<Example> {
       );
 }
 
-/// {@template main}
 /// _AppSection widget.
-/// {@endtemplate}
+/// {@macro example}
 class _AppSection extends StatelessWidget {
   /// {@macro main}
   const _AppSection({
@@ -218,12 +219,12 @@ class _AppSection extends StatelessWidget {
         width: double.infinity,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 5,
           children: [
             Text(
               title,
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
             ),
-            const SizedBox(height: 5),
             Text(
               item.toString(),
               style: const TextStyle(

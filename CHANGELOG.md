@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.10.1
+- **CHANGED**: Bump dependencies
+
 ## 1.10.0
 - **ADDED**: Prevent cache hit on iOS (and Android) [pull_request](https://github.com/ziqq/flutter_in_store_app_version_checker/pull/9)
 - **CHANGED**: Bump dependencies
@@ -16,8 +19,8 @@
 
 
 ## 1.7.1
-- **REMOVED**: `pubspec_generator`
 - **ADDED**: `package_info_plus`
+- **REMOVED**: `pubspec_generator`
 
 
 ## 1.7.0
