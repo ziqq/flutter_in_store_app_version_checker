@@ -41,6 +41,7 @@ on:
 
 jobs:
   checkout:
+    name: Checkout
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -50,8 +51,8 @@ jobs:
       threshold: 50
     timeout-minutes: 15
     steps:
-      - name: Get latest code
-        id: checkout
+      - name: Checkout repository
+        id: checkout_repository
         uses: actions/checkout@v4
         with:
           sparse-checkout: |
@@ -69,11 +70,11 @@ jobs:
         with:
           files: "README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE, example"
 
-      - name: File exists
+      - name: Files is exists
         if: steps.check_content.outputs.files_exists == 'true'
         id: file_exists
         timeout-minutes: 1
-        run: echo Content is ok!
+        run: echo Files is exists go next...
 
       - name: Check .md files
         if: steps.check_content.outputs.files_exists == 'true'
@@ -81,7 +82,7 @@ jobs:
         timeout-minutes: 1
         run: |
           echo | grep -q Description README.md ; echo $?
-          run: echo | grep -q Installation README.md ; echo $?
+          echo | grep -q Installation README.md ; echo $?
           echo | grep -q Example README.md ; echo $?
 
       - name: Install flutter
