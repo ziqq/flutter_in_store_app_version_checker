@@ -84,9 +84,9 @@ jobs:
         id: check_md_files
         timeout-minutes: 1
         run: |
-          echo | grep -q Description README.md ; echo Description is exists: $?
-          echo | grep -q Installation README.md ; echo Installation is exists: $?
-          echo | grep -q Example README.md ; echo Example is exists: $?
+          echo | grep -q Description README.md ; echo Description is exist
+          echo | grep -q Installation README.md ; echo Installation is exist
+          echo | grep -q Example README.md ; echo Example is exist
 
       - name: Install flutter
         uses: subosito/flutter-action@v2
