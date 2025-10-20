@@ -137,6 +137,11 @@ jobs:
           name: test-results
           path: reports/tests.json
 
+      - name: Cat results
+        id: cat_results
+        timeout-minutes: 1
+        run: cat reports/tests.json
+
       - name: Test report
         id: test_report
         timeout-minutes: 1
