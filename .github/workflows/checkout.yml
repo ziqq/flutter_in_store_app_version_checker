@@ -79,20 +79,14 @@ jobs:
         with:
           files: "README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE, example"
 
-      - name: Files is exists
-        if: steps.check_content.outputs.files_exists == 'true'
-        id: file_exists
-        timeout-minutes: 1
-        run: echo Files is exists go next...
-
-      - name: Check .md files
+      - name: Check README.md
         if: steps.check_content.outputs.files_exists == 'true'
         id: check_md_files
         timeout-minutes: 1
         run: |
-          echo | grep -q Description README.md ; echo $?
-          echo | grep -q Installation README.md ; echo $?
-          echo | grep -q Example README.md ; echo $?
+          echo | grep -q Description README.md ; echo Description is exists: $?
+          echo | grep -q Installation README.md ; echo Installation is exists: $?
+          echo | grep -q Example README.md ; echo Example is exists: $?
 
       - name: Install flutter
         uses: subosito/flutter-action@v2
