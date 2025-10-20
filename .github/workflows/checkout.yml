@@ -143,7 +143,7 @@ jobs:
         with:
           artifact: test-results
           name: Test report
-          path: "reports/tests.json"
+          path: "**/tests.json"
           reporter: flutter-json
           fail-on-error: false
 
