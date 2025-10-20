@@ -32,10 +32,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Utilities
-  meta: any
-  collection: any
-
   # Http
   http: ^1.5.0
 
@@ -52,6 +48,9 @@ dev_dependencies:
 
   # Linting
   flutter_lints: ^6.0.0
+
+  # Utilities
+  collection: any
 
   # Logging
   l: ^5.0.1

@@ -47,15 +47,22 @@ class InStoreAppVersionCheckerResult {
   /// Return error stack trace
   final StackTrace? stackTrace;
 
-  /// Return `true` if update is available
+  /// Check can update app.
+  /// Return `true` if update is available else `false`
   bool get canUpdate =>
       _shouldUpdate(currentVersion, newVersion ?? currentVersion);
 
   bool _shouldUpdate(String versionA, String versionB) {
-    final versionNumbersA =
-        versionA.split('.').map((e) => int.tryParse(e) ?? 0).toList();
-    final versionNumbersB =
-        versionB.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    final versionNumbersA = versionA
+        .split('.')
+        .map((e) => int.tryParse(e) ?? 0)
+        .whereType<int>()
+        .toList(growable: false);
+    final versionNumbersB = versionB
+        .split('.')
+        .map((e) => int.tryParse(e) ?? 0)
+        .whereType<int>()
+        .toList(growable: false);
 
     final versionASize = versionNumbersA.length;
     final versionBSize = versionNumbersB.length;
@@ -76,12 +83,12 @@ class InStoreAppVersionCheckerResult {
   @override
   String toString() {
     final buffer = StringBuffer()
-      ..write('CURRENT VERSION: $currentVersion\n')
-      ..write('NEW VERSION: $newVersion\n')
-      ..write('APP URL: $appURL\n')
-      ..write('CAN UPDATE: $canUpdate');
-    if (errorMessage != null) buffer.write('\nERROR: $errorMessage, ');
-    if (stackTrace != null) buffer.write('\nSTACK TRACE: $stackTrace, ');
+      ..writeln('Current version: $currentVersion')
+      ..writeln('New version: $newVersion')
+      ..writeln('App url: $appURL')
+      ..writeln('Can update: $canUpdate');
+    if (errorMessage != null) buffer.write('\nError: $errorMessage, ');
+    if (stackTrace != null) buffer.write('\nStack trace: $stackTrace, ');
     return buffer.toString();
   }
 
