@@ -198,7 +198,7 @@ void main() {
       });
     });
 
-    group('AndroidS tore -', () {
+    group('Android Store -', () {
       group('Default -', () {
         test('Successful check for Google Play Store', () async {
           debugDefaultTargetPlatformOverride = TargetPlatform.android;
