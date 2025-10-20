@@ -123,8 +123,10 @@ jobs:
         id: run_tests
         timeout-minutes: 2
         run: |
+          echo "Creating reports directory..."
           mkdir -p reports
-          flutter test --coverage --concurrency=6 --machine test/flutter_in_store_app_version_checker_test.dart | tee reports/tests.json
+          echo "Running tests with coverage..."
+          flutter test --coverage --concurrency=6 test/flutter_in_store_app_version_checker_test.dart | tee reports/tests.json
 
       - name: Upload test report
         id: upload_test_report
