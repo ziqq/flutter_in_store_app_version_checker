@@ -41,9 +41,130 @@ on:
 
 jobs:
   checkout:
-    uses: ziqq/flutter_ci_workflows/.github/workflows/checkout.yml@main
-  testing:
-    needs: [checkout]
-    uses: ziqq/flutter_ci_workflows/.github/workflows/testing_with_codecov_report.yml@main
-    secrets:
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    env:
+      pub-cache-name: pub
+      threshold: 50
+    timeout-minutes: 15
+    steps:
+      - name: Get latest code
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github
+            pubspec.yaml
+            lib
+            test
+            analysis_options.yaml
+            CHANGELOG.md
+
+      - name: Check content
+        id: check_content
+        timeout-minutes: 1
+        uses: andstor/file-existence-action@v1
+        with:
+          files: "README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE, example"
+
+      - name: File exists
+        if: steps.check_content.outputs.files_exists == 'true'
+        id: file_exists
+        timeout-minutes: 1
+        run: echo Content is ok!
+
+      - name: Check .md files
+        if: steps.check_content.outputs.files_exists == 'true'
+        id: check_md_files
+        timeout-minutes: 1
+        run: |
+          echo | grep -q Description README.md ; echo $?
+          run: echo | grep -q Installation README.md ; echo $?
+          echo | grep -q Example README.md ; echo $?
+
+      - name: Install flutter
+        uses: subosito/flutter-action@v2
+        id: install_flutter
+        with:
+          channel: 'stable'
+
+      - name: Check flutter version
+        id: check_flutter_version
+        run: flutter --version
+
+      - name: Restore pub modules
+        id: restore_pub_modules
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            $PWD/.pub_cache/
+          key: ${{ runner.os }}-pub-${{ env.pub-cache-name }}-${{ hashFiles('**/pubspec.yaml') }}
+
+      - name: Export pub cache directory
+        id: export_pub_cache
+        timeout-minutes: 1
+        run: |
+          export PUB_CACHE=$PWD/.pub_cache/
+          export PATH="$PATH":"$HOME/.pub-cache/bin"
+          echo "${HOME}/.pub-cache/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        id: install_dependencies
+        timeout-minutes: 2
+        run: |
+          apt-get update && apt-get install -y lcov
+          flutter pub get --no-example
+
+      - name: Save pub modules
+        id: save_pub_modules
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            $PWD/.pub_cache/
+          key: ${{ runner.os }}-pub-${{ env.pub-cache-name }}-${{ hashFiles('**/pubspec.yaml') }}
+
+      - name: Run dependency validator
+        run: |
+          dart pub global activate dependency_validator
+          dart pub global run dependency_validator:dependency_validator
+
+      - name: Check format
+        id: check_format
+        run: dart format --set-exit-if-changed -l 80 -o none lib/
+
+      - name: Check analyzer
+        id: check_analyzer
+        run: dart analyze --fatal-infos --fatal-warnings lib/
+
+      - name: Run tests
+        id: run_tests
+        timeout-minutes: 2
+        env:
+          CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
+        if: success()
+        run: |
+          flutter test --coverage
+          bash <(curl -s https://codecov.io/bash) -f coverage/lcov.info
+
+      - name: Upload test report
+        id: upload_test_report
+        timeout-minutes: 1
+        uses: actions/upload-artifact@v4
+        if: (success() || failure()) && ${{ github.actor != 'dependabot[bot]' }}
+        with:
+          name: test-results
+          path: reports/tests.json
+
+      - name: Test report
+        id: test_report
+        timeout-minutes: 1
+        uses: dorny/test-reporter@v2
+        if: ${{ !cancelled() }}
+        with:
+          artifact: test-results
+          name: Test report
+          path: "**/tests.json"
+          reporter: flutter-json
+          fail-on-error: false
