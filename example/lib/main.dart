@@ -83,45 +83,53 @@ class _ExampleState extends State<Example> {
   InStoreAppVersionCheckerResult? _freefireth;
   InStoreAppVersionCheckerResult? _wildberries;
   InStoreAppVersionCheckerResult? _ozon;
+  InStoreAppVersionChecker$Response? _ozonV2;
 
   /// Whether the app is running on Android.
-  bool get _asAndroid => defaultTargetPlatform == TargetPlatform.android;
+  bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
 
   /// Whether the app is running on iOS.
   // ignore: unused_element
-  bool get _asIOS => defaultTargetPlatform == TargetPlatform.iOS;
+  bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
 
   @override
   void initState() {
     super.initState();
     _tiktokChecker = InStoreAppVersionChecker(
-      appId: _asAndroid
+      appId: _isAndroid
           ? kTikTokStoreIDPair.googlePlayID
           : kTikTokStoreIDPair.appleStoreID,
     );
     _robloxChecker = InStoreAppVersionChecker(
-      appId: _asAndroid
+      appId: _isAndroid
           ? kRobloxStoreIDPair.googlePlayID
           : kRobloxStoreIDPair.appleStoreID,
     );
     _freefirethChecker = InStoreAppVersionChecker(
-      appId: _asAndroid
+      appId: _isAndroid
           ? kFreefirethStoreIDPair.googlePlayID
           : kFreefirethStoreIDPair.appleStoreID,
     );
     _wildberriesChecker = InStoreAppVersionChecker(
-      appId: _asAndroid
+      appId: _isAndroid
           ? kWildberriesStoreIDPair.googlePlayID
           : kWildberriesStoreIDPair.appleStoreID,
     );
     _ozonChecker = InStoreAppVersionChecker(
-      appId: _asAndroid
+      appId: _isAndroid
           ? kOzonStoreIDPair.googlePlayID
           : kOzonStoreIDPair.appleStoreID,
     );
   }
 
   Future<void> _checkVersion() async {
+    final params = InStoreAppVersionChecker$Params(
+      packageName: _isAndroid
+          ? kOzonStoreIDPair.googlePlayID
+          : kOzonStoreIDPair.appleStoreID,
+      locale: Localizations.localeOf(context).toLanguageTag(),
+    );
+    _ozonV2 = await InStoreAppVersionChecker.instance.checkUpdate(params);
     await [
       _tiktokChecker.checkUpdate().then((result) => _tiktok = result),
       _robloxChecker.checkUpdate().then((result) => _roblox = result),
@@ -191,6 +199,9 @@ class _ExampleState extends State<Example> {
                       if (_ozon != null) ...[
                         _AppSection(title: 'Ozon', item: _ozon!),
                       ],
+                      if (_ozonV2 != null) ...[
+                        _AppSection(title: 'Ozon v2', item: _ozonV2!),
+                      ],
                     ],
                   ),
                 );
@@ -209,10 +220,13 @@ class _AppSection extends StatelessWidget {
     required this.title,
     required this.item,
     super.key, // ignore: unused_element_parameter
-  });
+  }) : assert(
+            item is InStoreAppVersionCheckerResult ||
+                item is InStoreAppVersionChecker$Response,
+            r'item must be of type InStoreAppVersionCheckerResult or InStoreAppVersionChecker$Response');
 
   final String title;
-  final InStoreAppVersionCheckerResult item;
+  final Object item;
 
   @override
   Widget build(BuildContext context) => SizedBox(

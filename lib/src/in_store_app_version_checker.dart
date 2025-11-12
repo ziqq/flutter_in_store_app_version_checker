@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_in_store_app_version_checker/flutter_in_store_app_version_checker.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -139,6 +140,10 @@ abstract interface class InStoreAppVersionChecker {
     AndroidStore? androidStore,
   }) = _InStoreAppVersionCheckerImpl;
 
+  /// Returns the singleton instance of [InStoreAppVersionCheckerV2].
+  static IInStoreAppVersionChecker get instance =>
+      InStoreAppVersionCheckerV2.instance;
+
   /// The id of the app (com.exemple.your_app).
   /// If [appId] is null the [appId] will take the Flutter package identifier.
   String? get appId;
@@ -185,10 +190,13 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
   /// This is http client.
   late final http.Client _httpClient;
 
+  /// Whether the current platform is iOS.
   bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
+
+  /// Whether the current platform is Android.
   bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
 
-  /// {@macro in_store_app_version_checker}
+  /// Check update current store type.
   @override
   Future<InStoreAppVersionCheckerResult> checkUpdate() async {
     final packageInfo = await PackageInfo.fromPlatform();
@@ -218,7 +226,7 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
     }
   }
 
-  /// {@macro in_store_app_version_checker}
+  /// Check update in Apple Store.
   Future<InStoreAppVersionCheckerResult> _checkAppleStore(
     String currentVersion,
     String packageName, {
@@ -266,7 +274,7 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
     );
   }
 
-  /// {@macro in_store_app_version_checker}
+  /// Check update in Play Store.
   Future<InStoreAppVersionCheckerResult> _checkPlayStore(
     String currentVersion,
     String packageName,
@@ -307,7 +315,7 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
     );
   }
 
-  /// {@macro in_store_app_version_checker}
+  /// Check update in ApkPure Store.
   Future<InStoreAppVersionCheckerResult> _checkPlayStore$ApkPure(
     String currentVersion,
     String packageName,
