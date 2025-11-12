@@ -53,30 +53,50 @@ class InStoreAppVersionCheckerResult {
       _shouldUpdate(currentVersion, newVersion ?? currentVersion);
 
   bool _shouldUpdate(String versionA, String versionB) {
-    final versionNumbersA = versionA
+    var $versionA = versionA.trim();
+    var $versionB = versionB.trim();
+
+    String normalize(String v) =>
+        v.split('+').first.replaceAll(RegExp(r'[^0-9a-zA-Z\.\-]'), '');
+
+    $versionA = normalize($versionA);
+    $versionB = normalize($versionB);
+
+    final partsA = $versionA.split('-');
+    final partsB = $versionB.split('-');
+
+    final coreA = partsA.first;
+    final coreB = partsB.first;
+    final preA = partsA.length > 1 ? partsA[1] : null;
+    final preB = partsB.length > 1 ? partsB[1] : null;
+
+    final numsA = coreA
         .split('.')
-        .map((e) => int.tryParse(e) ?? 0)
-        .whereType<int>()
+        .map(int.tryParse)
+        .map((e) => e ?? 0)
         .toList(growable: false);
-    final versionNumbersB = versionB
+    final numsB = coreB
         .split('.')
-        .map((e) => int.tryParse(e) ?? 0)
-        .whereType<int>()
+        .map(int.tryParse)
+        .map((e) => e ?? 0)
         .toList(growable: false);
 
-    final versionASize = versionNumbersA.length;
-    final versionBSize = versionNumbersB.length;
-    final int maxSize = math.max(versionASize, versionBSize);
-
-    for (var i = 0; i < maxSize; i++) {
-      if ((i < versionASize ? versionNumbersA[i] : 0) >
-          (i < versionBSize ? versionNumbersB[i] : 0)) {
-        return false;
-      } else if ((i < versionASize ? versionNumbersA[i] : 0) <
-          (i < versionBSize ? versionNumbersB[i] : 0)) {
-        return true;
-      }
+    final maxLen = math.max(numsA.length, numsB.length);
+    for (int i = 0; i < maxLen; i++) {
+      final a = i < numsA.length ? numsA[i] : 0;
+      final b = i < numsB.length ? numsB[i] : 0;
+      if (a > b) return false;
+      if (a < b) return true;
     }
+
+    if (preA != null && preB == null) return false; // 1.0.0-beta < 1.0.0
+    if (preA == null && preB != null) return true; // 1.0.0 < 1.0.0-beta
+    if (preA != null && preB != null) {
+      final result = preA.compareTo(preB);
+      if (result < 0) return true;
+      if (result > 0) return false;
+    }
+
     return false;
   }
 
@@ -87,8 +107,8 @@ class InStoreAppVersionCheckerResult {
       ..writeln('New version: $newVersion')
       ..writeln('App url: $appURL')
       ..writeln('Can update: $canUpdate');
-    if (errorMessage != null) buffer.write('\nError: $errorMessage, ');
-    if (stackTrace != null) buffer.write('\nStack trace: $stackTrace, ');
+    if (errorMessage != null) buffer.write('Error: $errorMessage');
+    if (stackTrace != null) buffer.write('Stack trace: $stackTrace');
     return buffer.toString();
   }
 
@@ -198,7 +218,7 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
       return await switch (androidStore) {
         AndroidStore.apkPure =>
           _checkPlayStore$ApkPure(currentVersion, packageName),
-        _ => _checkPlayStore(currentVersion, packageName),
+        _ => _checkPlayStoreV2(currentVersion, packageName),
       };
     } else if (_isIOS) {
       return await _checkAppleStore(
@@ -236,7 +256,8 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
           '_ts': DateTime.now().millisecondsSinceEpoch.toString(),
         },
       );
-      final response = await _httpClient.get(uri);
+      final response =
+          await _httpClient.get(uri).timeout(const Duration(seconds: 15));
       if (response.statusCode != 200) {
         errorMsg =
             "Can't find an app in the Apple Store with the id: $packageName";
@@ -267,7 +288,7 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
   }
 
   /// {@macro in_store_app_version_checker}
-  Future<InStoreAppVersionCheckerResult> _checkPlayStore(
+  /* Future<InStoreAppVersionCheckerResult> _checkPlayStore(
     String currentVersion,
     String packageName,
   ) async {
@@ -284,7 +305,9 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
           '_ts': DateTime.now().millisecondsSinceEpoch.toString(),
         },
       );
-      final response = await _httpClient.get(uri);
+      final response = await _httpClient.get(uri, headers: {
+        if (locale != null && locale!.isNotEmpty) 'Accept-Language': locale!
+      }).timeout(const Duration(seconds: 15));
       if (response.statusCode != 200) {
         errorMsg =
             "Can't find an app in the Google Play Store with the id: $packageName";
@@ -298,6 +321,80 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
       errorMsg = '$error';
       stackTrace = st;
     }
+    if (newVersion == null && errorMsg == null) {
+      errorMsg = 'Unable to parse version for package $packageName';
+    }
+    return InStoreAppVersionCheckerResult(
+      currentVersion: currentVersion,
+      newVersion: newVersion,
+      appURL: url,
+      errorMessage: errorMsg,
+      stackTrace: stackTrace,
+    );
+  } */
+
+  /// {@macro in_store_app_version_checker}
+  Future<InStoreAppVersionCheckerResult> _checkPlayStoreV2(
+    String currentVersion,
+    String packageName,
+  ) async {
+    String? newVersion, errorMsg, url;
+    StackTrace? stackTrace;
+    try {
+      final uri = Uri.https(
+        'play.google.com',
+        '/store/apps/details',
+        <String, Object?>{
+          'id': packageName,
+          'hl': locale,
+          '_ts': DateTime.now().millisecondsSinceEpoch.toString(),
+        },
+      );
+
+      final response =
+          await _httpClient.get(uri).timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        final body = response.body;
+
+        newVersion =
+            RegExp(r',\[\[\["([0-9,\.]*)"]],').firstMatch(body)?.group(1);
+
+        newVersion ??=
+            RegExp(r'\"([0-9]+\.[0-9]+\.[0-9]+)\"').firstMatch(body)?.group(1);
+
+        if (newVersion != null) {
+          url = uri.toString();
+        }
+      }
+
+      if (newVersion == null) {
+        final apiUri = Uri.https(
+          'api.playstoreapi.com',
+          '/v1.2/apps/$packageName',
+        );
+
+        final apiResponse =
+            await _httpClient.get(apiUri).timeout(const Duration(seconds: 15));
+        if (apiResponse.statusCode == 200) {
+          final data = jsonDecode(apiResponse.body);
+          newVersion = data['version']?.toString();
+          url = 'https://play.google.com/store/apps/details?id=$packageName';
+        } else {
+          errorMsg =
+              'PlayStoreApi error: ${apiResponse.statusCode} ${apiResponse.reasonPhrase}';
+        }
+      }
+
+      if (newVersion == null) {
+        errorMsg ??=
+            'Cannot find version info for $packageName — possibly new Play UI or region restriction.';
+      }
+    } on Object catch (error, st) {
+      errorMsg = '$error';
+      stackTrace = st;
+    }
+
     return InStoreAppVersionCheckerResult(
       currentVersion: currentVersion,
       newVersion: newVersion,
@@ -317,7 +414,8 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
 
     try {
       final uri = Uri.https('apkpure.com', '$packageName/$packageName');
-      final response = await _httpClient.get(uri);
+      final response =
+          await _httpClient.get(uri).timeout(const Duration(seconds: 15));
       if (response.statusCode != 200) {
         errorMsg =
             "Can't find an app in the ApkPure Store with the id: $packageName";

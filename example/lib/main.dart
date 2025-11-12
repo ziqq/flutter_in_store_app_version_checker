@@ -39,6 +39,12 @@ const StoreIDPair kOzonStoreIDPair = (
   appleStoreID: 'ru.ozon.app',
 );
 
+//? Has in Pure Store and Google Play Store
+const StoreIDPair test = (
+  googlePlayID: 'de.conio.amoMoto',
+  appleStoreID: 'de.conio.amoMoto',
+);
+
 void main() => runZonedGuarded<void>(
       () => runApp(const App()),
       (error, stackTrace) => d.log('Top level exception: $error\n$stackTrace'),
@@ -77,12 +83,14 @@ class _ExampleState extends State<Example> {
   late final InStoreAppVersionChecker _freefirethChecker;
   late final InStoreAppVersionChecker _wildberriesChecker;
   late final InStoreAppVersionChecker _ozonChecker;
+  late final InStoreAppVersionChecker _testChecker;
 
   InStoreAppVersionCheckerResult? _tiktok;
   InStoreAppVersionCheckerResult? _roblox;
   InStoreAppVersionCheckerResult? _freefireth;
   InStoreAppVersionCheckerResult? _wildberries;
   InStoreAppVersionCheckerResult? _ozon;
+  InStoreAppVersionCheckerResult? _testResult;
 
   /// Whether the app is running on Android.
   bool get _asAndroid => defaultTargetPlatform == TargetPlatform.android;
@@ -113,11 +121,17 @@ class _ExampleState extends State<Example> {
       appId: _asAndroid
           ? kWildberriesStoreIDPair.googlePlayID
           : kWildberriesStoreIDPair.appleStoreID,
+      locale: 'ru',
     );
     _ozonChecker = InStoreAppVersionChecker(
       appId: _asAndroid
           ? kOzonStoreIDPair.googlePlayID
           : kOzonStoreIDPair.appleStoreID,
+      locale: 'ru',
+    );
+    _testChecker = InStoreAppVersionChecker(
+      appId: _asAndroid ? test.googlePlayID : test.appleStoreID,
+      locale: 'en',
     );
   }
 
@@ -128,6 +142,7 @@ class _ExampleState extends State<Example> {
       _freefirethChecker.checkUpdate().then((result) => _freefireth = result),
       _wildberriesChecker.checkUpdate().then((result) => _wildberries = result),
       _ozonChecker.checkUpdate().then((result) => _ozon = result),
+      _testChecker.checkUpdate().then((result) => _testResult = result),
     ].wait;
   }
 
@@ -190,6 +205,9 @@ class _ExampleState extends State<Example> {
                       ],
                       if (_ozon != null) ...[
                         _AppSection(title: 'Ozon', item: _ozon!),
+                      ],
+                      if (_testResult != null) ...[
+                        _AppSection(title: 'Test', item: _testResult!),
                       ],
                     ],
                   ),

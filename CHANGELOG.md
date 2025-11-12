@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.11.0
+- **FIXED**: `canUpdate` returns allways false on Android, [#11](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/11)
+
 ## 1.10.1
 - **CHANGED**: Bump dependencies
 
