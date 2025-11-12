@@ -5,9 +5,11 @@
 *.swp
 .DS_Store
 .atom/
+.build/
 .buildlog/
 .history
 .svn/
+.swiftpm/
 migrate_working_dir/
 
 # IntelliJ related
@@ -23,31 +25,53 @@ migrate_working_dir/
 
 # Flutter/Dart/Pub related
 # Libraries should not include pubspec.lock, per https://dart.dev/guides/libraries/private-files#pubspeclock.
-.dart_tool
-build/
+**/build
 **/doc/api/
 **/ios/Flutter/.last_build_id
+**/Flutter/ephemeral/
+**/Pods/
+.dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
-.packages
 .pub-cache/
+.pub/
+
+# Platform-specific generated files
+**/android/**/GeneratedPluginRegistrant.*
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/macos/Flutter/GeneratedPluginRegistrant.*
+**/windows/flutter/generated_plugin_registrant.*
+**/windows/flutter/generated_plugins.*
+**/linux/flutter/generated_plugin_registrant.*
+**/linux/flutter/generated_plugins.*
+
+# Xcode-related
+**/dgph
+**/xcuserdata/
 
 # Pana
 log.pana.json
 
 # Test
-.coverage/
 coverage/
+.coverage/
 /test/**/*.json
+!/test/**/fixtures/*.json
 /test/.test_coverage.dart
+reports/
+integration_test/screenshots
 
 # Temp
 /tmp
 /temp
 
-# FVM
-.fvm/flutter_sdk
-.fvm/versions/
+# GeneratedPluginRegistrant
+**/android/**/GeneratedPluginRegistrant.java
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+
+# FVM Version Cache
+.fvm/
 
 # Android
 **/.cxx/
