@@ -39,6 +39,12 @@ const StoreIDPair kOzonStoreIDPair = (
   appleStoreID: 'ru.ozon.app',
 );
 
+//? Has in Pure Store and Google Play Store
+const StoreIDPair test = (
+  googlePlayID: 'de.conio.amoMoto',
+  appleStoreID: 'de.conio.amoMoto',
+);
+
 void main() => runZonedGuarded<void>(
       () => runApp(const App()),
       (error, stackTrace) => d.log('Top level exception: $error\n$stackTrace'),
@@ -77,6 +83,7 @@ class _ExampleState extends State<Example> {
   late final InStoreAppVersionChecker _freefirethChecker;
   late final InStoreAppVersionChecker _wildberriesChecker;
   late final InStoreAppVersionChecker _ozonChecker;
+  late final InStoreAppVersionChecker _testChecker;
 
   InStoreAppVersionCheckerResult? _tiktok;
   InStoreAppVersionCheckerResult? _roblox;
@@ -84,6 +91,8 @@ class _ExampleState extends State<Example> {
   InStoreAppVersionCheckerResult? _wildberries;
   InStoreAppVersionCheckerResult? _ozon;
   InStoreAppVersionChecker$Response? _ozonV2;
+
+  InStoreAppVersionCheckerResult? _testResult;
 
   /// Whether the app is running on Android.
   bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
@@ -114,11 +123,17 @@ class _ExampleState extends State<Example> {
       appId: _isAndroid
           ? kWildberriesStoreIDPair.googlePlayID
           : kWildberriesStoreIDPair.appleStoreID,
+      locale: 'ru',
     );
     _ozonChecker = InStoreAppVersionChecker(
       appId: _isAndroid
           ? kOzonStoreIDPair.googlePlayID
           : kOzonStoreIDPair.appleStoreID,
+      locale: 'ru',
+    );
+    _testChecker = InStoreAppVersionChecker(
+      appId: _isAndroid ? test.googlePlayID : test.appleStoreID,
+      locale: 'en',
     );
   }
 
@@ -136,6 +151,7 @@ class _ExampleState extends State<Example> {
       _freefirethChecker.checkUpdate().then((result) => _freefireth = result),
       _wildberriesChecker.checkUpdate().then((result) => _wildberries = result),
       _ozonChecker.checkUpdate().then((result) => _ozon = result),
+      _testChecker.checkUpdate().then((result) => _testResult = result),
     ].wait;
   }
 
@@ -201,6 +217,9 @@ class _ExampleState extends State<Example> {
                       ],
                       if (_ozonV2 != null) ...[
                         _AppSection(title: 'Ozon v2', item: _ozonV2!),
+                      ],
+                      if (_testResult != null) ...[
+                        _AppSection(title: 'Test', item: _testResult!),
                       ],
                     ],
                   ),
