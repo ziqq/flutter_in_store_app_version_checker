@@ -1,3 +1,3 @@
-# example_gradle_8
+# example
 
 A new Flutter project.

@@ -1,4 +1,4 @@
-name: example_gradle_8
+name: example
 
 description: Demonstrates how to use the flutter_in_store_app_version_checker
 
@@ -7,8 +7,8 @@ version: 0.0.1
 publish_to: none
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
-  flutter: ">=3.0.0"
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: ">=3.38.1"
 
 dependencies:
   flutter:
@@ -24,7 +24,7 @@ dev_dependencies:
     sdk: flutter
 
   # Linting
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 
 flutter:

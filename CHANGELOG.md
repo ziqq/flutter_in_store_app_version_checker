@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.0-pre.01
+- **DEPRECATED**: Legacy facade will be removed in `2.0.0` (use `InStoreAppVersionChecker.instance`)
+- **ADDED**: New interface `IInStoreAppVersionChecker` (singleton `InStoreAppVersionChecker.instance`)
+- **ADDED**: Fallback to public PlayStore API on HTML parsing failure
+- **ADDED**: Extended version comparison logic (pre-release, normalization, ignoring build metadata)
+- **ADDED**: Response fields: `isSuccess`, `isError`, `canUpdate`, improved error messages
+- **CHANGED**: Migration to a singleton instead of manual creation
+- **CHANGED**: Improved error handling (stack return, format unification)
+- **REMOVED**: Old implicit instance creation methods (recommended using singleton or `.custom`)
+
 ## 1.11.0
 - **FIXED**: `canUpdate` returns allways false on Android, [#11](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/11)
 
