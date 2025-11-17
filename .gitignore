@@ -68,9 +68,6 @@ integration_test/screenshots
 /temp
 
 # GeneratedPluginRegistrant
-**/android/**/GeneratedPluginRegistrant.java
-**/ios/Runner/GeneratedPluginRegistrant.*
-**/macos/Flutter/GeneratedPluginRegistrant.swift
 
 # FVM Version Cache
 .fvm/
