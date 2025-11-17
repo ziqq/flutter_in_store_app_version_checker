@@ -54,7 +54,7 @@ check: analyze ## Check code
 				@echo "╠ RUN CECK CODE..."
 				@fvm dart pub publish --dry-run
 				@fvm dart pub global activate pana
-				@pana --json --no-warning --line-length 80 > log.pana.json
+				@fvm pana --json --no-warning --line-length 80 > log.pana.json
 				@echo "╠ CECKED CODE SUCCESSFULLY"
 
 .PHONY: publish
