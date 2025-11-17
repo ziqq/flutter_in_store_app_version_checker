@@ -53,7 +53,6 @@ analyze: get format ## Analyze code
 check: analyze ## Check code
 				@echo "╠ RUN CECK CODE..."
 				@dart pub publish --dry-run
-				@dart pub global activate pana
 				@pana --json --no-warning --line-length 80 > log.pana.json
 				@echo "╠ CECKED CODE SUCCESSFULLY"
 
