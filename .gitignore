@@ -37,15 +37,15 @@ migrate_working_dir/
 .pub/
 
 # Platform-specific generated files
-**/android/**/GeneratedPluginRegistrant.*
-**/android/**/local.properties
-**/android/.kotlin
-**/ios/Flutter/Generated.xcconfig
-**/ios/Flutter/flutter_export_environment.sh
-**/ios/Runner/GeneratedPluginRegistrant.*
-**/macos/Flutter/GeneratedPluginRegistrant.*
-**/windows/flutter/generated_*
-**/linux/flutter/generated_*
+**/**/android/**/GeneratedPluginRegistrant.*
+**/**/android/**/local.properties
+**/**/android/.kotlin
+**/**/ios/Flutter/Generated.xcconfig
+**/**/ios/Flutter/flutter_export_environment.sh
+**/**/ios/Runner/GeneratedPluginRegistrant.*
+**/**/macos/Flutter/GeneratedPluginRegistrant.*
+**/**/windows/flutter/generated_*
+**/**/linux/flutter/generated_*
 
 # Xcode-related
 **/dgph
