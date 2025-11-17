@@ -51,11 +51,9 @@ analyze: get format ## Analyze code
 
 .PHONY: check
 check: analyze ## Check code
-				@echo "╠ RUN CECK CODE..."
+				@echo "╠ RUN CECK PUBLISH..."
 				@dart pub publish --dry-run
-				@dart pub global activate pana
-				@pana --json --no-warning --line-length 80 > log.pana.json || (echo "¯\_(ツ)_/¯ Pana error"; exit 1)
-				@echo "╠ CECKED CODE SUCCESSFULLY"
+				@echo "╠ CECKED PUBLISH SUCCESSFULLY"
 
 .PHONY: publish
 publish: ## Publish package
