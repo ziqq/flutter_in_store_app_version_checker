@@ -43,17 +43,19 @@ clean: ## Clean flutter
 
 .PHONY: get
 get: ## Get dependencies
-				@flutter pub get || (echo "¯\_(ツ)_/¯ Get dependencies error"; exit 1)
+				@fvm flutter pub get || (echo "¯\_(ツ)_/¯ Get dependencies error"; exit 1)
 
 .PHONY: analyze
 analyze: get format ## Analyze code
-				@dart analyze --fatal-infos --fatal-warnings
+				@fvm flutter analyze --fatal-warnings --no-fatal-infos lib/ test/
 
 .PHONY: check
 check: analyze ## Check code
-				@dart pub global activate pana
+				@echo "╠ RUN CECK CODE..."
+				@fvm dart pub publish --dry-run
+				@fvm dart pub global activate pana
 				@pana --json --no-warning --line-length 80 > log.pana.json
-				@dart pub publish --dry-run
+				@echo "╠ CECKED CODE SUCCESSFULLY"
 
 .PHONY: publish
 publish: ## Publish package

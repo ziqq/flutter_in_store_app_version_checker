@@ -34,8 +34,8 @@ dependencies:
   # Http
   http: ^1.6.0
 
-  # Utilities
-  meta: any
+  # Utilities  # Annotations
+  meta: ^1.9.1
   package_info_plus: ^9.0.0
 
 dev_dependencies:

@@ -3,7 +3,7 @@
  * Date: 11 December 2023
  */
 
-// ignore_for_file: avoid_positional_boolean_parameters
+// ignore_for_file: avoid_positional_boolean_parameters, deprecated_member_use_from_same_package
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
