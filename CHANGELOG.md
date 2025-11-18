@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0-pre.01
+## 2.0.0-pre.1
 - **DEPRECATED**: Legacy facade will be removed in `2.0.0` (use `InStoreAppVersionChecker.instance`)
 - **ADDED**: New interface `IInStoreAppVersionChecker` (singleton `InStoreAppVersionChecker.instance`)
 - **ADDED**: Fallback to public PlayStore API on HTML parsing failure
