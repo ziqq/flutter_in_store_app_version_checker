@@ -27,25 +27,37 @@ migrate_working_dir/
 # Libraries should not include pubspec.lock, per https://dart.dev/guides/libraries/private-files#pubspeclock.
 **/build
 **/doc/api/
-**/ios/Flutter/.last_build_id
 **/Flutter/ephemeral/
+**/ios/Flutter/.last_build_id
 **/Pods/
 .dart_tool/
-.flutter-plugins
 .flutter-plugins-dependencies
+.flutter-plugins
 .pub-cache/
 .pub/
+.fvm/
 
 # Platform-specific generated files
-**/**/android/**/GeneratedPluginRegistrant.*
-**/**/android/**/local.properties
-**/**/android/.kotlin
-**/**/ios/Flutter/Generated.xcconfig
-**/**/ios/Flutter/flutter_export_environment.sh
-**/**/ios/Runner/GeneratedPluginRegistrant.*
-**/**/macos/Flutter/GeneratedPluginRegistrant.*
-**/**/windows/flutter/generated_*
-**/**/linux/flutter/generated_*
+**/android/**/GeneratedPluginRegistrant.*
+**/android/**/local.properties
+**/android/**/.cxx/
+**/android/.kotlin
+# Remember to never publicly share your keystore.
+# See https://flutter.dev/docs/deployment/android#reference-the-keystore-from-the-app
+**/android/**/key.properties
+**/*.keystore
+**/*.jks
+**/android/**/captures/
+**/android/**/.gradle
+**/android/**/gradlew
+**/android/**/gradle-wrapper.jar
+**/android/**/gradlew.bat
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/macos/Flutter/GeneratedPluginRegistrant.*
+**/windows/flutter/generated_*
+**/linux/flutter/generated_*
 
 # Xcode-related
 **/dgph
@@ -55,22 +67,16 @@ migrate_working_dir/
 log.pana.json
 
 # Test
-coverage/
 .coverage/
-/test/**/*.json
-!/test/**/fixtures/*.json
-/test/.test_coverage.dart
+coverage/
 reports/
+/test/**/*.json
+/test/.test_coverage.dart
+!/test/**/fixtures/*.json
 integration_test/screenshots
 
 # Temp
-/tmp
-/temp
-
-# GeneratedPluginRegistrant
-
-# FVM Version Cache
-.fvm/
-
-# Android
-**/.cxx/
+.temp/
+temp/
+.tmp/
+tmp/
