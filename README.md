@@ -33,7 +33,7 @@ Other platforms (`Web`, `Windows`, `Linux`, `macOS`, etc.) are not supported.
 | `InStoreAppVersionChecker$AndroidStore.apkPure`          | Alternative ApkPure scrape     |
 
 ## API Overview
-Main access point (legacy facade): [`InStoreAppVersionChecker`](lib/src/in_store_app_version_checker_legacy.dart) (singleton: [`InStoreAppVersionChecker.instance`](lib/src/in_store_app_version_checker_legacy.dart)) returning [`IInStoreAppVersionChecker`](lib/src/in_store_app_version_checker_interface.dart) implemented by [`InStoreAppVersionChecker`](lib/src/in_store_app_version_checker.dart).
+Main access point: [`InStoreAppVersionChecker`](lib/src/in_store_app_version_checker.dart) (singleton: [`InStoreAppVersionChecker.instance`](lib/src/in_store_app_version_checker.dart)) returning [`IInStoreAppVersionChecker`](lib/src/in_store_app_version_checker_interface.dart) implemented by [`InStoreAppVersionChecker`](lib/src/in_store_app_version_checker.dart).
 
 Request parameters: [`InStoreAppVersionChecker$Params`](lib/src/in_store_app_version_checker_params.dart)
 
@@ -65,14 +65,14 @@ Future<void> check() async {
     const InStoreAppVersionChecker$Params(
       locale: 'en',
       // packageName:    'com.example.app', // optional override
-      // currentVersion: '1.2.3',        // optional override
+      // currentVersion: '1.2.3',           // optional override
       // androidStore:   InStoreAppVersionChecker$AndroidStore.apkPure,
     ),
   );
   if (res.isSuccess) {
     print('Current: ${res.currentVersion}');
     print('New    : ${res.newVersion}');
-    print('URL    : ${res.appURL}');
+    print('Url    : ${res.appURL}');
     print('Update : ${res.canUpdate}');
   } else {
     print('Error: ${res.errorMessage}');

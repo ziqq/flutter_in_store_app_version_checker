@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.0-pre.2
+- **CHANGED**: Refactoring legacy facade to use new implementation as delegate
+- **CHANGED**: Updated documentation to reflect new interface and singleton usage
+
 ## 2.0.0-pre.1
 - **DEPRECATED**: Legacy facade will be removed in `2.0.0` (use `InStoreAppVersionChecker.instance`)
 - **ADDED**: New interface `IInStoreAppVersionChecker` (singleton `InStoreAppVersionChecker.instance`)
