@@ -5,7 +5,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_in_store_app_version_checker/flutter_in_store_app_version_checker.dart';
-import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker.dart';
+import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker.dart'
+    as new_impl;
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -164,7 +165,7 @@ abstract interface class InStoreAppVersionChecker {
 
   /// Returns the singleton instance of [InStoreAppVersionCheckerV2].
   static IInStoreAppVersionChecker get instance =>
-      InStoreAppVersionCheckerV2.instance;
+      new_impl.InStoreAppVersionChecker.instance;
 
   /// The id of the app (com.exemple.your_app).
   /// If [appId] is null the [appId] will take the Flutter package identifier.

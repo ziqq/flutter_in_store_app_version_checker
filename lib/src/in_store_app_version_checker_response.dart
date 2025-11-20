@@ -218,9 +218,12 @@ class InStoreAppVersionChecker$Response {
   }
 }
 
-/// Success response class
+/// Success response
+/// {@macro in_store_app_version_checker_response}
+@immutable
 final class _InStoreAppVersionChecker$Response$Success
     extends InStoreAppVersionChecker$Response {
+  /// {@macro in_store_app_version_checker_response}
   const _InStoreAppVersionChecker$Response$Success({
     required super.currentVersion,
     super.newVersion,
@@ -228,9 +231,12 @@ final class _InStoreAppVersionChecker$Response$Success
   }) : super(type: InStoreAppVersionChecker$Response$Type.success);
 }
 
-/// Error response class
+/// Error response
+/// {@macro in_store_app_version_checker_response}
+@immutable
 final class _InStoreAppVersionChecker$Response$Error
     extends InStoreAppVersionChecker$Response {
+  /// {@macro in_store_app_version_checker_response}
   const _InStoreAppVersionChecker$Response$Error({
     required super.currentVersion,
     super.newVersion,

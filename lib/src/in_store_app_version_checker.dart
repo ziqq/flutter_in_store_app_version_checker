@@ -12,36 +12,37 @@ import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_ch
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 
-/// {@template in_store_app_version_checker_v2}
-/// [InStoreAppVersionCheckerV2] is an interface for checking the current version
-/// of an app available in app stores such as Google Play and ApkPure,
-/// comparing it with the installed version on the device.
-/// It supports both Android and iOS platforms.
+/// {@template in_store_app_version_checker}
+/// [InStoreAppVersionChecker] is an implementation
+/// of [IInStoreAppVersionChecker] for checking the current version
+/// of an app available in app stores such as `AppStore`, `Google Play`
+/// and `ApkPure`, comparing it with the installed version on the device.
+/// It supports both `Android` and `iOS` platforms.
 /// {@endtemplate}
-final class InStoreAppVersionCheckerV2 implements IInStoreAppVersionChecker {
+final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
   /// {@macro in_store_app_version_checker}
-  InStoreAppVersionCheckerV2._([
+  InStoreAppVersionChecker._([
     http.Client? httpClient,
   ]) : _httpClient = httpClient ?? http.Client();
 
-  /// Create custom instance of [InStoreAppVersionCheckerV2]
+  /// Create custom instance of [InStoreAppVersionChecker]
   /// with your own http client.
   /// {@macro in_store_app_version_checker}
-  factory InStoreAppVersionCheckerV2.custom({
+  factory InStoreAppVersionChecker.custom({
     http.Client? httpClient,
   }) =>
-      InStoreAppVersionCheckerV2._(httpClient);
+      InStoreAppVersionChecker._(httpClient);
 
   /// This is http client.
   late final http.Client _httpClient;
 
-  static InStoreAppVersionCheckerV2? _instance;
+  static InStoreAppVersionChecker? _instance;
 
   /// Returns the [InStoreAppVersionChecker] singleton instance.
   /// Also registers this with the default http client.
   // ignore: prefer_constructors_over_static_methods
-  static InStoreAppVersionCheckerV2 get instance =>
-      _instance ??= InStoreAppVersionCheckerV2._();
+  static InStoreAppVersionChecker get instance =>
+      _instance ??= InStoreAppVersionChecker._();
 
   /// Whether the current platform is iOS.
   bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;

@@ -16,7 +16,7 @@ import 'package:mockito/mockito.dart';
 import '../util/mocks.mocks.dart';
 
 void main() {
-  group('InStoreAppVersionCheckerV2 - ', () {
+  group('InStoreAppVersionChecker - ', () {
     const pkgChannel = MethodChannel('dev.fluttercommunity.plus/package_info');
     late MockClient mockHttpClient;
 
@@ -54,7 +54,7 @@ void main() {
             200,
           ),
         );
-        final r = await InStoreAppVersionCheckerV2.custom(
+        final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
             .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'us'));
         expect(r.isSuccess, isTrue);
@@ -67,7 +67,7 @@ void main() {
         debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
         when(mockHttpClient.get(any))
             .thenAnswer((_) async => http.Response('x', 404));
-        final r = await InStoreAppVersionCheckerV2.custom(
+        final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
             .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'ru'));
         expect(r.isError, isTrue);
@@ -80,7 +80,7 @@ void main() {
         debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
         when(mockHttpClient.get(any))
             .thenAnswer((_) async => http.Response('{"results":[]}', 200));
-        final r = await InStoreAppVersionCheckerV2.custom(
+        final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
             .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
         expect(r.isError, isTrue);
@@ -96,7 +96,7 @@ void main() {
             200,
           ),
         );
-        final r = await InStoreAppVersionCheckerV2.custom(
+        final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
             .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
         expect(r.newVersion, '2.0.0');
@@ -112,7 +112,7 @@ void main() {
             200,
           ),
         );
-        final r = await InStoreAppVersionCheckerV2.custom(
+        final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
             .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
         expect(r.newVersion, '3.0.0');
@@ -125,7 +125,7 @@ void main() {
         when(mockHttpClient.get(any)).thenAnswer(
           (_) async => http.Response('{"results":[{"version":}', 200),
         );
-        final r = await InStoreAppVersionCheckerV2.custom(
+        final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
             .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
         expect(r.isError, isTrue);
@@ -135,7 +135,7 @@ void main() {
       test('exception propagates to errorMessage', () async {
         debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
         when(mockHttpClient.get(any)).thenThrow(StateError('boom'));
-        final r = await InStoreAppVersionCheckerV2.custom(
+        final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
             .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
         expect(r.isError, isTrue);
@@ -152,7 +152,7 @@ void main() {
         ))).thenAnswer(
           (_) async => http.Response(',[[["3.2.1"]],', 200),
         );
-        final r = await InStoreAppVersionCheckerV2.custom(
+        final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
             .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
         expect(r.newVersion, '3.2.1');
@@ -164,7 +164,7 @@ void main() {
         when(mockHttpClient.get(any)).thenAnswer(
           (_) async => http.Response('"5.4.3"', 200),
         );
-        final r = await InStoreAppVersionCheckerV2.custom(
+        final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
             .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
         expect(r.newVersion, '5.4.3');
@@ -183,7 +183,7 @@ void main() {
         ))).thenAnswer(
           (_) async => http.Response('{"version":"9.9.9"}', 200),
         );
-        final r = await InStoreAppVersionCheckerV2.custom(
+        final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
             .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
         expect(r.newVersion, '9.9.9');
@@ -202,7 +202,7 @@ void main() {
         ))).thenAnswer(
           (_) async => http.Response('{"name":"App"}', 200),
         );
-        final r = await InStoreAppVersionCheckerV2.custom(
+        final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
             .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
         expect(r.isSuccess, isTrue);
@@ -222,7 +222,7 @@ void main() {
         ))).thenAnswer(
           (_) async => http.Response('fail', 500, reasonPhrase: 'Server Error'),
         );
-        final r = await InStoreAppVersionCheckerV2.custom(
+        final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
             .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
         expect(r.isError, isTrue);
@@ -242,7 +242,7 @@ void main() {
         ))).thenAnswer(
           (_) async => http.Response('{"version":"2.0.0"}', 200),
         );
-        final r = await InStoreAppVersionCheckerV2.custom(
+        final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
             .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
         expect(r.newVersion, '2.0.0');
@@ -260,7 +260,7 @@ void main() {
           ),
         );
         final r =
-            await InStoreAppVersionCheckerV2.custom(httpClient: mockHttpClient)
+            await InStoreAppVersionChecker.custom(httpClient: mockHttpClient)
                 .checkUpdate(const InStoreAppVersionChecker$Params(
           locale: 'en',
           androidStore: InStoreAppVersionChecker$AndroidStore.apkPure,
@@ -274,7 +274,7 @@ void main() {
         when(mockHttpClient.get(any))
             .thenAnswer((_) async => http.Response('x', 404));
         final r =
-            await InStoreAppVersionCheckerV2.custom(httpClient: mockHttpClient)
+            await InStoreAppVersionChecker.custom(httpClient: mockHttpClient)
                 .checkUpdate(const InStoreAppVersionChecker$Params(
           locale: 'en',
           androidStore: InStoreAppVersionChecker$AndroidStore.apkPure,
@@ -289,7 +289,7 @@ void main() {
         when(mockHttpClient.get(any))
             .thenAnswer((_) async => http.Response('<html></html>', 200));
         final r =
-            await InStoreAppVersionCheckerV2.custom(httpClient: mockHttpClient)
+            await InStoreAppVersionChecker.custom(httpClient: mockHttpClient)
                 .checkUpdate(const InStoreAppVersionChecker$Params(
           locale: 'en',
           androidStore: InStoreAppVersionChecker$AndroidStore.apkPure,
@@ -305,7 +305,7 @@ void main() {
         debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
         when(mockHttpClient.get(any))
             .thenAnswer((_) async => http.Response('n/a', 200));
-        final r = await InStoreAppVersionCheckerV2.custom(
+        final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
             .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
         expect(r.isError, isTrue);
@@ -324,7 +324,7 @@ void main() {
           ),
         );
         final r =
-            await InStoreAppVersionCheckerV2.custom(httpClient: mockHttpClient)
+            await InStoreAppVersionChecker.custom(httpClient: mockHttpClient)
                 .checkUpdate(const InStoreAppVersionChecker$Params(
           locale: 'us',
           packageName: 'custom.pkg',
@@ -342,7 +342,7 @@ void main() {
         when(mockHttpClient.get(any)).thenAnswer((_) async =>
             http.Response(first ? ',[[["1.0.1"]],' : ',[[["1.0.2"]],', 200));
         final checker =
-            InStoreAppVersionCheckerV2.custom(httpClient: mockHttpClient);
+            InStoreAppVersionChecker.custom(httpClient: mockHttpClient);
         final r1 = await checker
             .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
         first = false;
@@ -550,7 +550,7 @@ void main() {
       });
     });
 
-    group('InStoreAppVersionCheckerV2 (additional) - ', () {
+    group('InStoreAppVersionChecker (additional) - ', () {
       const pkgChannel =
           MethodChannel('dev.fluttercommunity.plus/package_info');
       late MockClient mockHttpClient;
@@ -607,7 +607,7 @@ void main() {
               200,
             ),
           );
-          final res = await InStoreAppVersionCheckerV2.custom(
+          final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'us'));
           expect(res.newVersion, '1.0.1');
@@ -623,7 +623,7 @@ void main() {
               200,
             ),
           );
-          final res = await InStoreAppVersionCheckerV2.custom(
+          final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'us'));
           expect(res.appURL, '   ');
@@ -639,7 +639,7 @@ void main() {
               200,
             ),
           );
-          final res = await InStoreAppVersionCheckerV2.custom(
+          final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionChecker$Params(
             locale: 'us',
@@ -658,7 +658,7 @@ void main() {
               200,
             ),
           );
-          final res = await InStoreAppVersionCheckerV2.custom(
+          final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionChecker$Params(
             locale: 'us',
@@ -675,7 +675,7 @@ void main() {
           when(mockHttpClient.get(any)).thenAnswer(
             (_) async => http.Response('random "2.3.4" text', 200),
           );
-          final res = await InStoreAppVersionCheckerV2.custom(
+          final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
           expect(res.newVersion, '2.3.4');
@@ -687,7 +687,7 @@ void main() {
           when(mockHttpClient.get(any)).thenAnswer(
             (_) async => http.Response(',[[["3,2,1"]],', 200),
           );
-          final res = await InStoreAppVersionCheckerV2.custom(
+          final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
           expect(res.newVersion, '3,2,1');
@@ -705,7 +705,7 @@ void main() {
           ))).thenAnswer(
             (_) async => http.Response('{"version":"7.0.0"}', 200),
           );
-          final res = await InStoreAppVersionCheckerV2.custom(
+          final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionChecker$Params(
             locale: 'en',
@@ -728,7 +728,7 @@ void main() {
           ))).thenAnswer(
             (_) async => http.Response('{"name":"App"}', 200),
           );
-          final res = await InStoreAppVersionCheckerV2.custom(
+          final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionChecker$Params(
             locale: 'en',
@@ -755,7 +755,7 @@ void main() {
             (_) async => http.Response('error', 503,
                 reasonPhrase: 'Service Unavailable'),
           );
-          final res = await InStoreAppVersionCheckerV2.custom(
+          final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
           expect(res.isError, isTrue);
@@ -771,7 +771,7 @@ void main() {
             (_) async => http.Response(
                 '<div class="details-sdk">for Android</div>', 200),
           );
-          final res = await InStoreAppVersionCheckerV2.custom(
+          final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionChecker$Params(
             locale: 'en',
@@ -789,7 +789,7 @@ void main() {
               200,
             ),
           );
-          final res = await InStoreAppVersionCheckerV2.custom(
+          final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionChecker$Params(
             locale: 'en',
@@ -807,7 +807,7 @@ void main() {
           when(mockHttpClient.get(any)).thenAnswer(
             (_) async => http.Response('irrelevant', 200),
           );
-          final res = await InStoreAppVersionCheckerV2.custom(
+          final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
           expect(res.isError, isTrue);
@@ -827,7 +827,7 @@ void main() {
             },
           );
           final checker =
-              InStoreAppVersionCheckerV2.custom(httpClient: mockHttpClient);
+              InStoreAppVersionChecker.custom(httpClient: mockHttpClient);
           final futures = List.generate(
             5,
             (_) => checker.checkUpdate(
@@ -843,7 +843,7 @@ void main() {
             (_) async => http.Response(',[[["2.0.0"]],', 200),
           );
           debugDefaultTargetPlatformOverride = TargetPlatform.android;
-          final androidRes = await InStoreAppVersionCheckerV2.custom(
+          final androidRes = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionChecker$Params(
             locale: 'en',
@@ -858,7 +858,7 @@ void main() {
               200,
             ),
           );
-          final iosRes = await InStoreAppVersionCheckerV2.custom(
+          final iosRes = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionChecker$Params(
             locale: 'us',
@@ -906,7 +906,7 @@ void main() {
               200,
             );
           });
-          await InStoreAppVersionCheckerV2.custom(
+          await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'fr'));
           expect(captured.path, contains('/fr/lookup'));
@@ -919,7 +919,7 @@ void main() {
             captured = invocation.positionalArguments.first as Uri;
             return http.Response(',[[["1.0.1"]],', 200);
           });
-          await InStoreAppVersionCheckerV2.custom(
+          await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'de'));
           expect(captured.queryParameters['hl'], 'de');
@@ -930,7 +930,7 @@ void main() {
         test('Thrown synchronous exception yields error response', () async {
           debugDefaultTargetPlatformOverride = TargetPlatform.android;
           when(mockHttpClient.get(any)).thenThrow(Exception('network down'));
-          final res = await InStoreAppVersionCheckerV2.custom(
+          final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
           expect(res.isError, isTrue);
@@ -943,7 +943,7 @@ void main() {
           when(mockHttpClient.get(any)).thenAnswer(
             (_) async => http.Response('{"bad":', 200),
           );
-          final res = await InStoreAppVersionCheckerV2.custom(
+          final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'us'));
           expect(res.isError, isTrue);
