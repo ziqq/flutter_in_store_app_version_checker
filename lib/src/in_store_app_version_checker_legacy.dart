@@ -201,15 +201,22 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
     http.Client? httpClient,
   }) : _httpClient = httpClient ?? http.Client();
 
+  /// The android store type of the app to check.
+  /// Default `InStoreAppVersionChecker$AndroidStore.GooglePlayStore`.
   @override
   final AndroidStore? androidStore;
 
+  /// The current version of the app.
+  /// If [currentVersion] is null, it is taked from the Flutter package version.
   @override
   final String? currentVersion;
 
+  /// The locale your app store.
   @override
   final String? locale;
 
+  /// The id of the app (com.exemple.your_app).
+  /// If [appId] is null the [appId] will take the Flutter package identifier.
   @override
   final String? appId;
 

@@ -36,13 +36,13 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
   /// This is http client.
   late final http.Client _httpClient;
 
-  static InStoreAppVersionChecker? _instance;
-
   /// Returns the [InStoreAppVersionChecker] singleton instance.
   /// Also registers this with the default http client.
   // ignore: prefer_constructors_over_static_methods
   static InStoreAppVersionChecker get instance =>
       _instance ??= InStoreAppVersionChecker._();
+
+  static InStoreAppVersionChecker? _instance;
 
   /// Whether the current platform is iOS.
   bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
@@ -50,7 +50,9 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
   /// Whether the current platform is Android.
   bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
 
-  /// Check update current store type.
+  /// Check the current version of the app available in app stores
+  /// such as `AppStore`, `Google Play` and `ApkPure`,
+  /// comparing it with the installed version on the device.
   @override
   Future<InStoreAppVersionChecker$Response> checkUpdate(
     InStoreAppVersionChecker$Params params,
@@ -94,7 +96,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
     }
   }
 
-  /// Check update in [App Store].
+  /// Check update in [Apple Store].
   Future<InStoreAppVersionChecker$Response> _checkAppleStore(
     String currentVersion,
     String packageName,
