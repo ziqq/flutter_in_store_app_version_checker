@@ -61,48 +61,44 @@ Version comparison logic considers:
 import 'package:flutter_in_store_app_version_checker/flutter_in_store_app_version_checker.dart';
 
 Future<void> check() async {
-  final res = await InStoreAppVersionChecker.instance.checkUpdate(
-    const InStoreAppVersionChecker$Params(
-      locale: 'en',
-      // packageName:    'com.example.app', // optional override
-      // currentVersion: '1.2.3',           // optional override
-      // androidStore:   InStoreAppVersionChecker$AndroidStore.apkPure,
-    ),
+  const params = InStoreAppVersionChecker$Params(
+    locale: 'en',
+    // packageName:    'com.example.app', // optional override
+    // currentVersion: '1.2.3',           // optional override
+    // androidStore:   InStoreAppVersionChecker$AndroidStore.apkPure,
   );
+  final res = await InStoreAppVersionChecker.instance.checkUpdate(params);
   if (res.isSuccess) {
-    print('Current: ${res.currentVersion}');
-    print('New    : ${res.newVersion}');
-    print('Url    : ${res.appURL}');
-    print('Update : ${res.canUpdate}');
+    print('Current version: ${res.currentVersion}');
+    print('New version    : ${res.newVersion}');
+    print('App url        : ${res.appURL}');
+    print('Can update     : ${res.canUpdate}');
   } else {
-    print('Error: ${res.errorMessage}');
+    print('Error          : ${res.errorMessage}');
   }
 }
 ```
 
 ### ApkPure
 ```dart
-final res = await InStoreAppVersionChecker.instance.checkUpdate(
-  const InStoreAppVersionChecker$Params(
-    locale: 'en',
-    androidStore: InStoreAppVersionChecker$AndroidStore.apkPure,
-  ),
+const params = InStoreAppVersionChecker$Params(
+  locale: 'en',
+  androidStore: InStoreAppVersionChecker$AndroidStore.apkPure,
 );
+final res = await InStoreAppVersionChecker.instance.checkUpdate(params);
 ```
 
 ### iOS
 ```dart
-final res = await InStoreAppVersionChecker.instance.checkUpdate(
-  const InStoreAppVersionChecker$Params(locale: 'en'),
-);
+const params = InStoreAppVersionChecker$Params(locale: 'en');
+final res = await InStoreAppVersionChecker.instance.checkUpdate(params);
 ```
 
 ### Custom HTTP client
 ```dart
-final custom = InStoreAppVersionChecker.custom(httpClient: myClient);
-final res = await custom.checkUpdate(
-  const InStoreAppVersionChecker$Params(locale: 'en'),
-);
+final custom = InStoreAppVersionChecker.custom(httpClient: customHTTPClient);
+const params = InStoreAppVersionChecker$Params(locale: 'en');
+final res = await custom.checkUpdate(params);
 ```
 
 
@@ -128,7 +124,6 @@ Types:
 Refer to the [Changelog](https://github.com/ziqq/flutter_in_store_app_version_checker/blob/main/CHANGELOG.md) to get all release notes.
 
 
-
 ## Maintainers
 [Anton Ustinoff (ziqq)](https://github.com/ziqq)
 
@@ -141,7 +136,6 @@ Refer to the [Changelog](https://github.com/ziqq/flutter_in_store_app_version_ch
 If you want to support the development of our library, there are several ways you can do it:
 
 - [Buy me a coffee](https://www.buymeacoffee.com/ziqq)
-- [Support on Patreon](https://www.patreon.com/ziqq)
 - [Subscribe through Boosty](https://boosty.to/ziqq)
 
 
