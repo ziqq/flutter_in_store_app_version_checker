@@ -45,6 +45,27 @@ clean: ## Clean flutter
 get: ## Get dependencies
 				@fvm flutter pub get || (echo "¯\_(ツ)_/¯ Get dependencies error"; exit 1)
 
+.PHONY: init-ios-pods
+init-ios-pods: ## Init ios pods (use Podfile)
+				@fvm flutter config --no-enable-swift-package-manager && flutter config --no-enable-swift-package-manager
+				@cd example && fvm flutter clean
+				@cd example && fvm flutter pub get
+				@cd example/ios && \
+						( [ -f "_Podfile" ] && [ ! -f "Podfile" ] && mv "_Podfile" "Podfile" || true ) && \
+						rm -rf Pods Podfile.lock && \
+						pod install
+				@cd example && fvm flutter pub get || (echo "¯\_(ツ)_/¯ Init ios pods error"; exit 1)
+
+.PHONY: init-ios-spm
+init-ios-spm: ## Init ios swift package manager (use _Podfile)
+				@fvm flutter config --enable-swift-package-manager && flutter config --enable-swift-package-manager
+				@cd example && fvm flutter clean
+				@cd example/ios && \
+						( [ -f "Podfile" ] && mv "Podfile" "_Podfile" || true ) && \
+						rm -rf Pods Podfile.lock && \
+						( pod deintegrate || true )
+				@cd example && fvm flutter pub get || (echo "¯\_(ツ)_/¯ Init ios swift package manager error"; exit 1)
+
 .PHONY: analyze
 analyze: get format ## Analyze code
 				@fvm flutter analyze --fatal-warnings --no-fatal-infos lib/ test/

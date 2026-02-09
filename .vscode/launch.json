@@ -10,6 +10,24 @@
       "env": {}
     },
     {
+      "name": "example:ios:pods",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/example",
+      "preLaunchTask": "init:ios:pods",
+      "args": [],
+      "env": {}
+    },
+    {
+      "name": "example:ios:spm",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/example",
+      "preLaunchTask": "init:ios:spm",
+      "args": [],
+      "env": {}
+    },
+    {
       "name": "tests",
       "request": "launch",
       "type": "dart",

@@ -2,6 +2,42 @@
 
 Thank you for your help! Before you start, let's take a look at some agreements.
 
+
+## iOS: testing (CocoaPods and Swift Package Manager)
+
+This plugin supports iOS builds in two integration modes. **Before opening a PR, please verify that the example app builds in both modes:**
+
+### 1 CocoaPods (Podfile)
+Uses `example/ios/Podfile`.
+
+```bash
+make init-ios-pods
+cd example
+fvm flutter run
+```
+
+Notes:
+- `make init-ios-pods` switches Flutter config to disable SPM and ensures `example/ios/Podfile` is active (it may restore it from `_Podfile`).
+- If you run `pod install` manually, always run `fvm flutter pub get` in `example/` first (it generates `ios/Flutter/Generated.xcconfig`).
+
+### 2 Swift Package Manager (SPM)
+Uses `example/ios/_Podfile` (Podfile is renamed away) and removes Pods artifacts.
+
+```bash
+make init-ios-spm
+cd example
+fvm flutter run
+```
+
+Notes:
+- Flutter SPM integration is currently experimental. If something fails specifically in SPM mode, include the iOS project files in your report as suggested by Flutter tooling.
+- `make init-ios-spm` renames `Podfile -> _Podfile`, cleans Pods (`Pods/`, `Podfile.lock`) and runs `pod deintegrate` (if available) to remove CocoaPods integration artifacts.
+
+### What to include in PR description
+- [ ] iOS builds with CocoaPods (`make init-ios-pods`)
+- [ ] iOS builds with SwiftPM (`make init-ios-spm`)
+
+
 ## Pull request rules
 
 Make sure that your code:
