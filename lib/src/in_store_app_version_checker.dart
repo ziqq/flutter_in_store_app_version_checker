@@ -79,7 +79,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
           newVersion: null,
           appURL: null,
           errorMessage:
-              'This platform is not yet supported by this package. Support only iOS or Android platrforms.',
+              'This platform is not yet supported by this package. Support only iOS or Android platforms.',
           stackTrace: StackTrace.current,
           error: Exception('Unsupported platform'),
         );

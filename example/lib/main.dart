@@ -254,7 +254,7 @@ class _ExampleState extends State<Example> {
                   spacing: 16,
                   children: <Widget>[
                     _Section(title: 'Ozon', item: _ozon),
-                    _Section(title: 'Willberies', item: _wildberries),
+                    _Section(title: 'Wildberries', item: _wildberries),
                     _Section(title: 'Roblox', item: _roblox),
                     _Section(title: 'Tik Tok', item: _tiktok),
                     _Section(title: 'Freefeireth', item: _freefireth),
