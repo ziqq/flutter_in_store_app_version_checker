@@ -1,8 +1,8 @@
 import Flutter
 import UIKit
 
-@objc(InStoreAppVersionCheckerPlugin)
-public class SwiftInStoreAppVersionCheckerPlugin: NSObject, FlutterPlugin {
+@objc(SwiftInStoreAppVersionCheckerPlugin)
+public final class SwiftInStoreAppVersionCheckerPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(
       name: "flutter_in_store_app_version_checker",
@@ -14,5 +14,12 @@ public class SwiftInStoreAppVersionCheckerPlugin: NSObject, FlutterPlugin {
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     result("iOS " + UIDevice.current.systemVersion)
+  }
+}
+
+@objc(InStoreAppVersionCheckerPlugin)
+public final class InStoreAppVersionCheckerPlugin: NSObject, FlutterPlugin {
+  public static func register(with registrar: FlutterPluginRegistrar) {
+    SwiftInStoreAppVersionCheckerPlugin.register(with: registrar)
   }
 }
