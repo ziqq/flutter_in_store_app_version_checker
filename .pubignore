@@ -1,6 +1,23 @@
 pubspec.lock
-reports/
+.coverage/
 coverage/
+reports/
 build/
-example/
-!example/lib/main.dart
+
+# Keep example sources for pub.dev
+# (Do NOT ignore the whole example/ directory)
+
+# Ignore platform folders of the example app (optional, to reduce size)
+example/android/
+example/ios/
+example/macos/
+example/windows/
+example/linux/
+example/web/
+
+# Ignore example build artifacts
+example/build/
+example/.dart_tool/
+example/.flutter-plugins
+example/.flutter-plugins-dependencies
+example/.metadata
