@@ -3,3 +3,4 @@ reports/
 coverage/
 build/
 example/
+!example/lib/main.dart
