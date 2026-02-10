@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
 
   s.source           = { :path => '.' }
   s.source_files     = 'flutter_in_store_app_version_checker/Sources/flutter_in_store_app_version_checker/**/*.swift'
-  s.requires_arc     = true
+  s.static_framework = true
 
   s.platform         = :ios, '13.0'
   s.swift_version    = '5.0'

@@ -20,7 +20,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  flutter_in_store_app_version_checker: 06cd846fe4e194aa3a47488e3a9f05942db2479e
+  flutter_in_store_app_version_checker: c5fbbd5318f11ac63ffddcf4fd4e5e43d570fa23
   package_info_plus: c0502532a26c7662a62a356cebe2692ec5fe4ec4
 
 PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
