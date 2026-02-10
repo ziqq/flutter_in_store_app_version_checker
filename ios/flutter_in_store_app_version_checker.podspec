@@ -2,6 +2,8 @@
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
 # Run `pod lib lint flutter_app_version_checker.podspec` to validate before publishing.
 #
+# Swift Package Manager support: https://docs.flutter.dev/packages-and-plugins/swift-package-manager/for-plugin-authors
+#
 Pod::Spec.new do |s|
   s.name             = 'flutter_in_store_app_version_checker'
   s.version          = '2.0.0'
