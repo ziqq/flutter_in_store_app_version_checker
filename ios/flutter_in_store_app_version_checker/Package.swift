@@ -20,9 +20,7 @@ let package = Package(
             name: "flutter_in_store_app_version_checker",
             dependencies: [],
             path: "Sources/flutter_in_store_app_version_checker",
-            exclude: [
-                "InStoreAppVersionCheckerPlugin.h"
-            ]
+            publicHeadersPath: "include"
         )
     ]
 )
