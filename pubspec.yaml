@@ -30,10 +30,10 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Http
+  # HTTP
   http: ^1.6.0
 
-  # Utilities  # Annotations
+  # Utilities
   meta: ^1.9.1
   package_info_plus: ^9.0.0
 
