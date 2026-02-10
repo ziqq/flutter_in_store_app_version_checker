@@ -23,7 +23,11 @@ let package = Package(
             exclude: [
                 "InStoreAppVersionCheckerPlugin.m",
                 "InStoreAppVersionCheckerPlugin.h"
+            ],
+            cSettings: [
+                .headerSearchPath("include/flutter_in_store_app_version_checker")
             ]
+
         )
     ]
 )
