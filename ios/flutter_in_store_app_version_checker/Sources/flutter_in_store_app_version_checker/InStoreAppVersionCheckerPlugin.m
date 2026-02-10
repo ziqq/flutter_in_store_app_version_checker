@@ -1,5 +1,4 @@
-#import "InStoreAppVersionCheckerPlugin.h"
-#import <UIKit/UIKit.h>
+#import "./include/flutter_in_store_app_version_checker/InStoreAppVersionCheckerPlugin.h"
 
 @implementation InStoreAppVersionCheckerPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
