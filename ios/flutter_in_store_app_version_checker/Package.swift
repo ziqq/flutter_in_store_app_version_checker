@@ -21,7 +21,6 @@ let package = Package(
             dependencies: [],
             path: "Sources/flutter_in_store_app_version_checker",
             exclude: [
-                "InStoreAppVersionCheckerPlugin.m",
                 "InStoreAppVersionCheckerPlugin.h"
             ]
         )

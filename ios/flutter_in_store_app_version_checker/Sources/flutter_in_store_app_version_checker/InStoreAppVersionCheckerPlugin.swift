@@ -1,13 +1,13 @@
 import Flutter
 import UIKit
 
-public final class SwiftInStoreAppVersionCheckerPlugin: NSObject, FlutterPlugin {
+public final class InStoreAppVersionCheckerPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(
       name: "github.com/ziqq/flutter_in_store_app_version_checker",
       binaryMessenger: registrar.messenger()
     )
-    let instance = SwiftInStoreAppVersionCheckerPlugin()
+    let instance = InStoreAppVersionCheckerPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
 
