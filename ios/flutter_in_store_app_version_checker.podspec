@@ -12,10 +12,11 @@ Pod::Spec.new do |s|
   s.author           = { 'Anton Ustinoff' => 'a.a.ustinoff@gmail.com' }
 
   s.source           = { :path => '.' }
-  s.source_files = 'flutter_in_store_app_version_checker/Sources/flutter_in_store_app_version_checker/**/*.swift'
+  s.source_files     = 'flutter_in_store_app_version_checker/Sources/flutter_in_store_app_version_checker/**/*.swift'
+  s.requires_arc     = true
 
-  s.platform = :ios, '13.0'
-  s.swift_version = '5.0'
+  s.platform         = :ios, '13.0'
+  s.swift_version    = '5.0'
   s.dependency 'Flutter'
 
   # Flutter.framework does not contain a i386 slice.
