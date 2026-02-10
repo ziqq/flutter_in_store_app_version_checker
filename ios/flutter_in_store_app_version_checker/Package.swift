@@ -19,8 +19,7 @@ let package = Package(
         .target(
             name: "flutter_in_store_app_version_checker",
             dependencies: [],
-            path: "Sources/flutter_in_store_app_version_checker",
-            publicHeadersPath: "include"
+            path: "Sources/flutter_in_store_app_version_checker"
         )
     ]
 )
