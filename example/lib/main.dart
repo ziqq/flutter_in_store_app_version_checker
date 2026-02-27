@@ -97,8 +97,8 @@ class _ExampleState extends State<Example> {
   InStoreAppVersionCheckerResult? _roblox;
   InStoreAppVersionCheckerResult? _tiktok;
 
-  InStoreAppVersionChecker$Response? _wildberries;
-  InStoreAppVersionChecker$Response? _ozon;
+  InStoreAppVersionCheckerResponse? _wildberries;
+  InStoreAppVersionCheckerResponse? _ozon;
 
   /// Whether the app is running on Android.
   bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
@@ -140,14 +140,14 @@ class _ExampleState extends State<Example> {
     final stopwatch = Stopwatch()..start();
     try {
       if (refresh != null) _updating.value = true;
-      final ozonParams = InStoreAppVersionChecker$Params(
+      final ozonParams = InStoreAppVersionCheckerParams(
         currentVersion: kOzonStoreIDPair.currentVersion,
         packageName: _isAndroid
             ? kOzonStoreIDPair.googlePlayID
             : kOzonStoreIDPair.appleStoreID,
         locale: 'ru',
       );
-      final wildberisParams = InStoreAppVersionChecker$Params(
+      final wildberisParams = InStoreAppVersionCheckerParams(
         currentVersion: kWildberriesStoreIDPair.currentVersion,
         packageName: _isAndroid
             ? kWildberriesStoreIDPair.googlePlayID
@@ -279,8 +279,8 @@ class _Section extends StatelessWidget {
     super.key, // ignore: unused_element_parameter
   }) : assert(
          item is InStoreAppVersionCheckerResult ||
-             item is InStoreAppVersionChecker$Response,
-         r'item must be of type InStoreAppVersionCheckerResult or InStoreAppVersionChecker$Response',
+             item is InStoreAppVersionCheckerResponse,
+         r'item must be of type InStoreAppVersionCheckerResult or InStoreAppVersionCheckerResponse',
        );
 
   final String title;
@@ -290,7 +290,7 @@ class _Section extends StatelessWidget {
   Widget build(BuildContext context) {
     if (item == null) return const SizedBox.shrink();
     final canUpdate = switch (item) {
-      InStoreAppVersionChecker$Response i => i.canUpdate,
+      InStoreAppVersionCheckerResponse i => i.canUpdate,
       InStoreAppVersionCheckerResult i => i.canUpdate,
       _ => false,
     };

@@ -20,7 +20,7 @@ import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_ch
 /// {@endtemplate}
 abstract interface class IInStoreAppVersionChecker {
   /// Check on update app in store with given [params].
-  Future<InStoreAppVersionChecker$Response> checkUpdate(
-    InStoreAppVersionChecker$Params params,
+  Future<InStoreAppVersionCheckerResponse> checkUpdate(
+    InStoreAppVersionCheckerParams params,
   );
 }

@@ -10,7 +10,7 @@ import 'package:meta/meta.dart';
 /// {@template in_store_app_version_checker_response_type}
 /// Type of response enumeration
 /// {@endtemplate}
-enum InStoreAppVersionChecker$Response$Type {
+enum InStoreAppVersionCheckerResponseType {
   /// Error response
   error,
 
@@ -22,9 +22,9 @@ enum InStoreAppVersionChecker$Response$Type {
 /// The response of check app version in [AppStore] or [GooglePlay].
 /// {@endtemplate}
 @immutable
-class InStoreAppVersionChecker$Response {
+class InStoreAppVersionCheckerResponse {
   /// {@macro in_store_app_version_checker_response}
-  const InStoreAppVersionChecker$Response({
+  const InStoreAppVersionCheckerResponse({
     required this.currentVersion,
     required this.type,
     this.newVersion,
@@ -36,7 +36,7 @@ class InStoreAppVersionChecker$Response {
 
   /// Create success response
   @literal
-  const factory InStoreAppVersionChecker$Response.success({
+  const factory InStoreAppVersionCheckerResponse.success({
     required String currentVersion,
     String? newVersion,
     String? appURL,
@@ -44,7 +44,7 @@ class InStoreAppVersionChecker$Response {
 
   /// Create error response
   @literal
-  const factory InStoreAppVersionChecker$Response.error({
+  const factory InStoreAppVersionCheckerResponse.error({
     required String currentVersion,
     required String errorMessage,
     String? newVersion,
@@ -72,17 +72,17 @@ class InStoreAppVersionChecker$Response {
   final StackTrace? stackTrace;
 
   /// Return response type
-  final InStoreAppVersionChecker$Response$Type type;
+  final InStoreAppVersionCheckerResponseType type;
 
   /// Whether the response is a success.
   /// Return `true` if the response type
-  /// is [InStoreAppVersionChecker$Response$Type.success] else `false`
-  bool get isSuccess => type == InStoreAppVersionChecker$Response$Type.success;
+  /// is [InStoreAppVersionCheckerResponseType.success] else `false`
+  bool get isSuccess => type == InStoreAppVersionCheckerResponseType.success;
 
   /// Whether the response is an error.
   /// Return `true` if the response type
-  /// is [InStoreAppVersionChecker$Response$Type.error] else `false`
-  bool get isError => type == InStoreAppVersionChecker$Response$Type.error;
+  /// is [InStoreAppVersionCheckerResponseType.error] else `false`
+  bool get isError => type == InStoreAppVersionCheckerResponseType.error;
 
   /// Check can update app.
   /// Return `true` if update is available else `false`
@@ -196,7 +196,7 @@ class InStoreAppVersionChecker$Response {
       appURL.hashCode;
 
   @override
-  bool operator ==(covariant InStoreAppVersionChecker$Response other) {
+  bool operator ==(covariant InStoreAppVersionCheckerResponse other) {
     if (identical(this, other)) return true;
     return other.currentVersion == currentVersion &&
         other.newVersion == newVersion &&
@@ -222,20 +222,20 @@ class InStoreAppVersionChecker$Response {
 /// {@macro in_store_app_version_checker_response}
 @immutable
 final class _InStoreAppVersionChecker$Response$Success
-    extends InStoreAppVersionChecker$Response {
+    extends InStoreAppVersionCheckerResponse {
   /// {@macro in_store_app_version_checker_response}
   const _InStoreAppVersionChecker$Response$Success({
     required super.currentVersion,
     super.newVersion,
     super.appURL,
-  }) : super(type: InStoreAppVersionChecker$Response$Type.success);
+  }) : super(type: InStoreAppVersionCheckerResponseType.success);
 }
 
 /// Error response
 /// {@macro in_store_app_version_checker_response}
 @immutable
 final class _InStoreAppVersionChecker$Response$Error
-    extends InStoreAppVersionChecker$Response {
+    extends InStoreAppVersionCheckerResponse {
   /// {@macro in_store_app_version_checker_response}
   const _InStoreAppVersionChecker$Response$Error({
     required super.currentVersion,
@@ -244,5 +244,5 @@ final class _InStoreAppVersionChecker$Response$Error
     super.error,
     super.stackTrace,
     super.errorMessage,
-  }) : super(type: InStoreAppVersionChecker$Response$Type.error);
+  }) : super(type: InStoreAppVersionCheckerResponseType.error);
 }

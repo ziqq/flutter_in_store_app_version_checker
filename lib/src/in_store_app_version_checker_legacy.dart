@@ -202,7 +202,7 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
   }) : _httpClient = httpClient ?? http.Client();
 
   /// The android store type of the app to check.
-  /// Default `InStoreAppVersionChecker$AndroidStore.GooglePlayStore`.
+  /// Default `InStoreAppVersionCheckerAndroidStoreType.GooglePlayStore`.
   @override
   final AndroidStore? androidStore;
 

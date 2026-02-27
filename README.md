@@ -29,15 +29,15 @@ Other platforms (`Web`, `Windows`, `Linux`, `macOS`, etc.) are not supported.
 
 | Android enum value                                 | Description                    |
 |----------------------------------------------------|--------------------------------|
-| `InStoreAppVersionChecker$AndroidStore.googlePlayStore` | Default Google Play flow       |
-| `InStoreAppVersionChecker$AndroidStore.apkPure`          | Alternative ApkPure scrape     |
+| `InStoreAppVersionCheckerAndroidStoreType.googlePlayStore` | Default Google Play flow       |
+| `InStoreAppVersionCheckerAndroidStoreType.apkPure`          | Alternative ApkPure scrape     |
 
 ## API Overview
 Main access point: [`InStoreAppVersionChecker`](lib/src/in_store_app_version_checker.dart) (singleton: [`InStoreAppVersionChecker.instance`](lib/src/in_store_app_version_checker.dart)) returning [`IInStoreAppVersionChecker`](lib/src/in_store_app_version_checker_interface.dart) implemented by [`InStoreAppVersionChecker`](lib/src/in_store_app_version_checker.dart).
 
-Request parameters: [`InStoreAppVersionChecker$Params`](lib/src/in_store_app_version_checker_params.dart)
+Request parameters: [`InStoreAppVersionCheckerParams`](lib/src/in_store_app_version_checker_params.dart)
 
-Response object: [`InStoreAppVersionChecker$Response`](lib/src/in_store_app_version_checker_response.dart)
+Response object: [`InStoreAppVersionCheckerResponse`](lib/src/in_store_app_version_checker_response.dart)
 
 Key response fields:
 - `isSuccess` / `isError`
@@ -61,11 +61,11 @@ Version comparison logic considers:
 import 'package:flutter_in_store_app_version_checker/flutter_in_store_app_version_checker.dart';
 
 Future<void> check() async {
-  const params = InStoreAppVersionChecker$Params(
+  const params = InStoreAppVersionCheckerParams(
     locale: 'en',
     // packageName:    'com.example.app', // optional override
     // currentVersion: '1.2.3',           // optional override
-    // androidStore:   InStoreAppVersionChecker$AndroidStore.apkPure,
+    // androidStore:   InStoreAppVersionCheckerAndroidStoreType.apkPure,
   );
   final res = await InStoreAppVersionChecker.instance.checkUpdate(params);
   if (res.isSuccess) {
@@ -81,23 +81,23 @@ Future<void> check() async {
 
 ### ApkPure
 ```dart
-const params = InStoreAppVersionChecker$Params(
+const params = InStoreAppVersionCheckerParams(
   locale: 'en',
-  androidStore: InStoreAppVersionChecker$AndroidStore.apkPure,
+  androidStore: InStoreAppVersionCheckerAndroidStoreType.apkPure,
 );
 final res = await InStoreAppVersionChecker.instance.checkUpdate(params);
 ```
 
 ### iOS
 ```dart
-const params = InStoreAppVersionChecker$Params(locale: 'en');
+const params = InStoreAppVersionCheckerParams(locale: 'en');
 final res = await InStoreAppVersionChecker.instance.checkUpdate(params);
 ```
 
 ### Custom HTTP client
 ```dart
 final custom = InStoreAppVersionChecker.custom(httpClient: customHTTPClient);
-const params = InStoreAppVersionChecker$Params(locale: 'en');
+const params = InStoreAppVersionCheckerParams(locale: 'en');
 final res = await custom.checkUpdate(params);
 ```
 

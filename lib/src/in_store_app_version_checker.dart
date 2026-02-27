@@ -54,8 +54,8 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
   /// such as `AppStore`, `Google Play` and `ApkPure`,
   /// comparing it with the installed version on the device.
   @override
-  Future<InStoreAppVersionChecker$Response> checkUpdate(
-    InStoreAppVersionChecker$Params params,
+  Future<InStoreAppVersionCheckerResponse> checkUpdate(
+    InStoreAppVersionCheckerParams params,
   ) async {
     try {
       final packageInfo = await PackageInfo.fromPlatform();
@@ -63,7 +63,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
       final currentVersion = params.currentVersion ?? packageInfo.version;
       if (_isAndroid) {
         return await switch (params.androidStore) {
-          InStoreAppVersionChecker$AndroidStore.apkPure =>
+          InStoreAppVersionCheckerAndroidStoreType.apkPure =>
             _checkPlayStore$ApkPure(currentVersion, packageName),
           _ => _checkPlayStore(currentVersion, packageName, params.locale),
         };
@@ -74,7 +74,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
           params.locale,
         );
       } else {
-        return InStoreAppVersionChecker$Response.error(
+        return InStoreAppVersionCheckerResponse.error(
           currentVersion: currentVersion,
           newVersion: null,
           appURL: null,
@@ -85,7 +85,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
         );
       }
     } on Object catch (e, s) {
-      return InStoreAppVersionChecker$Response.error(
+      return InStoreAppVersionCheckerResponse.error(
         currentVersion: params.currentVersion ?? 'undefined',
         newVersion: null,
         appURL: null,
@@ -97,7 +97,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
   }
 
   /// Check update in [Apple Store].
-  Future<InStoreAppVersionChecker$Response> _checkAppleStore(
+  Future<InStoreAppVersionCheckerResponse> _checkAppleStore(
     String currentVersion,
     String packageName,
     String locale,
@@ -114,7 +114,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
       );
       final response = await _httpClient.get(uri);
       if (response.statusCode != 200) {
-        return InStoreAppVersionChecker$Response.error(
+        return InStoreAppVersionCheckerResponse.error(
           currentVersion: currentVersion,
           newVersion: newVersion,
           appURL: url,
@@ -128,7 +128,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
             List<Object?>.from(jsonObj['results'] as Iterable<Object?>);
 
         if (results.isEmpty) {
-          return InStoreAppVersionChecker$Response.error(
+          return InStoreAppVersionCheckerResponse.error(
             currentVersion: currentVersion,
             newVersion: newVersion,
             appURL: url,
@@ -139,7 +139,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
         } else {
           newVersion = jsonObj['results'][0]['version'].toString();
           url = jsonObj['results'][0]['trackViewUrl'].toString();
-          return InStoreAppVersionChecker$Response.success(
+          return InStoreAppVersionCheckerResponse.success(
             currentVersion: currentVersion,
             newVersion: newVersion,
             appURL: url,
@@ -147,7 +147,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
         }
       }
     } on Object catch (e, st) {
-      return InStoreAppVersionChecker$Response.error(
+      return InStoreAppVersionCheckerResponse.error(
         currentVersion: currentVersion,
         newVersion: newVersion,
         appURL: url,
@@ -159,7 +159,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
   }
 
   /// Check update in [Play Store].
-  Future<InStoreAppVersionChecker$Response> _checkPlayStore(
+  Future<InStoreAppVersionCheckerResponse> _checkPlayStore(
     String currentVersion,
     String packageName,
     String locale,
@@ -189,7 +189,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
             RegExp(r'\"([0-9]+\.[0-9]+\.[0-9]+)\"').firstMatch(body)?.group(1);
 
         if (newVersion != null) {
-          return InStoreAppVersionChecker$Response.success(
+          return InStoreAppVersionCheckerResponse.success(
             currentVersion: currentVersion,
             newVersion: newVersion,
             appURL: uri.toString(),
@@ -210,13 +210,13 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
           final data = jsonDecode(apiResponse.body);
           newVersion = data['version']?.toString();
           url = 'https://play.google.com/store/apps/details?id=$packageName';
-          return InStoreAppVersionChecker$Response.success(
+          return InStoreAppVersionCheckerResponse.success(
             currentVersion: currentVersion,
             newVersion: newVersion,
             appURL: url,
           );
         } else {
-          return InStoreAppVersionChecker$Response.error(
+          return InStoreAppVersionCheckerResponse.error(
             currentVersion: currentVersion,
             newVersion: newVersion,
             appURL: url,
@@ -227,7 +227,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
         }
       }
 
-      return InStoreAppVersionChecker$Response.error(
+      return InStoreAppVersionCheckerResponse.error(
         currentVersion: currentVersion,
         newVersion: newVersion,
         appURL: url,
@@ -236,7 +236,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
             'Can not find an app in the Play Store with the id: $packageName',
       );
     } on Object catch (e, st) {
-      return InStoreAppVersionChecker$Response.error(
+      return InStoreAppVersionCheckerResponse.error(
         currentVersion: currentVersion,
         newVersion: newVersion,
         appURL: url,
@@ -248,7 +248,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
   }
 
   /// Check update in [ApkPure Store].
-  Future<InStoreAppVersionChecker$Response> _checkPlayStore$ApkPure(
+  Future<InStoreAppVersionCheckerResponse> _checkPlayStore$ApkPure(
     String currentVersion,
     String packageName,
   ) async {
@@ -257,7 +257,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
       final uri = Uri.https('apkpure.com', '$packageName/$packageName');
       final response = await _httpClient.get(uri);
       if (response.statusCode != 200) {
-        return InStoreAppVersionChecker$Response.error(
+        return InStoreAppVersionCheckerResponse.error(
           currentVersion: currentVersion,
           newVersion: newVersion,
           appURL: url,
@@ -269,14 +269,14 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
         newVersion = RegExp(
           r'<div class="details-sdk"><span itemprop="version">(.*?)<\/span>for Android<\/div>',
         ).firstMatch(response.body)?.group(1)?.trim();
-        return InStoreAppVersionChecker$Response.success(
+        return InStoreAppVersionCheckerResponse.success(
           currentVersion: currentVersion,
           newVersion: newVersion,
           appURL: uri.toString(),
         );
       }
     } on Object catch (e, st) {
-      return InStoreAppVersionChecker$Response.error(
+      return InStoreAppVersionCheckerResponse.error(
         currentVersion: currentVersion,
         newVersion: newVersion,
         appURL: url,

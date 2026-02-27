@@ -56,7 +56,7 @@ void main() {
         );
         final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
-            .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'us'));
+            .checkUpdate(const InStoreAppVersionCheckerParams(locale: 'us'));
         expect(r.isSuccess, isTrue);
         expect(r.newVersion, '1.2.3');
         expect(r.appURL, 'https://apps.apple.com/app/id123');
@@ -69,7 +69,7 @@ void main() {
             .thenAnswer((_) async => http.Response('x', 404));
         final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
-            .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'ru'));
+            .checkUpdate(const InStoreAppVersionCheckerParams(locale: 'ru'));
         expect(r.isError, isTrue);
         expect(r.newVersion, isNull);
         expect(r.canUpdate, isFalse);
@@ -82,7 +82,7 @@ void main() {
             .thenAnswer((_) async => http.Response('{"results":[]}', 200));
         final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
-            .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+            .checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
         expect(r.isError, isTrue);
         expect(r.newVersion, isNull);
         expect(r.canUpdate, isFalse);
@@ -98,7 +98,7 @@ void main() {
         );
         final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
-            .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+            .checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
         expect(r.newVersion, '2.0.0');
         expect(r.appURL, 'null');
         expect(r.canUpdate, isTrue);
@@ -114,7 +114,7 @@ void main() {
         );
         final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
-            .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+            .checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
         expect(r.newVersion, '3.0.0');
         expect(r.appURL, 'null');
         expect(r.canUpdate, isTrue);
@@ -127,7 +127,7 @@ void main() {
         );
         final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
-            .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+            .checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
         expect(r.isError, isTrue);
         expect(r.canUpdate, isFalse);
       });
@@ -137,7 +137,7 @@ void main() {
         when(mockHttpClient.get(any)).thenThrow(StateError('boom'));
         final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
-            .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+            .checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
         expect(r.isError, isTrue);
         expect(r.errorMessage, contains('boom'));
         expect(r.canUpdate, isFalse);
@@ -154,7 +154,7 @@ void main() {
         );
         final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
-            .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+            .checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
         expect(r.newVersion, '3.2.1');
         expect(r.canUpdate, isTrue);
       });
@@ -166,7 +166,7 @@ void main() {
         );
         final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
-            .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+            .checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
         expect(r.newVersion, '5.4.3');
         expect(r.canUpdate, isTrue);
       });
@@ -185,7 +185,7 @@ void main() {
         );
         final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
-            .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+            .checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
         expect(r.newVersion, '9.9.9');
         expect(r.canUpdate, isTrue);
       });
@@ -204,7 +204,7 @@ void main() {
         );
         final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
-            .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+            .checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
         expect(r.isSuccess, isTrue);
         expect(r.newVersion, isNull);
         expect(r.canUpdate, isFalse);
@@ -224,7 +224,7 @@ void main() {
         );
         final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
-            .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+            .checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
         expect(r.isError, isTrue);
         expect(r.errorMessage, contains('PlayStoreApi error: 500'));
         expect(r.canUpdate, isFalse);
@@ -244,7 +244,7 @@ void main() {
         );
         final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
-            .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+            .checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
         expect(r.newVersion, '2.0.0');
         expect(r.canUpdate, isTrue);
       });
@@ -261,9 +261,9 @@ void main() {
         );
         final r =
             await InStoreAppVersionChecker.custom(httpClient: mockHttpClient)
-                .checkUpdate(const InStoreAppVersionChecker$Params(
+                .checkUpdate(const InStoreAppVersionCheckerParams(
           locale: 'en',
-          androidStore: InStoreAppVersionChecker$AndroidStore.apkPure,
+          androidStore: InStoreAppVersionCheckerAndroidStoreType.apkPure,
         ));
         expect(r.newVersion, '4.5.6');
         expect(r.canUpdate, isTrue);
@@ -275,9 +275,9 @@ void main() {
             .thenAnswer((_) async => http.Response('x', 404));
         final r =
             await InStoreAppVersionChecker.custom(httpClient: mockHttpClient)
-                .checkUpdate(const InStoreAppVersionChecker$Params(
+                .checkUpdate(const InStoreAppVersionCheckerParams(
           locale: 'en',
-          androidStore: InStoreAppVersionChecker$AndroidStore.apkPure,
+          androidStore: InStoreAppVersionCheckerAndroidStoreType.apkPure,
         ));
         expect(r.isError, isTrue);
         expect(r.newVersion, isNull);
@@ -290,9 +290,9 @@ void main() {
             .thenAnswer((_) async => http.Response('<html></html>', 200));
         final r =
             await InStoreAppVersionChecker.custom(httpClient: mockHttpClient)
-                .checkUpdate(const InStoreAppVersionChecker$Params(
+                .checkUpdate(const InStoreAppVersionCheckerParams(
           locale: 'en',
-          androidStore: InStoreAppVersionChecker$AndroidStore.apkPure,
+          androidStore: InStoreAppVersionCheckerAndroidStoreType.apkPure,
         ));
         expect(r.isSuccess, isTrue);
         expect(r.newVersion, isNull);
@@ -307,7 +307,7 @@ void main() {
             .thenAnswer((_) async => http.Response('n/a', 200));
         final r = await InStoreAppVersionChecker.custom(
                 httpClient: mockHttpClient)
-            .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+            .checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
         expect(r.isError, isTrue);
         expect(r.errorMessage, contains('platform'));
         expect(r.canUpdate, isFalse);
@@ -325,7 +325,7 @@ void main() {
         );
         final r =
             await InStoreAppVersionChecker.custom(httpClient: mockHttpClient)
-                .checkUpdate(const InStoreAppVersionChecker$Params(
+                .checkUpdate(const InStoreAppVersionCheckerParams(
           locale: 'us',
           packageName: 'custom.pkg',
           currentVersion: '1.9.9',
@@ -344,18 +344,18 @@ void main() {
         final checker =
             InStoreAppVersionChecker.custom(httpClient: mockHttpClient);
         final r1 = await checker
-            .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+            .checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
         first = false;
         final r2 = await checker
-            .checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+            .checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
         expect(r1.newVersion, '1.0.1');
         expect(r2.newVersion, '1.0.2');
       });
     });
 
     group('canUpdate logic (success responses)', () {
-      InStoreAppVersionChecker$Response s(String a, String? b) =>
-          InStoreAppVersionChecker$Response.success(
+      InStoreAppVersionCheckerResponse s(String a, String? b) =>
+          InStoreAppVersionCheckerResponse.success(
             currentVersion: a,
             newVersion: b,
           );
@@ -377,8 +377,8 @@ void main() {
     });
 
     group('pre-release ordering', () {
-      InStoreAppVersionChecker$Response s(String a, String b) =>
-          InStoreAppVersionChecker$Response.success(
+      InStoreAppVersionCheckerResponse s(String a, String b) =>
+          InStoreAppVersionCheckerResponse.success(
             currentVersion: a,
             newVersion: b,
           );
@@ -401,8 +401,8 @@ void main() {
     });
 
     group('normalization & stripping', () {
-      InStoreAppVersionChecker$Response s(String a, String b) =>
-          InStoreAppVersionChecker$Response.success(
+      InStoreAppVersionCheckerResponse s(String a, String b) =>
+          InStoreAppVersionCheckerResponse.success(
             currentVersion: a,
             newVersion: b,
           );
@@ -420,21 +420,21 @@ void main() {
 
     group('literal "null"', () {
       test('"null" same core', () {
-        const r = InStoreAppVersionChecker$Response.success(
+        const r = InStoreAppVersionCheckerResponse.success(
           currentVersion: '1.0.0',
           newVersion: 'null',
         );
         expect(r.canUpdate, isFalse);
       });
       test('"null" vs higher numeric', () {
-        const r = InStoreAppVersionChecker$Response.success(
+        const r = InStoreAppVersionCheckerResponse.success(
           currentVersion: '1.0.0',
           newVersion: '1.0.1',
         );
         expect(r.canUpdate, isTrue);
       });
       test('"null" vs lower numeric', () {
-        const r = InStoreAppVersionChecker$Response.success(
+        const r = InStoreAppVersionCheckerResponse.success(
           currentVersion: '2.0.0',
           newVersion: 'null',
         );
@@ -444,7 +444,7 @@ void main() {
 
     group('error response passthrough', () {
       test('higher newVersion -> true', () {
-        const r = InStoreAppVersionChecker$Response.error(
+        const r = InStoreAppVersionCheckerResponse.error(
           currentVersion: '1.0.0',
           newVersion: '1.0.1',
           errorMessage: 'fail',
@@ -452,7 +452,7 @@ void main() {
         expect(r.canUpdate, isTrue);
       });
       test('same version -> false', () {
-        const r = InStoreAppVersionChecker$Response.error(
+        const r = InStoreAppVersionCheckerResponse.error(
           currentVersion: '1.0.0',
           newVersion: '1.0.0',
           errorMessage: 'fail',
@@ -460,7 +460,7 @@ void main() {
         expect(r.canUpdate, isFalse);
       });
       test('lower newVersion -> false', () {
-        const r = InStoreAppVersionChecker$Response.error(
+        const r = InStoreAppVersionCheckerResponse.error(
           currentVersion: '1.0.1',
           newVersion: '1.0.0',
           errorMessage: 'fail',
@@ -471,12 +471,12 @@ void main() {
 
     group('equality & hashCode', () {
       test('success equality', () {
-        const a = InStoreAppVersionChecker$Response.success(
+        const a = InStoreAppVersionCheckerResponse.success(
           currentVersion: '1.0.0',
           newVersion: '1.1.0',
           appURL: 'url',
         );
-        const b = InStoreAppVersionChecker$Response.success(
+        const b = InStoreAppVersionCheckerResponse.success(
           currentVersion: '1.0.0',
           newVersion: '1.1.0',
           appURL: 'url',
@@ -486,11 +486,11 @@ void main() {
       });
 
       test('different newVersion not equal', () {
-        const a = InStoreAppVersionChecker$Response.success(
+        const a = InStoreAppVersionCheckerResponse.success(
           currentVersion: '1.0.0',
           newVersion: '1.1.0',
         );
-        const b = InStoreAppVersionChecker$Response.success(
+        const b = InStoreAppVersionCheckerResponse.success(
           currentVersion: '1.0.0',
           newVersion: '1.2.0',
         );
@@ -498,12 +498,12 @@ void main() {
       });
 
       test('error responses only message differs -> equal', () {
-        const a = InStoreAppVersionChecker$Response.error(
+        const a = InStoreAppVersionCheckerResponse.error(
           currentVersion: '1.0.0',
           newVersion: '1.1.0',
           errorMessage: 'A',
         );
-        const b = InStoreAppVersionChecker$Response.error(
+        const b = InStoreAppVersionCheckerResponse.error(
           currentVersion: '1.0.0',
           newVersion: '1.1.0',
           errorMessage: 'B',
@@ -515,7 +515,7 @@ void main() {
 
     group('toString', () {
       test('success formatting', () {
-        const r = InStoreAppVersionChecker$Response.success(
+        const r = InStoreAppVersionCheckerResponse.success(
           currentVersion: '3.4.5',
           newVersion: '3.5.0',
           appURL: 'https://example.com',
@@ -528,7 +528,7 @@ void main() {
       });
 
       test('error shows message & stackTrace label', () {
-        final r = InStoreAppVersionChecker$Response.error(
+        final r = InStoreAppVersionCheckerResponse.error(
           currentVersion: '3.4.5',
           newVersion: '3.5.0',
           appURL: 'https://example.com',
@@ -544,7 +544,7 @@ void main() {
 
       test('missing newVersion prints null', () {
         const r =
-            InStoreAppVersionChecker$Response.success(currentVersion: '1.0.0');
+            InStoreAppVersionCheckerResponse.success(currentVersion: '1.0.0');
         expect(r.toString(), contains('New version: null'));
         expect(r.canUpdate, isFalse);
       });
@@ -581,8 +581,8 @@ void main() {
       });
 
       group('Regression adjustments (reflect current behavior)', () {
-        InStoreAppVersionChecker$Response r(String a, String b) =>
-            InStoreAppVersionChecker$Response.success(
+        InStoreAppVersionCheckerResponse r(String a, String b) =>
+            InStoreAppVersionCheckerResponse.success(
               currentVersion: a,
               newVersion: b,
             );
@@ -609,7 +609,7 @@ void main() {
           );
           final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
-          ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'us'));
+          ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'us'));
           expect(res.newVersion, '1.0.1');
           expect(res.appURL, '');
           expect(res.canUpdate, isTrue);
@@ -625,7 +625,7 @@ void main() {
           );
           final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
-          ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'us'));
+          ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'us'));
           expect(res.appURL, '   ');
           expect(res.canUpdate, isTrue);
         });
@@ -641,7 +641,7 @@ void main() {
           );
           final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
-          ).checkUpdate(const InStoreAppVersionChecker$Params(
+          ).checkUpdate(const InStoreAppVersionCheckerParams(
             locale: 'us',
             currentVersion: '1.0.0+10',
           ));
@@ -660,7 +660,7 @@ void main() {
           );
           final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
-          ).checkUpdate(const InStoreAppVersionChecker$Params(
+          ).checkUpdate(const InStoreAppVersionCheckerParams(
             locale: 'us',
             currentVersion: '2025.10',
           ));
@@ -677,7 +677,7 @@ void main() {
           );
           final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
-          ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+          ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
           expect(res.newVersion, '2.3.4');
           expect(res.canUpdate, isTrue);
         });
@@ -689,7 +689,7 @@ void main() {
           );
           final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
-          ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+          ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
           expect(res.newVersion, '3,2,1');
         });
 
@@ -707,7 +707,7 @@ void main() {
           );
           final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
-          ).checkUpdate(const InStoreAppVersionChecker$Params(
+          ).checkUpdate(const InStoreAppVersionCheckerParams(
             locale: 'en',
             currentVersion: '6.9.9',
           ));
@@ -730,7 +730,7 @@ void main() {
           );
           final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
-          ).checkUpdate(const InStoreAppVersionChecker$Params(
+          ).checkUpdate(const InStoreAppVersionCheckerParams(
             locale: 'en',
             currentVersion: '1.0.0',
           ));
@@ -757,7 +757,7 @@ void main() {
           );
           final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
-          ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+          ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
           expect(res.isError, isTrue);
           expect(res.errorMessage, contains('503'));
           expect(res.canUpdate, isFalse);
@@ -773,9 +773,9 @@ void main() {
           );
           final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
-          ).checkUpdate(const InStoreAppVersionChecker$Params(
+          ).checkUpdate(const InStoreAppVersionCheckerParams(
             locale: 'en',
-            androidStore: InStoreAppVersionChecker$AndroidStore.apkPure,
+            androidStore: InStoreAppVersionCheckerAndroidStoreType.apkPure,
           ));
           expect(res.newVersion, isNull);
           expect(res.canUpdate, isFalse);
@@ -791,9 +791,9 @@ void main() {
           );
           final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
-          ).checkUpdate(const InStoreAppVersionChecker$Params(
+          ).checkUpdate(const InStoreAppVersionCheckerParams(
             locale: 'en',
-            androidStore: InStoreAppVersionChecker$AndroidStore.apkPure,
+            androidStore: InStoreAppVersionCheckerAndroidStoreType.apkPure,
             currentVersion: '2.0.0',
           ));
           expect(res.newVersion, '2.0.1');
@@ -809,7 +809,7 @@ void main() {
           );
           final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
-          ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+          ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
           expect(res.isError, isTrue);
           expect(res.errorMessage, contains('iOS or Android'));
           expect(res.canUpdate, isFalse);
@@ -831,7 +831,7 @@ void main() {
           final futures = List.generate(
             5,
             (_) => checker.checkUpdate(
-                const InStoreAppVersionChecker$Params(locale: 'en')),
+                const InStoreAppVersionCheckerParams(locale: 'en')),
           );
           final results = await Future.wait(futures);
           expect(results.length, 5);
@@ -845,7 +845,7 @@ void main() {
           debugDefaultTargetPlatformOverride = TargetPlatform.android;
           final androidRes = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
-          ).checkUpdate(const InStoreAppVersionChecker$Params(
+          ).checkUpdate(const InStoreAppVersionCheckerParams(
             locale: 'en',
             currentVersion: '1.0.0',
           ));
@@ -860,7 +860,7 @@ void main() {
           );
           final iosRes = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
-          ).checkUpdate(const InStoreAppVersionChecker$Params(
+          ).checkUpdate(const InStoreAppVersionCheckerParams(
             locale: 'us',
             currentVersion: '2.9.9',
           ));
@@ -870,7 +870,7 @@ void main() {
 
       group('Response object invariants', () {
         test('error newVersion null -> canUpdate false', () {
-          const res = InStoreAppVersionChecker$Response.error(
+          const res = InStoreAppVersionCheckerResponse.error(
             currentVersion: '1.2.3',
             newVersion: null,
             errorMessage: 'x',
@@ -879,7 +879,7 @@ void main() {
         });
 
         test('success with identical versions & metadata -> no update', () {
-          const res = InStoreAppVersionChecker$Response.success(
+          const res = InStoreAppVersionCheckerResponse.success(
             currentVersion: '1.0.0+5',
             newVersion: '1.0.0+10',
           );
@@ -887,7 +887,7 @@ void main() {
         });
 
         test('success higher core ignoring metadata -> update true', () {
-          const res = InStoreAppVersionChecker$Response.success(
+          const res = InStoreAppVersionCheckerResponse.success(
             currentVersion: '1.0.0+99',
             newVersion: '1.0.1+1',
           );
@@ -908,7 +908,7 @@ void main() {
           });
           await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
-          ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'fr'));
+          ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'fr'));
           expect(captured.path, contains('/fr/lookup'));
         });
 
@@ -921,7 +921,7 @@ void main() {
           });
           await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
-          ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'de'));
+          ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'de'));
           expect(captured.queryParameters['hl'], 'de');
         });
       });
@@ -932,7 +932,7 @@ void main() {
           when(mockHttpClient.get(any)).thenThrow(Exception('network down'));
           final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
-          ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'en'));
+          ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
           expect(res.isError, isTrue);
           expect(res.errorMessage, contains('network down'));
           expect(res.canUpdate, isFalse);
@@ -945,15 +945,15 @@ void main() {
           );
           final res = await InStoreAppVersionChecker.custom(
             httpClient: mockHttpClient,
-          ).checkUpdate(const InStoreAppVersionChecker$Params(locale: 'us'));
+          ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'us'));
           expect(res.isError, isTrue);
           expect(res.stackTrace, isNotNull);
         });
       });
 
       group('Pre-release mixed alphanumeric segments', () {
-        InStoreAppVersionChecker$Response r(String a, String b) =>
-            InStoreAppVersionChecker$Response.success(
+        InStoreAppVersionCheckerResponse r(String a, String b) =>
+            InStoreAppVersionCheckerResponse.success(
               currentVersion: a,
               newVersion: b,
             );
@@ -975,7 +975,7 @@ void main() {
 
       group('Literal "null" newVersion interactions', () {
         test('"null" literal never triggers update if current higher', () {
-          const res = InStoreAppVersionChecker$Response.success(
+          const res = InStoreAppVersionCheckerResponse.success(
             currentVersion: '2.0.0',
             newVersion: 'null',
           );
@@ -985,7 +985,7 @@ void main() {
         test(
             '"null" literal vs lower currentVersion (1.0.0) no downgrade update',
             () {
-          const res = InStoreAppVersionChecker$Response.success(
+          const res = InStoreAppVersionCheckerResponse.success(
             currentVersion: '1.0.0',
             newVersion: 'null',
           );

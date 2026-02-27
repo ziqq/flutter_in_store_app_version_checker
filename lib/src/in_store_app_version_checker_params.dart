@@ -5,10 +5,10 @@
 
 import 'package:meta/meta.dart';
 
-/// {@template android_store}
+/// {@template in_store_app_version_checker_android_store_type}
 /// Possible types of android store
 /// {@endtemplate}
-enum InStoreAppVersionChecker$AndroidStore {
+enum InStoreAppVersionCheckerAndroidStoreType {
   /// The default AAB
   googlePlayStore,
 
@@ -20,13 +20,14 @@ enum InStoreAppVersionChecker$AndroidStore {
 /// Params for [InStoreAppVersionChecker].
 /// {@endtemplate}
 @immutable
-class InStoreAppVersionChecker$Params {
+class InStoreAppVersionCheckerParams {
   /// {@macro in_store_app_version_checker_params}
-  const InStoreAppVersionChecker$Params({
+  const InStoreAppVersionCheckerParams({
     required this.locale,
     this.packageName,
     this.currentVersion,
-    this.androidStore = InStoreAppVersionChecker$AndroidStore.googlePlayStore,
+    this.androidStore =
+        InStoreAppVersionCheckerAndroidStoreType.googlePlayStore,
   });
 
   /// The locale your app store.
@@ -49,6 +50,6 @@ class InStoreAppVersionChecker$Params {
   final String? currentVersion;
 
   /// The android store type of the app to check.
-  /// Default `InStoreAppVersionChecker$AndroidStore.GooglePlayStore`.
-  final InStoreAppVersionChecker$AndroidStore androidStore;
+  /// Default `InStoreAppVersionCheckerAndroidStoreType.googlePlayStore`.
+  final InStoreAppVersionCheckerAndroidStoreType androidStore;
 }
