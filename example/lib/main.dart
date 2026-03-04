@@ -1,54 +1,63 @@
 import 'dart:async';
-import 'dart:developer' as d;
+import 'dart:developer' as dev show log;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_in_store_app_version_checker/flutter_in_store_app_version_checker.dart';
 
-/// A pair of store IDs for Google Play Store and Apple App Store.
-typedef StoreIDPair = ({String googlePlayID, String appleStoreID});
+/// A pair of store IDs for `Google Play` and `App Store`,
+/// containing a current version of the app.
+typedef StoreIDPair = ({
+  String googlePlayID,
+  String appleStoreID,
+  String currentVersion,
+});
 
-//? Has in Pure Store and Google Play Store
+// TikTok
+// bundle id: com.zhiliaoapp.musically, https://www.ntc.swiss/hubfs/NTC-security-analysis-tiktok-v1.0-en.pdf?utm_source=chatgpt.com
 const StoreIDPair kTikTokStoreIDPair = (
   googlePlayID: 'com.zhiliaoapp.musically',
   appleStoreID: 'com.zhiliaoapp.musically',
+  currentVersion: '43.7.0',
 );
 
-//? Has in Pure Store and Google Play Store
+// Roblox
+// bundle id: com.roblox.robloxmobile, https://apptopia.com/ios/app/431946152/about?utm_source=chatgpt.com
 const StoreIDPair kRobloxStoreIDPair = (
   googlePlayID: 'com.roblox.client',
-  appleStoreID: 'com.roblox.client',
+  appleStoreID: 'com.roblox.robloxmobile',
+  currentVersion: '2.706.752',
 );
 
-//? Has in Pure Store and Google Play Store
+// Free Fire (TH)
+// bundle id: com.dts.freefireth, https://apptopia.com/ios/app/1300146617/about?utm_source=chatgpt.com
 const StoreIDPair kFreefirethStoreIDPair = (
   googlePlayID: 'com.dts.freefireth',
   appleStoreID: 'com.dts.freefireth',
+  currentVersion: '1.120.1',
 );
 
-//? Has in Pure Store and Google Play Store
+// Wildberries
+// bundle id из AASA wildberries.ru, https://well-known.dev/resources/apple_app_site_association/sites/wildberries.ru?utm_source=chatgpt.com
 const StoreIDPair kWildberriesStoreIDPair = (
   googlePlayID: 'com.wildberries.ru',
-  appleStoreID: 'com.wildberries.ru',
+  appleStoreID: 'RU.WILDBERRIES.MOBILEAPP',
+  currentVersion: '',
 );
 
-//? Has in Pure Store and Google Play Store
+// OZON
+// bundle id (аналитика/ASO источники): ru.ozon.OzonStore, https://platform.foxdata.com/en/app-profile/407804998/BY/as?utm_source=chatgpt.com
 const StoreIDPair kOzonStoreIDPair = (
   googlePlayID: 'ru.ozon.app.android',
-  appleStoreID: 'ru.ozon.app',
-);
-
-//? Has in Pure Store and Google Play Store
-const StoreIDPair test = (
-  googlePlayID: 'de.conio.amoMoto',
-  appleStoreID: 'de.conio.amoMoto',
+  appleStoreID: 'ru.ozon.OzonStore',
+  currentVersion: '',
 );
 
 void main() => runZonedGuarded<void>(
-      () => runApp(const App()),
-      (error, stackTrace) => d.log('Top level exception: $error\n$stackTrace'),
-    );
+  () => runApp(const App()),
+  (e, s) => dev.log('Top level exception: $e\n$s'),
+);
 
 /// {@template app}
 /// App widget.
@@ -59,10 +68,10 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-        title: 'In Store App Version Checker Example',
-        theme: ThemeData.dark(),
-        home: const Example(),
-      );
+    title: 'In Store App Version Checker Example',
+    theme: ThemeData.dark(),
+    home: const Example(),
+  );
 }
 
 /// {@template example}
@@ -78,179 +87,250 @@ class Example extends StatefulWidget {
 
 /// State of the [Example] widget.
 class _ExampleState extends State<Example> {
-  late final InStoreAppVersionChecker _tiktokChecker;
-  late final InStoreAppVersionChecker _robloxChecker;
+  final ValueNotifier<bool> _updating = ValueNotifier<bool>(false);
   late final InStoreAppVersionChecker _freefirethChecker;
-  late final InStoreAppVersionChecker _wildberriesChecker;
-  late final InStoreAppVersionChecker _ozonChecker;
-  late final InStoreAppVersionChecker _testChecker;
+  late final InStoreAppVersionChecker _robloxChecker;
+  late final InStoreAppVersionChecker _tiktokChecker;
+  final _checker = InStoreAppVersionChecker.instance;
 
-  InStoreAppVersionCheckerResult? _tiktok;
-  InStoreAppVersionCheckerResult? _roblox;
   InStoreAppVersionCheckerResult? _freefireth;
-  InStoreAppVersionCheckerResult? _wildberries;
-  InStoreAppVersionCheckerResult? _ozon;
-  InStoreAppVersionCheckerResult? _testResult;
+  InStoreAppVersionCheckerResult? _roblox;
+  InStoreAppVersionCheckerResult? _tiktok;
+
+  InStoreAppVersionCheckerResponse? _wildberries;
+  InStoreAppVersionCheckerResponse? _ozon;
 
   /// Whether the app is running on Android.
-  bool get _asAndroid => defaultTargetPlatform == TargetPlatform.android;
+  bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
 
   /// Whether the app is running on iOS.
   // ignore: unused_element
-  bool get _asIOS => defaultTargetPlatform == TargetPlatform.iOS;
+  bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
 
   @override
   void initState() {
     super.initState();
-    _tiktokChecker = InStoreAppVersionChecker(
-      appId: _asAndroid
-          ? kTikTokStoreIDPair.googlePlayID
-          : kTikTokStoreIDPair.appleStoreID,
-    );
-    _robloxChecker = InStoreAppVersionChecker(
-      appId: _asAndroid
-          ? kRobloxStoreIDPair.googlePlayID
-          : kRobloxStoreIDPair.appleStoreID,
-    );
     _freefirethChecker = InStoreAppVersionChecker(
-      appId: _asAndroid
+      appId: _isAndroid
           ? kFreefirethStoreIDPair.googlePlayID
           : kFreefirethStoreIDPair.appleStoreID,
+      currentVersion: kFreefirethStoreIDPair.currentVersion,
     );
-    _wildberriesChecker = InStoreAppVersionChecker(
-      appId: _asAndroid
-          ? kWildberriesStoreIDPair.googlePlayID
-          : kWildberriesStoreIDPair.appleStoreID,
-      locale: 'ru',
+    _robloxChecker = InStoreAppVersionChecker(
+      appId: _isAndroid
+          ? kRobloxStoreIDPair.googlePlayID
+          : kRobloxStoreIDPair.appleStoreID,
+      currentVersion: kRobloxStoreIDPair.currentVersion,
     );
-    _ozonChecker = InStoreAppVersionChecker(
-      appId: _asAndroid
-          ? kOzonStoreIDPair.googlePlayID
-          : kOzonStoreIDPair.appleStoreID,
-      locale: 'ru',
-    );
-    _testChecker = InStoreAppVersionChecker(
-      appId: _asAndroid ? test.googlePlayID : test.appleStoreID,
-      locale: 'en',
+    _tiktokChecker = InStoreAppVersionChecker(
+      appId: _isAndroid
+          ? kTikTokStoreIDPair.googlePlayID
+          : kTikTokStoreIDPair.appleStoreID,
+      currentVersion: kTikTokStoreIDPair.currentVersion,
     );
   }
 
-  Future<void> _checkVersion() async {
-    await [
-      _tiktokChecker.checkUpdate().then((result) => _tiktok = result),
-      _robloxChecker.checkUpdate().then((result) => _roblox = result),
-      _freefirethChecker.checkUpdate().then((result) => _freefireth = result),
-      _wildberriesChecker.checkUpdate().then((result) => _wildberries = result),
-      _ozonChecker.checkUpdate().then((result) => _ozon = result),
-      _testChecker.checkUpdate().then((result) => _testResult = result),
-    ].wait;
+  @override
+  void dispose() {
+    _updating.dispose();
+    super.dispose();
+  }
+
+  Future<void> _checkVersion({bool? refresh}) async {
+    final stopwatch = Stopwatch()..start();
+    try {
+      if (refresh != null) _updating.value = true;
+      final ozonParams = InStoreAppVersionCheckerParams(
+        currentVersion: kOzonStoreIDPair.currentVersion,
+        packageName: _isAndroid
+            ? kOzonStoreIDPair.googlePlayID
+            : kOzonStoreIDPair.appleStoreID,
+        locale: 'ru',
+      );
+      final wildberisParams = InStoreAppVersionCheckerParams(
+        currentVersion: kWildberriesStoreIDPair.currentVersion,
+        packageName: _isAndroid
+            ? kWildberriesStoreIDPair.googlePlayID
+            : kWildberriesStoreIDPair.appleStoreID,
+        locale: 'ru',
+      );
+
+      _wildberries = await _checker.checkUpdate(wildberisParams);
+      _ozon = await _checker.checkUpdate(ozonParams);
+      _freefireth = await _freefirethChecker.checkUpdate();
+      _roblox = await _robloxChecker.checkUpdate();
+      _tiktok = await _tiktokChecker.checkUpdate();
+      /* await (
+        _checker.checkUpdate(wildberisParams).then((r) => _wildberries = r),
+        _checker.checkUpdate(ozonParams).then((r) => _ozon = r),
+        _robloxChecker.checkUpdate().then((r) => _roblox = r),
+        _tiktokChecker.checkUpdate().then((r) => _tiktok = r),
+        _freefirethChecker.checkUpdate().then((r) => _freefireth = r),
+      ).wait; */
+    } on Object catch (e, _) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error checking for updates: $e',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: Colors.white),
+            ),
+            backgroundColor: CupertinoDynamicColor.resolve(
+              CupertinoColors.systemRed,
+              context,
+            ),
+          ),
+        );
+    } finally {
+      _updating.value = false;
+      dev.log(
+        '${(stopwatch..stop()).elapsedMicroseconds / 10000} μs',
+        name: 'check_version',
+        level: 100,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          forceMaterialTransparency: false,
-          centerTitle: true,
-          title: const Text(
-            'In Store App Version Checker Example',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          actions: [
-            IconButton(
-              iconSize: 24,
-              padding: EdgeInsets.zero,
-              onPressed: _checkVersion,
-              icon: const Icon(CupertinoIcons.refresh),
-            )
-          ],
+    appBar: AppBar(
+      centerTitle: true,
+      title: const Text(
+        'In Store App Version Checker Example',
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+      ),
+      actions: <Widget>[
+        IconButton(
+          iconSize: 24,
+          padding: EdgeInsets.zero,
+          onPressed: () => _checkVersion(refresh: true),
+          icon: const Icon(CupertinoIcons.refresh),
         ),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: FutureBuilder(
-              future: _checkVersion(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator.adaptive(),
-                  );
-                }
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text(
-                      'Error: ${snapshot.error}',
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  );
-                }
-
-                return SingleChildScrollView(
-                  child: Column(
-                    spacing: 16,
-                    children: [
-                      if (_tiktok != null) ...[
-                        _AppSection(title: 'Tik Tok', item: _tiktok!),
-                      ],
-                      if (_roblox != null) ...[
-                        _AppSection(title: 'Roblox', item: _roblox!),
-                      ],
-                      if (_freefireth != null) ...[
-                        _AppSection(title: 'Freefeireth', item: _freefireth!),
-                      ],
-                      if (_wildberries != null) ...[
-                        _AppSection(title: 'Willberies', item: _wildberries!),
-                      ],
-                      if (_ozon != null) ...[
-                        _AppSection(title: 'Ozon', item: _ozon!),
-                      ],
-                      if (_testResult != null) ...[
-                        _AppSection(title: 'Test', item: _testResult!),
-                      ],
+      ],
+    ),
+    body: SafeArea(
+      child: Padding(
+        padding: const .all(16),
+        child: ValueListenableBuilder(
+          valueListenable: _updating,
+          builder: (_, updating, _) => FutureBuilder(
+            future: _checkVersion(),
+            builder: (context, snapshot) {
+              // --- Loading state --- //
+              if (updating || snapshot.connectionState == .waiting) {
+                return Center(
+                  child: Row(
+                    mainAxisAlignment: .center,
+                    spacing: 5,
+                    children: <Widget>[
+                      const CircularProgressIndicator.adaptive(),
+                      Text(updating ? 'Updating...' : 'Loading...'),
                     ],
                   ),
                 );
-              },
-            ),
+              }
+
+              // --- Error state --- //
+              if (snapshot.hasError) {
+                return Center(
+                  child: Text(
+                    'Error: ${snapshot.error}',
+                    style: TextStyle(
+                      color: CupertinoDynamicColor.resolve(
+                        CupertinoColors.systemRed,
+                        context,
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              return SingleChildScrollView(
+                child: Column(
+                  spacing: 16,
+                  children: <Widget>[
+                    _Section(title: 'Ozon', item: _ozon),
+                    _Section(title: 'Wildberries', item: _wildberries),
+                    _Section(title: 'Roblox', item: _roblox),
+                    _Section(title: 'Tik Tok', item: _tiktok),
+                    _Section(title: 'Freefeireth', item: _freefireth),
+                  ],
+                ),
+              );
+            },
           ),
         ),
-      );
+      ),
+    ),
+  );
 }
 
-/// _AppSection widget.
+/// _Section widget.
 /// {@macro example}
-class _AppSection extends StatelessWidget {
+class _Section extends StatelessWidget {
   /// {@macro main}
-  const _AppSection({
+  const _Section({
     required this.title,
     required this.item,
     super.key, // ignore: unused_element_parameter
-  });
+  }) : assert(
+         item is InStoreAppVersionCheckerResult ||
+             item is InStoreAppVersionCheckerResponse,
+         r'item must be of type InStoreAppVersionCheckerResult or InStoreAppVersionCheckerResponse',
+       );
 
   final String title;
-  final InStoreAppVersionCheckerResult item;
+  final Object? item;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-        width: double.infinity,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 5,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
-            ),
-            Text(
-              item.toString(),
-              style: const TextStyle(
-                fontWeight: FontWeight.normal,
-                fontSize: 14,
+  Widget build(BuildContext context) {
+    if (item == null) return const SizedBox.shrink();
+    final canUpdate = switch (item) {
+      InStoreAppVersionCheckerResponse i => i.canUpdate,
+      InStoreAppVersionCheckerResult i => i.canUpdate,
+      _ => false,
+    };
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: .start,
+        spacing: 5,
+        children: <Widget>[
+          Row(
+            spacing: 10,
+            children: <Widget>[
+              Flexible(
+                child: Text(
+                  title,
+                  style: const TextStyle(fontWeight: .w600, fontSize: 17),
+                ),
               ),
-            ),
-          ],
-        ),
-      );
+              if (canUpdate) ...[
+                Badge(
+                  label: const Text('Can update'),
+                  textColor: CupertinoDynamicColor.resolve(
+                    CupertinoColors.systemGreen,
+                    context,
+                  ),
+                  backgroundColor: CupertinoDynamicColor.resolve(
+                    CupertinoColors.systemGreen,
+                    context,
+                  ).withAlpha(25),
+                  padding: const .symmetric(horizontal: 8, vertical: 3),
+                ),
+              ],
+            ],
+          ),
+          Text(
+            item.toString(),
+            style: const TextStyle(fontWeight: .normal, fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Example",
+      "name": "example",
       "type": "dart",
       "request": "launch",
       "cwd": "${workspaceFolder}/example",
@@ -10,7 +10,25 @@
       "env": {}
     },
     {
-      "name": "Run Tests",
+      "name": "example:ios:pods",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/example",
+      "preLaunchTask": "init:ios:pods",
+      "args": [],
+      "env": {}
+    },
+    {
+      "name": "example:ios:spm",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/example",
+      "preLaunchTask": "init:ios:spm",
+      "args": [],
+      "env": {}
+    },
+    {
+      "name": "tests",
       "request": "launch",
       "type": "dart",
       "program": "test/flutter_in_store_app_version_checker_test.dart",

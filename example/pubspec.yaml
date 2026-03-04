@@ -1,30 +1,33 @@
-name: example_gradle_8
+name: example
 
-description: Demonstrates how to use the flutter_in_store_app_version_checker
-
-version: 0.0.1
+description: Demonstrates how to use the flutter_in_store_app_version_checker package to check for app updates on Google Play and App Store.
 
 publish_to: none
 
+version: 0.0.1
+
+
 environment:
-  sdk: '>=3.0.0 <4.0.0'
-  flutter: ">=3.0.0"
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: ">=3.38.9"
+
 
 dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: any
-
   flutter_in_store_app_version_checker:
     path: ../
+
+  cupertino_icons: any
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   # Linting
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 
 flutter:

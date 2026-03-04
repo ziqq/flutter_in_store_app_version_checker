@@ -105,6 +105,53 @@
       "dependsOn": [
         "dart:pub:get"
       ]
+    },
+    {
+      "label": "init:ios:pods",
+      "type": "shell",
+      "command": [
+        "fvm flutter config --no-enable-swift-package-manager && flutter config --no-enable-swift-package-manager",
+        "&& cd example",
+        "&& fvm flutter clean",
+        "&& fvm flutter pub get",
+        "&& cd ios",
+        "&& ( [ -f \"_Podfile\" ] && [ ! -f \"Podfile\" ] && mv \"_Podfile\" \"Podfile\" || true )",
+        "&& rm -rf Pods Podfile.lock",
+        "&& pod install",
+        "&& cd .. && fvm flutter pub get || (echo \"¯\\\\_(ツ)_/¯ Init ios pods error\"; exit 1)"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
+    },
+    {
+      "label": "init:ios:spm",
+      "type": "shell",
+      "command": [
+        "fvm flutter config --enable-swift-package-manager && flutter config --enable-swift-package-manager",
+        "&& cd example",
+        "&& fvm flutter clean",
+        "&& cd ios",
+        "&& ( [ -f \"Podfile\" ] && mv \"Podfile\" \"_Podfile\" || true )",
+        "&& rm -rf Pods Podfile.lock",
+        "&& ( pod deintegrate || true )",
+        "&& cd .. && fvm flutter pub get || (echo \"¯\\\\_(ツ)_/¯ Init ios swift package manager error\"; exit 1)"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
     }
   ]
 }

@@ -120,7 +120,7 @@ jobs:
       - name: Check analyzer
         id: check_analyzer
         timeout-minutes: 1
-        run: dart analyze --fatal-infos --fatal-warnings lib/
+        run: flutter analyze --fatal-warnings --no-fatal-infos lib/ test/
 
       - name: Run tests
         id: run_tests

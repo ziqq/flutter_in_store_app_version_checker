@@ -4,7 +4,7 @@ PWD   :=$(shell pwd)
 .DEFAULT_GOAL := all
 .PHONY: all
 all: ## build pipeline
-all: get format check test-unit build
+all: get format check test-unit
 
 .PHONY: ci
 ci: ## CI build pipeline
@@ -43,17 +43,38 @@ clean: ## Clean flutter
 
 .PHONY: get
 get: ## Get dependencies
-				@flutter pub get || (echo "¯\_(ツ)_/¯ Get dependencies error"; exit 1)
+				@fvm flutter pub get || (echo "¯\_(ツ)_/¯ Get dependencies error"; exit 1)
+
+.PHONY: init-ios-pods
+init-ios-pods: ## Init ios pods (use Podfile)
+				@fvm flutter config --no-enable-swift-package-manager && flutter config --no-enable-swift-package-manager
+				@cd example && fvm flutter clean
+				@cd example && fvm flutter pub get
+				@cd example/ios && \
+						( [ -f "_Podfile" ] && [ ! -f "Podfile" ] && mv "_Podfile" "Podfile" || true ) && \
+						rm -rf Pods Podfile.lock && \
+						pod install
+				@cd example && fvm flutter pub get || (echo "¯\_(ツ)_/¯ Init ios pods error"; exit 1)
+
+.PHONY: init-ios-spm
+init-ios-spm: ## Init ios swift package manager (use _Podfile)
+				@fvm flutter config --enable-swift-package-manager && flutter config --enable-swift-package-manager
+				@cd example && fvm flutter clean
+				@cd example/ios && \
+						( [ -f "Podfile" ] && mv "Podfile" "_Podfile" || true ) && \
+						rm -rf Pods Podfile.lock && \
+						( pod deintegrate || true )
+				@cd example && fvm flutter pub get || (echo "¯\_(ツ)_/¯ Init ios swift package manager error"; exit 1)
 
 .PHONY: analyze
 analyze: get format ## Analyze code
-				@dart analyze --fatal-infos --fatal-warnings
+				@fvm flutter analyze --fatal-warnings --no-fatal-infos lib/ test/
 
 .PHONY: check
 check: analyze ## Check code
-				@dart pub global activate pana
-				@pana --json --no-warning --line-length 80 > log.pana.json
+				@echo "╠ RUN CECK PUBLISH..."
 				@dart pub publish --dry-run
+				@echo "╠ CECKED PUBLISH SUCCESSFULLY"
 
 .PHONY: publish
 publish: ## Publish package

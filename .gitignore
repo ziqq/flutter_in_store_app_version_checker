@@ -5,9 +5,11 @@
 *.swp
 .DS_Store
 .atom/
+.build/
 .buildlog/
 .history
 .svn/
+.swiftpm/
 migrate_working_dir/
 
 # IntelliJ related
@@ -23,14 +25,43 @@ migrate_working_dir/
 
 # Flutter/Dart/Pub related
 # Libraries should not include pubspec.lock, per https://dart.dev/guides/libraries/private-files#pubspeclock.
-.dart_tool
-build/
+**/build
 **/doc/api/
+**/Flutter/ephemeral/
 **/ios/Flutter/.last_build_id
-.flutter-plugins
+**/Pods/
+.dart_tool/
 .flutter-plugins-dependencies
-.packages
+.flutter-plugins
 .pub-cache/
+.pub/
+.fvm/
+
+# Platform-specific generated files
+**/android/**/GeneratedPluginRegistrant.*
+**/android/**/local.properties
+**/android/**/.cxx/
+**/android/.kotlin
+# Remember to never publicly share your keystore.
+# See https://flutter.dev/docs/deployment/android#reference-the-keystore-from-the-app
+**/android/**/key.properties
+**/*.keystore
+**/*.jks
+**/android/**/captures/
+**/android/**/.gradle
+**/android/**/gradlew
+**/android/**/gradle-wrapper.jar
+**/android/**/gradlew.bat
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/macos/Flutter/GeneratedPluginRegistrant.*
+**/windows/flutter/generated_*
+**/linux/flutter/generated_*
+
+# Xcode-related
+**/dgph
+**/xcuserdata/
 
 # Pana
 log.pana.json
@@ -38,16 +69,14 @@ log.pana.json
 # Test
 .coverage/
 coverage/
+reports/
 /test/**/*.json
 /test/.test_coverage.dart
+!/test/**/fixtures/*.json
+integration_test/screenshots
 
 # Temp
-/tmp
-/temp
-
-# FVM
-.fvm/flutter_sdk
-.fvm/versions/
-
-# Android
-**/.cxx/
+.temp/
+temp/
+.tmp/
+tmp/

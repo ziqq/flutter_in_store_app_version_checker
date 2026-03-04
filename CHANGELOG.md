@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.0.0
+- **DEPRECATED**: Legacy facade `InStoreAppVersionChecker` will be removed in next releases
+- **ADDED**: New interface `IInStoreAppVersionChecker` (singleton `InStoreAppVersionChecker.instance`)
+- **ADDED**: Fallback to public PlayStore API on HTML parsing failure
+- **ADDED**: Response fields: `isSuccess`, `isError`, `canUpdate`, improved error messages
+- **ADDED**: Extended version comparison logic (pre-release, normalization, ignoring build metadata)
+- **ADDED**: Support for `iOS` builds with `Swift Package Manager` and `CocoaPods` (see [CONTRIBUTING.md](CONTRIBUTING.md#ios-testing-cocoapods-and-swift-package-manager))
+- **CHANGED**: Updated documentation to reflect new interface and singleton usage
+- **CHANGED**: Refactoring legacy facade to use new implementation as delegate
+- **CHANGED**: Improved error handling (stack return, format unification)
+- **CHANGED**: Migration to a singleton instead of manual creation
+- **CHANGED**: Bump dependencies
+
 ## 1.11.0
 - **FIXED**: `canUpdate` returns allways false on Android, [#11](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/11)
 
