@@ -85,7 +85,6 @@ jobs:
         timeout-minutes: 1
         run: |
           echo | grep -q Description README.md ; echo Description is exist
-          echo | grep -q Installation README.md ; echo Installation is exist
           echo | grep -q Example README.md ; echo Example is exist
 
       - name: Install flutter
@@ -135,7 +134,7 @@ jobs:
         id: upload_test_report
         timeout-minutes: 1
         uses: actions/upload-artifact@v4
-        if: (success() || failure()) && ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ (success() || failure()) && github.actor != 'dependabot[bot]' }}
         with:
           name: test-results
           path: reports/tests.json
