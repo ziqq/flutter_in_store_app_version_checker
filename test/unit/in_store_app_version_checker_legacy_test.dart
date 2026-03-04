@@ -69,7 +69,7 @@ void main() {
         expect(result.appURL, null);
         expect(
           result.errorMessage,
-          'This platform is not yet supported by this package. We support iOS or Android platrforms.',
+          'This platform is not yet supported by this package. We support iOS or Android platforms.',
         );
         expect(result.canUpdate, isFalse);
       });
