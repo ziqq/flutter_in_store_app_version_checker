@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.1
+- **CHANGED**: Bump dependencies
+
 ## 2.0.0
 - **DEPRECATED**: Legacy facade `InStoreAppVersionChecker` will be removed in next releases
 - **ADDED**: New interface `IInStoreAppVersionChecker` (singleton `InStoreAppVersionChecker.instance`)
