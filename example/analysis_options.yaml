@@ -12,8 +12,6 @@ include: package:flutter_lints/flutter.yaml
 #   trailing_commas: preserve
 
 analyzer:
-  enable-experiment:
-    - dot-shorthands
   exclude:
     # Build
     - "build/**"

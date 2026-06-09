@@ -1,7 +1,14 @@
 # Changelog
 
+
+## 2.1.0
+- **CHANGED**: Updates minimum supported SDK versions to Flutter 3.44.1 and Dart 3.12.1
+- **CHANGED**: Migrates Android plugin and example app to built-in Kotlin
+
+
 ## 2.0.1
 - **CHANGED**: Bump dependencies
+
 
 ## 2.0.0
 - **DEPRECATED**: Legacy facade `InStoreAppVersionChecker` will be removed in next releases
@@ -16,11 +23,14 @@
 - **CHANGED**: Migration to a singleton instead of manual creation
 - **CHANGED**: Bump dependencies
 
+
 ## 1.11.0
 - **FIXED**: `canUpdate` returns allways false on Android, [#11](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/11)
 
+
 ## 1.10.1
 - **CHANGED**: Bump dependencies
+
 
 ## 1.10.0
 - **ADDED**: Prevent cache hit on iOS (and Android) [pull_request](https://github.com/ziqq/flutter_in_store_app_version_checker/pull/9)
