@@ -85,5 +85,43 @@ void main() {
         ),
       );
     });
+
+    test('throws when platform returns null metadata map', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (_) async => null);
+
+      await expectLater(
+        AppMetadata.fromPlatform(),
+        throwsA(
+          isA<PlatformException>()
+              .having((e) => e.code, 'code', 'invalid_package_info')
+              .having(
+                (e) => e.message,
+                'message',
+                contains('TargetPlatform.android'),
+              ),
+        ),
+      );
+    });
+
+    test('throws when both packageName and version are missing', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (_) async => <String, Object?>{});
+
+      await expectLater(
+        AppMetadata.fromPlatform(),
+        throwsA(
+          isA<PlatformException>()
+              .having((e) => e.code, 'code', 'invalid_package_info')
+              .having(
+                (e) => e.message,
+                'message',
+                contains('TargetPlatform.macOS'),
+              ),
+        ),
+      );
+    });
   });
 }

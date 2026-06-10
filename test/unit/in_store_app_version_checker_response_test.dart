@@ -68,6 +68,18 @@ void main() => group('InStoreAppVersionCheckerResponse - ', () {
         'desc': 'patch increase',
       },
       {
+        'current': '1.0.0-1',
+        'new': '1.0.0-beta',
+        'expected': true,
+        'desc': 'numeric prerelease token treated below alphanumeric',
+      },
+      {
+        'current': '1.0.0-beta',
+        'new': '1.0.0-1',
+        'expected': false,
+        'desc': 'alphanumeric prerelease token treated above numeric',
+      },
+      {
         'current': '1.2.3',
         'new': '1.3.0',
         'expected': true,

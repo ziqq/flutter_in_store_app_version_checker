@@ -17,7 +17,7 @@ import 'package:flutter/services.dart';
 @internal
 final class AppMetadata {
   /// {@macro app_metadata}
-  const AppMetadata._();
+  const AppMetadata._(); // coverage:ignore-line
 
   /// Channel used by the plugin's native implementations.
   ///

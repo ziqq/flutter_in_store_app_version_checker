@@ -365,6 +365,30 @@ void main() {
     });
 
     group('Singleton instance reuse', () {
+      test('instance getter returns the same singleton', () {
+        expect(
+          identical(
+            InStoreAppVersionChecker.instance,
+            InStoreAppVersionChecker.instance,
+          ),
+          isTrue,
+        );
+      });
+
+      test('custom without client creates a usable checker', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        final checker = InStoreAppVersionChecker.custom();
+        final result = await checker.checkUpdate(
+          const InStoreAppVersionCheckerParams(
+            locale: 'en',
+            currentVersion: '1.0.0',
+            packageName: 'com.example.app',
+          ),
+        );
+        expect(result.isError, isTrue);
+        expect(result.errorMessage, isNotNull);
+      });
+
       test('multiple calls different remote data', () async {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
         var first = true;
@@ -385,6 +409,47 @@ void main() {
         expect(r1.newVersion, '1.0.1');
         expect(r2.newVersion, '1.0.2');
       });
+    });
+
+    group('Top-level fallback when metadata lookup fails', () {
+      test(
+        'uses undefined currentVersion when params.currentVersion is absent',
+        () async {
+          debugDefaultTargetPlatformOverride = TargetPlatform.android;
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+              .setMockMethodCallHandler(channel, (_) async => null);
+
+          final result = await InStoreAppVersionChecker.custom(
+            httpClient: mockHttpClient,
+          ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
+
+          expect(result.isError, isTrue);
+          expect(result.currentVersion, 'undefined');
+          expect(result.errorMessage, contains('invalid_package_info'));
+        },
+      );
+
+      test(
+        'keeps explicit currentVersion when metadata lookup fails',
+        () async {
+          debugDefaultTargetPlatformOverride = TargetPlatform.android;
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+              .setMockMethodCallHandler(channel, (_) async => null);
+
+          final result =
+              await InStoreAppVersionChecker.custom(
+                httpClient: mockHttpClient,
+              ).checkUpdate(
+                const InStoreAppVersionCheckerParams(
+                  locale: 'en',
+                  currentVersion: '9.9.9',
+                ),
+              );
+
+          expect(result.isError, isTrue);
+          expect(result.currentVersion, '9.9.9');
+        },
+      );
     });
 
     group('canUpdate logic (success responses)', () {
@@ -874,6 +939,18 @@ void main() {
           expect(res.errorMessage, contains('503'));
           expect(res.canUpdate, isFalse);
         });
+
+        test('HTML request exception is surfaced as error', () async {
+          debugDefaultTargetPlatformOverride = TargetPlatform.android;
+          when(mockHttpClient.get(any)).thenThrow(StateError('play boom'));
+
+          final res = await InStoreAppVersionChecker.custom(
+            httpClient: mockHttpClient,
+          ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
+
+          expect(res.isError, isTrue);
+          expect(res.errorMessage, contains('play boom'));
+        });
       });
 
       group('ApkPure extra variants', () {
@@ -920,6 +997,25 @@ void main() {
               );
           expect(res.newVersion, '2.0.1');
           expect(res.canUpdate, isTrue);
+        });
+
+        test('request exception is surfaced as error', () async {
+          debugDefaultTargetPlatformOverride = TargetPlatform.android;
+          when(mockHttpClient.get(any)).thenThrow(StateError('apk boom'));
+
+          final res =
+              await InStoreAppVersionChecker.custom(
+                httpClient: mockHttpClient,
+              ).checkUpdate(
+                const InStoreAppVersionCheckerParams(
+                  locale: 'en',
+                  androidStore:
+                      InStoreAppVersionCheckerAndroidStoreType.apkPure,
+                ),
+              );
+
+          expect(res.isError, isTrue);
+          expect(res.errorMessage, contains('apk boom'));
         });
       });
 
