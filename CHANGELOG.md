@@ -3,12 +3,12 @@
 
 ## 3.0.0-pre.1
 - **DEPRECATED**: `InStoreAppVersionChecker.custom(...)` in favor of `InStoreAppVersionChecker.instanceFor(...)`
-- **ADDED**: The required `FlutterFramework` Swift Package Manager dependency
+- **ADDED**: The required `FlutterFramework` `Swift Package Manager` dependency
 - **ADDED**: Unit tests for `AppMetadata.fromPlatform`
 - **CHANGED**: Replaces `package_info_plus` with internal `AppMetadata` platform metadata lookup
-- **CHANGED**: Updates minimum supported SDK versions to Flutter 3.44.1 and Dart 3.12.1
-- **CHANGED**: Refreshes README, API descriptions, and inline documentation
-- **CHANGED**: Migrates Android plugin and example app to built-in Kotlin
+- **CHANGED**: Updates minimum supported SDK versions to Flutter `3.44.1` and Dart `3.12.1`
+- **CHANGED**: Refreshes `README`, `API descriptions`, and inline `documentation`
+- **CHANGED**: Migrates `Android` plugin and example app to built-in Kotlin
 - **CHANGED**: Example app migrated to `InStoreAppVersionChecker.instance.checkUpdate(...)`
 - **CHANGED**: Public package export now exposes only the response-based API
 - **REMOVED**: Legacy types `InStoreAppVersionCheckerResult` and `AndroidStore`
