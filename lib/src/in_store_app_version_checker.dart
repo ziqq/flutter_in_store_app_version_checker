@@ -24,11 +24,17 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
   InStoreAppVersionChecker._([http.Client? httpClient])
     : _httpClient = httpClient ?? http.Client();
 
-  /// Create custom instance of [InStoreAppVersionChecker]
+  /// Create a scoped instance of [InStoreAppVersionChecker]
   /// with your own http client.
   /// {@macro in_store_app_version_checker}
-  factory InStoreAppVersionChecker.custom({http.Client? httpClient}) =>
+  factory InStoreAppVersionChecker.instanceFor({http.Client? httpClient}) =>
       InStoreAppVersionChecker._(httpClient);
+
+  /// Create a scoped instance of [InStoreAppVersionChecker]
+  /// with your own http client.
+  @Deprecated('Use InStoreAppVersionChecker.instanceFor instead')
+  factory InStoreAppVersionChecker.custom({http.Client? httpClient}) =>
+      InStoreAppVersionChecker.instanceFor(httpClient: httpClient);
 
   /// HTTP client used for store requests.
   late final http.Client _httpClient;

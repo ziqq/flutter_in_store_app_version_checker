@@ -41,7 +41,7 @@ Other platforms (`Web`, `Windows`, `Linux`, `macOS`, etc.) are not supported.
 ## API Overview
 Main access point: [`InStoreAppVersionChecker`](lib/src/in_store_app_version_checker.dart) (singleton: [`InStoreAppVersionChecker.instance`](lib/src/in_store_app_version_checker.dart)) returning [`IInStoreAppVersionChecker`](lib/src/in_store_app_version_checker_interface.dart) implemented by [`InStoreAppVersionChecker`](lib/src/in_store_app_version_checker.dart).
 
-Legacy factory-based API from 2.0.x has been removed. Use [`InStoreAppVersionChecker.instance`](lib/src/in_store_app_version_checker.dart) or [`InStoreAppVersionChecker.custom(...)`](lib/src/in_store_app_version_checker.dart) together with [`InStoreAppVersionCheckerParams`](lib/src/in_store_app_version_checker_params.dart).
+Legacy factory-based API from 2.0.x has been removed. Use [`InStoreAppVersionChecker.instance`](lib/src/in_store_app_version_checker.dart) or [`InStoreAppVersionChecker.instanceFor(...)`](lib/src/in_store_app_version_checker.dart) together with [`InStoreAppVersionCheckerParams`](lib/src/in_store_app_version_checker_params.dart). [`InStoreAppVersionChecker.custom(...)`](lib/src/in_store_app_version_checker.dart) is now deprecated and forwards to `instanceFor(...)`.
 
 Request parameters: [`InStoreAppVersionCheckerParams`](lib/src/in_store_app_version_checker_params.dart)
 
@@ -106,9 +106,11 @@ final res = await InStoreAppVersionChecker.instance.checkUpdate(params);
 
 ### Custom HTTP client
 ```dart
-final custom = InStoreAppVersionChecker.custom(httpClient: customHTTPClient);
+final checker = InStoreAppVersionChecker.instanceFor(
+  httpClient: customHTTPClient,
+);
 const params = InStoreAppVersionCheckerParams(locale: 'en');
-final res = await custom.checkUpdate(params);
+final res = await checker.checkUpdate(params);
 ```
 
 ### How package name and version are resolved

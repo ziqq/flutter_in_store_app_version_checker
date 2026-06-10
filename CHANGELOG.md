@@ -2,6 +2,7 @@
 
 
 ## 3.0.0-pre.1
+- **DEPRECATED**: `InStoreAppVersionChecker.custom(...)` in favor of `InStoreAppVersionChecker.instanceFor(...)`
 - **ADDED**: The required `FlutterFramework` Swift Package Manager dependency
 - **ADDED**: Unit tests for `AppMetadata.fromPlatform`
 - **CHANGED**: Replaces `package_info_plus` with internal `AppMetadata` platform metadata lookup
