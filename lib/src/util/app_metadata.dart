@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, internal;
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' show MethodChannel, PlatformException;
 
 /// {@template app_metadata}
 /// Internal helper for retrieving installed app metadata
