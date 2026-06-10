@@ -9,6 +9,12 @@
 ## Description
 A lightweight Flutter plugin to check whether your app (or any other app) has a newer version published on Google Play, ApkPure, or Apple App Store.
 
+Minimum supported SDKs:
+- Flutter `>=3.44.1`
+- Dart `>=3.12.1 <4.0.0`
+
+The plugin uses Flutter 3.44+ built-in Kotlin support on Android and retrieves installed app metadata through its own native method channel. It no longer depends on `package_info_plus`.
+
 Add the dependency:
 
 ```yaml
@@ -35,9 +41,13 @@ Other platforms (`Web`, `Windows`, `Linux`, `macOS`, etc.) are not supported.
 ## API Overview
 Main access point: [`InStoreAppVersionChecker`](lib/src/in_store_app_version_checker.dart) (singleton: [`InStoreAppVersionChecker.instance`](lib/src/in_store_app_version_checker.dart)) returning [`IInStoreAppVersionChecker`](lib/src/in_store_app_version_checker_interface.dart) implemented by [`InStoreAppVersionChecker`](lib/src/in_store_app_version_checker.dart).
 
+Legacy factory-based API from 2.0.x has been removed. Use [`InStoreAppVersionChecker.instance`](lib/src/in_store_app_version_checker.dart) or [`InStoreAppVersionChecker.custom(...)`](lib/src/in_store_app_version_checker.dart) together with [`InStoreAppVersionCheckerParams`](lib/src/in_store_app_version_checker_params.dart).
+
 Request parameters: [`InStoreAppVersionCheckerParams`](lib/src/in_store_app_version_checker_params.dart)
 
 Response object: [`InStoreAppVersionCheckerResponse`](lib/src/in_store_app_version_checker_response.dart)
+
+Internal installed-app metadata helper: [`AppMetadata`](lib/src/util/app_metadata.dart)
 
 Key response fields:
 - `isSuccess` / `isError`
@@ -101,6 +111,14 @@ const params = InStoreAppVersionCheckerParams(locale: 'en');
 final res = await custom.checkUpdate(params);
 ```
 
+### How package name and version are resolved
+If `packageName` or `currentVersion` are not provided in `InStoreAppVersionCheckerParams`, the plugin resolves them from the installed app metadata on the host platform.
+
+- Android: package name and version from the plugin's native Android implementation
+- iOS: bundle identifier and `CFBundleShortVersionString` from the plugin's native iOS implementation
+
+This behavior is covered by unit tests in [test/unit/app_metadata_test.dart](test/unit/app_metadata_test.dart).
+
 
 ## Version comparison notes
 - Release vs pre-release: a pure release is considered higher than a pre-release with the same core; therefore if current is release and new is pre-release -> treated as update (legacy-compatible).
@@ -118,6 +136,12 @@ Types:
 - `error` (network failures, app not found, unsupported platform)
 
 `errorMessage` is populated only for error responses. An error response may still indicate `canUpdate == true` if `newVersion` is greater.
+
+
+## Platform integration notes
+- Android example app is migrated to Flutter built-in Kotlin.
+- iOS Swift Package Manager support includes the required `FlutterFramework` dependency in `Package.swift`.
+- CocoaPods support remains available alongside Swift Package Manager.
 
 
 ## Changelog

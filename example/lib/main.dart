@@ -88,14 +88,11 @@ class Example extends StatefulWidget {
 /// State of the [Example] widget.
 class _ExampleState extends State<Example> {
   final ValueNotifier<bool> _updating = ValueNotifier<bool>(false);
-  late final InStoreAppVersionChecker _freefirethChecker;
-  late final InStoreAppVersionChecker _robloxChecker;
-  late final InStoreAppVersionChecker _tiktokChecker;
   final _checker = InStoreAppVersionChecker.instance;
 
-  InStoreAppVersionCheckerResult? _freefireth;
-  InStoreAppVersionCheckerResult? _roblox;
-  InStoreAppVersionCheckerResult? _tiktok;
+  InStoreAppVersionCheckerResponse? _freefireth;
+  InStoreAppVersionCheckerResponse? _roblox;
+  InStoreAppVersionCheckerResponse? _tiktok;
 
   InStoreAppVersionCheckerResponse? _wildberries;
   InStoreAppVersionCheckerResponse? _ozon;
@@ -108,58 +105,35 @@ class _ExampleState extends State<Example> {
   bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
 
   @override
-  void initState() {
-    super.initState();
-    _freefirethChecker = InStoreAppVersionChecker(
-      appId: _isAndroid
-          ? kFreefirethStoreIDPair.googlePlayID
-          : kFreefirethStoreIDPair.appleStoreID,
-      currentVersion: kFreefirethStoreIDPair.currentVersion,
-    );
-    _robloxChecker = InStoreAppVersionChecker(
-      appId: _isAndroid
-          ? kRobloxStoreIDPair.googlePlayID
-          : kRobloxStoreIDPair.appleStoreID,
-      currentVersion: kRobloxStoreIDPair.currentVersion,
-    );
-    _tiktokChecker = InStoreAppVersionChecker(
-      appId: _isAndroid
-          ? kTikTokStoreIDPair.googlePlayID
-          : kTikTokStoreIDPair.appleStoreID,
-      currentVersion: kTikTokStoreIDPair.currentVersion,
-    );
-  }
-
-  @override
   void dispose() {
     _updating.dispose();
     super.dispose();
   }
 
+  InStoreAppVersionCheckerParams _paramsFor(
+    StoreIDPair storeIDPair, {
+    String locale = 'ru',
+  }) => InStoreAppVersionCheckerParams(
+    currentVersion: storeIDPair.currentVersion,
+    packageName: _isAndroid
+        ? storeIDPair.googlePlayID
+        : storeIDPair.appleStoreID,
+    locale: locale,
+  );
+
   Future<void> _checkVersion({bool? refresh}) async {
     final stopwatch = Stopwatch()..start();
     try {
       if (refresh != null) _updating.value = true;
-      final ozonParams = InStoreAppVersionCheckerParams(
-        currentVersion: kOzonStoreIDPair.currentVersion,
-        packageName: _isAndroid
-            ? kOzonStoreIDPair.googlePlayID
-            : kOzonStoreIDPair.appleStoreID,
-        locale: 'ru',
+      _wildberries = await _checker.checkUpdate(
+        _paramsFor(kWildberriesStoreIDPair),
       );
-      final wildberisParams = InStoreAppVersionCheckerParams(
-        currentVersion: kWildberriesStoreIDPair.currentVersion,
-        packageName: _isAndroid
-            ? kWildberriesStoreIDPair.googlePlayID
-            : kWildberriesStoreIDPair.appleStoreID,
-        locale: 'ru',
+      _ozon = await _checker.checkUpdate(_paramsFor(kOzonStoreIDPair));
+      _freefireth = await _checker.checkUpdate(
+        _paramsFor(kFreefirethStoreIDPair),
       );
-
-      _wildberries = await _checker.checkUpdate(wildberisParams);
-      _ozon = await _checker.checkUpdate(ozonParams);
-      _freefireth = await _freefirethChecker.checkUpdate();
-      _roblox = await _robloxChecker.checkUpdate();
-      _tiktok = await _tiktokChecker.checkUpdate();
+      _roblox = await _checker.checkUpdate(_paramsFor(kRobloxStoreIDPair));
+      _tiktok = await _checker.checkUpdate(_paramsFor(kTikTokStoreIDPair));
       /* await (
         _checker.checkUpdate(wildberisParams).then((r) => _wildberries = r),
         _checker.checkUpdate(ozonParams).then((r) => _ozon = r),
@@ -277,11 +251,7 @@ class _Section extends StatelessWidget {
     required this.title,
     required this.item,
     super.key, // ignore: unused_element_parameter
-  }) : assert(
-         item is InStoreAppVersionCheckerResult ||
-             item is InStoreAppVersionCheckerResponse,
-         r'item must be of type InStoreAppVersionCheckerResult or InStoreAppVersionCheckerResponse',
-       );
+  });
 
   final String title;
   final Object? item;
@@ -291,7 +261,6 @@ class _Section extends StatelessWidget {
     if (item == null) return const SizedBox.shrink();
     final canUpdate = switch (item) {
       InStoreAppVersionCheckerResponse i => i.canUpdate,
-      InStoreAppVersionCheckerResult i => i.canUpdate,
       _ => false,
     };
     return SizedBox(

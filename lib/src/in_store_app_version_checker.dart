@@ -30,7 +30,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
   factory InStoreAppVersionChecker.custom({http.Client? httpClient}) =>
       InStoreAppVersionChecker._(httpClient);
 
-  /// This is http client.
+  /// HTTP client used for store requests.
   late final http.Client _httpClient;
 
   /// Returns the [InStoreAppVersionChecker] singleton instance.
@@ -76,7 +76,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
           newVersion: null,
           appURL: null,
           errorMessage:
-              'This platform is not yet supported by this package. Support only iOS or Android platforms.',
+              'This platform is not yet supported by this package. It supports only iOS and Android.',
           stackTrace: StackTrace.current,
           error: Exception('Unsupported platform'),
         );
@@ -114,7 +114,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
           appURL: url,
           stackTrace: StackTrace.current,
           errorMessage:
-              'Can not find an app in the Apple Store with the id: $packageName',
+            'Cannot find an app in the Apple Store with the id: $packageName',
         );
       } else {
         final jsonObj = jsonDecode(response.body);
@@ -129,7 +129,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
             appURL: url,
             stackTrace: StackTrace.current,
             errorMessage:
-                'Can not find an app in the Apple Store with the id: $packageName',
+                'Cannot find an app in the Apple Store with the id: $packageName',
           );
         } else {
           newVersion = jsonObj['results'][0]['version'].toString();
@@ -229,7 +229,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
         appURL: url,
         stackTrace: StackTrace.current,
         errorMessage:
-            'Can not find an app in the Play Store with the id: $packageName',
+        'Cannot find an app in the Play Store with the id: $packageName',
       );
     } on Object catch (e, st) {
       return InStoreAppVersionCheckerResponse.error(
@@ -259,7 +259,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
           appURL: url,
           stackTrace: StackTrace.current,
           errorMessage:
-              'Can not find an app in the ApkPure Store with the id: $packageName',
+            'Cannot find an app in the ApkPure Store with the id: $packageName',
         );
       } else {
         newVersion = RegExp(

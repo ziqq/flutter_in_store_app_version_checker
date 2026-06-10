@@ -2,16 +2,16 @@ import 'package:flutter/foundation.dart' show defaultTargetPlatform, internal;
 import 'package:flutter/services.dart';
 
 /// {@template app_metadata}
-/// [AppMetadata] is a class that retrieves the app metadata
-/// from the platform using a method channel.
+/// Internal helper for retrieving installed app metadata
+/// from the host platform over a method channel.
 ///
-/// It provides the package name and version of the app.
+/// It provides the package name and version of the current app.
 ///
 /// Example:
 /// ```dart
 /// final data = await AppMetadata.fromPlatform();
-/// print(data.packageName); // prints the package name of the app
-/// print(data.version); // prints the version of the app
+/// print(data.packageName); // com.example.app
+/// print(data.version); // 1.2.3
 /// ```
 /// {@endtemplate}
 @internal
@@ -19,24 +19,25 @@ final class AppMetadata {
   /// {@macro app_metadata}
   const AppMetadata._();
 
-  /// Method chanel has 2 methods:
-  /// - `getAppMetadata` - returns a map with `packageName` and `version` fields.
-  /// - `getPlatformVersion` - returns the platform version of the device.
+  /// Channel used by the plugin's native implementations.
+  ///
+  /// Supported method names:
+  /// - `getAppMetadata`: returns a map containing `packageName` and `version`.
+  /// - `getPlatformVersion`: returns the host platform version.
   static const MethodChannel _channel = MethodChannel(
     'github.com/ziqq/instoreappversionchecker/app_metadata',
   );
 
   /// Retrieves the app metadata from the platform using a method channel.
   ///
-  /// This method return record with `packageName` and `version` fields.
-  /// `packageName` - The package name of the app.
-  /// - `bundleIdentifier` on `iOS` and `macOS`.
-  /// Defined in the product target in xcode.
-  /// - `packageName` on Android.
-  /// Defined in `build.gradle` as `applicationId`.
-  /// - `package_name` from `version.json` on Web and Linux.
+  /// Returns a record with `packageName` and `version` fields.
   ///
-  /// `version` - The version of the app.
+  /// `packageName` is resolved from the host platform:
+  /// - `bundleIdentifier` on iOS and macOS
+  /// - `applicationId` / package name on Android
+  /// - `package_name` from generated metadata on Web and Linux
+  ///
+  /// `version` is the app version exposed by the host platform.
   ///
   /// Throws a [PlatformException] if the platform
   /// does not provide the required metadata.

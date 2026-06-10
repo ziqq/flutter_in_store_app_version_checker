@@ -592,8 +592,8 @@ void main() {
         final s = r.toString();
         expect(s, contains('Current version: 3.4.5'));
         expect(s, contains('New version: 3.5.0'));
-        expect(s, contains('App url: https://example.com'));
-        expect(s, contains('Can update: true'));
+        expect(s, contains('App URL: https://example.com'));
+        expect(s, contains('Update available: true'));
       });
 
       test('error shows message & stackTrace label', () {
@@ -933,7 +933,7 @@ void main() {
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
           expect(res.isError, isTrue);
-          expect(res.errorMessage, contains('iOS or Android'));
+          expect(res.errorMessage, contains('iOS and Android'));
           expect(res.canUpdate, isFalse);
         });
       });

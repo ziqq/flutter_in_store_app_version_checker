@@ -199,8 +199,8 @@ void main() => group('InStoreAppVersionCheckerResponse - ', () {
           final s = r.toString();
           expect(s, contains('Current version: 3.4.5'));
           expect(s, contains('New version: 3.5.0'));
-          expect(s, contains('App url: https://example.com'));
-          expect(s, contains('Can update: true'));
+          expect(s, contains('App URL: https://example.com'));
+          expect(s, contains('Update available: true'));
         });
 
         test('error contains error fields', () {
@@ -215,8 +215,8 @@ void main() => group('InStoreAppVersionCheckerResponse - ', () {
           final s = r.toString();
           expect(s, contains('Current version: 3.4.5'));
           expect(s, contains('New version: 3.5.0'));
-          expect(s, contains('App url: https://example.com'));
-          expect(s, contains('Can update: true'));
+          expect(s, contains('App URL: https://example.com'));
+          expect(s, contains('Update available: true'));
           expect(s, contains('Error message: Failure'));
           expect(s, contains('Error:'));
           expect(s, contains('Stack trace:'));
@@ -597,8 +597,8 @@ void main() => group('InStoreAppVersionCheckerResponse - ', () {
           final s = r.toString();
           expect(s, contains('Current version: 1.0.0'));
           expect(s, contains('New version: null'));
-          expect(s, contains('App url: null'));
-          expect(s, contains('Can update: false'));
+          expect(s, contains('App URL: null'));
+          expect(s, contains('Update available: false'));
           expect(s, isNot(contains('Error message:')));
         });
         test('error without newVersion still prints fields', () {

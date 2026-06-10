@@ -8,7 +8,7 @@ import 'dart:math' as math show max;
 import 'package:meta/meta.dart';
 
 /// {@template in_store_app_version_checker_response_type}
-/// Type of response enumeration
+/// Response type.
 /// {@endtemplate}
 enum InStoreAppVersionCheckerResponseType {
   /// Error response
@@ -19,7 +19,7 @@ enum InStoreAppVersionCheckerResponseType {
 }
 
 /// {@template in_store_app_version_checker_response}
-/// The response of check app version in [AppStore] or [GooglePlay].
+/// Response returned by an app version check.
 /// {@endtemplate}
 @immutable
 class InStoreAppVersionCheckerResponse {
@@ -53,25 +53,25 @@ class InStoreAppVersionCheckerResponse {
     StackTrace? stackTrace,
   }) = _InStoreAppVersionChecker$Response$Error;
 
-  /// Return current app version
+  /// Current app version.
   final String currentVersion;
 
-  /// Return the new app version
+  /// Store version, if one was found.
   final String? newVersion;
 
-  /// Return the app url
+  /// Store URL for the app, if one was found.
   final String? appURL;
 
-  /// Return error object if found else it will return `null`
+  /// Underlying error, if available.
   final Object? error;
 
-  /// Return error message if found else it will return `null`
+  /// Human-readable error message, if available.
   final String? errorMessage;
 
-  /// Return error stack trace
+  /// Stack trace associated with [error], if available.
   final StackTrace? stackTrace;
 
-  /// Return response type
+  /// Response type.
   final InStoreAppVersionCheckerResponseType type;
 
   /// Whether the response is a success.
@@ -84,8 +84,7 @@ class InStoreAppVersionCheckerResponse {
   /// is [InStoreAppVersionCheckerResponseType.error] else `false`
   bool get isError => type == InStoreAppVersionCheckerResponseType.error;
 
-  /// Check can update app.
-  /// Return `true` if update is available else `false`
+  /// Whether an update is available.
   bool get canUpdate =>
       _shouldUpdate(currentVersion, newVersion ?? currentVersion);
 
@@ -209,8 +208,8 @@ class InStoreAppVersionCheckerResponse {
     final buffer = StringBuffer()
       ..writeln('Current version: $currentVersion')
       ..writeln('New version: $newVersion')
-      ..writeln('App url: $appURL')
-      ..writeln('Can update: $canUpdate');
+      ..writeln('App URL: $appURL')
+      ..writeln('Update available: $canUpdate');
     if (errorMessage != null) buffer.writeln('Error message: $errorMessage');
     if (error != null) buffer.writeln('Error: $error');
     if (stackTrace != null) buffer.writeln('Stack trace: $stackTrace');
