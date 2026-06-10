@@ -35,7 +35,6 @@ dependencies:
 
   # Utilities
   meta: ^1.9.1
-  package_info_plus: ^10.1.0
 
 dev_dependencies:
   # Integration tests for Flutter

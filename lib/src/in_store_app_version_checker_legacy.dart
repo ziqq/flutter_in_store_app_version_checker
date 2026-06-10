@@ -7,8 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_in_store_app_version_checker/flutter_in_store_app_version_checker.dart';
 import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker.dart'
     as new_impl;
+import 'package:flutter_in_store_app_version_checker/src/util/app_metadata.dart';
 import 'package:http/http.dart' as http;
-import 'package:package_info_plus/package_info_plus.dart';
 
 /// {@template android_store}
 /// Possible types of android store
@@ -18,7 +18,7 @@ enum AndroidStore {
   googlePlayStore,
 
   /// The pure APK
-  apkPure
+  apkPure,
 }
 
 /// {@template in_store_app_version_checker_result}
@@ -232,13 +232,15 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
   /// Check update current store type.
   @override
   Future<InStoreAppVersionCheckerResult> checkUpdate() async {
-    final packageInfo = await PackageInfo.fromPlatform();
-    final packageName = appId ?? packageInfo.packageName;
-    final currentVersion = this.currentVersion ?? packageInfo.version;
+    final appMetadata = await AppMetadata.fromPlatform();
+    final packageName = appId ?? appMetadata.packageName;
+    final currentVersion = this.currentVersion ?? appMetadata.version;
     if (_isAndroid) {
       return await switch (androidStore) {
-        AndroidStore.apkPure =>
-          _checkPlayStore$ApkPure(currentVersion, packageName),
+        AndroidStore.apkPure => _checkPlayStore$ApkPure(
+          currentVersion,
+          packageName,
+        ),
         _ => _checkPlayStoreV2(currentVersion, packageName),
       };
     } else if (_isIOS) {
@@ -269,23 +271,21 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
     StackTrace? stackTrace;
 
     try {
-      final uri = Uri.https(
-        'itunes.apple.com',
-        '/$locale/lookup',
-        {
-          'bundleId': packageName,
-          '_ts': DateTime.now().millisecondsSinceEpoch.toString(),
-        },
-      );
-      final response =
-          await _httpClient.get(uri).timeout(const Duration(seconds: 15));
+      final uri = Uri.https('itunes.apple.com', '/$locale/lookup', {
+        'bundleId': packageName,
+        '_ts': DateTime.now().millisecondsSinceEpoch.toString(),
+      });
+      final response = await _httpClient
+          .get(uri)
+          .timeout(const Duration(seconds: 15));
       if (response.statusCode != 200) {
         errorMsg =
             "Can't find an app in the Apple Store with the id: $packageName";
       } else {
         final jsonObj = jsonDecode(response.body);
-        final results =
-            List<dynamic>.from(jsonObj['results'] as Iterable<dynamic>);
+        final results = List<dynamic>.from(
+          jsonObj['results'] as Iterable<dynamic>,
+        );
 
         if (results.isEmpty) {
           errorMsg =
@@ -362,27 +362,27 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
     String? newVersion, errorMsg, url;
     StackTrace? stackTrace;
     try {
-      final uri = Uri.https(
-        'play.google.com',
-        '/store/apps/details',
-        <String, Object?>{
-          'id': packageName,
-          'hl': locale,
-          '_ts': DateTime.now().millisecondsSinceEpoch.toString(),
-        },
-      );
+      final uri =
+          Uri.https('play.google.com', '/store/apps/details', <String, Object?>{
+            'id': packageName,
+            'hl': locale,
+            '_ts': DateTime.now().millisecondsSinceEpoch.toString(),
+          });
 
-      final response =
-          await _httpClient.get(uri).timeout(const Duration(seconds: 15));
+      final response = await _httpClient
+          .get(uri)
+          .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final body = response.body;
 
-        newVersion =
-            RegExp(r',\[\[\["([0-9,\.]*)"]],').firstMatch(body)?.group(1);
+        newVersion = RegExp(
+          r',\[\[\["([0-9,\.]*)"]],',
+        ).firstMatch(body)?.group(1);
 
-        newVersion ??=
-            RegExp(r'\"([0-9]+\.[0-9]+\.[0-9]+)\"').firstMatch(body)?.group(1);
+        newVersion ??= RegExp(
+          r'\"([0-9]+\.[0-9]+\.[0-9]+)\"',
+        ).firstMatch(body)?.group(1);
 
         if (newVersion != null) {
           url = uri.toString();
@@ -395,8 +395,9 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
           '/v1.2/apps/$packageName',
         );
 
-        final apiResponse =
-            await _httpClient.get(apiUri).timeout(const Duration(seconds: 15));
+        final apiResponse = await _httpClient
+            .get(apiUri)
+            .timeout(const Duration(seconds: 15));
         if (apiResponse.statusCode == 200) {
           final data = jsonDecode(apiResponse.body);
           newVersion = data['version']?.toString();
@@ -435,8 +436,9 @@ final class _InStoreAppVersionCheckerImpl implements InStoreAppVersionChecker {
 
     try {
       final uri = Uri.https('apkpure.com', '$packageName/$packageName');
-      final response =
-          await _httpClient.get(uri).timeout(const Duration(seconds: 15));
+      final response = await _httpClient
+          .get(uri)
+          .timeout(const Duration(seconds: 15));
       if (response.statusCode != 200) {
         errorMsg =
             "Can't find an app in the ApkPure Store with the id: $packageName";

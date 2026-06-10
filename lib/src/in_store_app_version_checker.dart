@@ -9,8 +9,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_interface.dart';
 import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_params.dart';
 import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_response.dart';
+import 'package:flutter_in_store_app_version_checker/src/util/app_metadata.dart';
 import 'package:http/http.dart' as http;
-import 'package:package_info_plus/package_info_plus.dart';
 
 /// {@template in_store_app_version_checker}
 /// [InStoreAppVersionChecker] is an implementation
@@ -21,16 +21,13 @@ import 'package:package_info_plus/package_info_plus.dart';
 /// {@endtemplate}
 final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
   /// {@macro in_store_app_version_checker}
-  InStoreAppVersionChecker._([
-    http.Client? httpClient,
-  ]) : _httpClient = httpClient ?? http.Client();
+  InStoreAppVersionChecker._([http.Client? httpClient])
+    : _httpClient = httpClient ?? http.Client();
 
   /// Create custom instance of [InStoreAppVersionChecker]
   /// with your own http client.
   /// {@macro in_store_app_version_checker}
-  factory InStoreAppVersionChecker.custom({
-    http.Client? httpClient,
-  }) =>
+  factory InStoreAppVersionChecker.custom({http.Client? httpClient}) =>
       InStoreAppVersionChecker._(httpClient);
 
   /// This is http client.
@@ -58,9 +55,9 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
     InStoreAppVersionCheckerParams params,
   ) async {
     try {
-      final packageInfo = await PackageInfo.fromPlatform();
-      final packageName = params.packageName ?? packageInfo.packageName;
-      final currentVersion = params.currentVersion ?? packageInfo.version;
+      final appMetadata = await AppMetadata.fromPlatform();
+      final packageName = params.packageName ?? appMetadata.packageName;
+      final currentVersion = params.currentVersion ?? appMetadata.version;
       if (_isAndroid) {
         return await switch (params.androidStore) {
           InStoreAppVersionCheckerAndroidStoreType.apkPure =>
@@ -104,14 +101,11 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
   ) async {
     String? newVersion, url;
     try {
-      final uri = Uri.https(
-        'itunes.apple.com',
-        '/$locale/lookup',
-        <String, Object?>{
-          'bundleId': packageName,
-          '_ts': DateTime.now().toUtc().millisecondsSinceEpoch.toString(),
-        },
-      );
+      final uri =
+          Uri.https('itunes.apple.com', '/$locale/lookup', <String, Object?>{
+            'bundleId': packageName,
+            '_ts': DateTime.now().toUtc().millisecondsSinceEpoch.toString(),
+          });
       final response = await _httpClient.get(uri);
       if (response.statusCode != 200) {
         return InStoreAppVersionCheckerResponse.error(
@@ -124,8 +118,9 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
         );
       } else {
         final jsonObj = jsonDecode(response.body);
-        final results =
-            List<Object?>.from(jsonObj['results'] as Iterable<Object?>);
+        final results = List<Object?>.from(
+          jsonObj['results'] as Iterable<Object?>,
+        );
 
         if (results.isEmpty) {
           return InStoreAppVersionCheckerResponse.error(
@@ -166,27 +161,27 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
   ) async {
     String? newVersion, url;
     try {
-      final uri = Uri.https(
-        'play.google.com',
-        '/store/apps/details',
-        <String, Object?>{
-          'id': packageName,
-          'hl': locale,
-          '_ts': DateTime.now().millisecondsSinceEpoch.toString(),
-        },
-      );
+      final uri =
+          Uri.https('play.google.com', '/store/apps/details', <String, Object?>{
+            'id': packageName,
+            'hl': locale,
+            '_ts': DateTime.now().millisecondsSinceEpoch.toString(),
+          });
 
-      final response =
-          await _httpClient.get(uri).timeout(const Duration(seconds: 15));
+      final response = await _httpClient
+          .get(uri)
+          .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final body = response.body;
 
-        newVersion =
-            RegExp(r',\[\[\["([0-9,\.]*)"]],').firstMatch(body)?.group(1);
+        newVersion = RegExp(
+          r',\[\[\["([0-9,\.]*)"]],',
+        ).firstMatch(body)?.group(1);
 
-        newVersion ??=
-            RegExp(r'\"([0-9]+\.[0-9]+\.[0-9]+)\"').firstMatch(body)?.group(1);
+        newVersion ??= RegExp(
+          r'\"([0-9]+\.[0-9]+\.[0-9]+)\"',
+        ).firstMatch(body)?.group(1);
 
         if (newVersion != null) {
           return InStoreAppVersionCheckerResponse.success(
@@ -203,8 +198,9 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
           '/v1.2/apps/$packageName',
         );
 
-        final apiResponse =
-            await _httpClient.get(apiUri).timeout(const Duration(seconds: 15));
+        final apiResponse = await _httpClient
+            .get(apiUri)
+            .timeout(const Duration(seconds: 15));
 
         if (apiResponse.statusCode == 200) {
           final data = jsonDecode(apiResponse.body);
