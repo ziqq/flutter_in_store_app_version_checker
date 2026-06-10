@@ -197,11 +197,17 @@ class _ExampleState extends State<Example> {
               // --- Loading state --- //
               if (updating || snapshot.connectionState == .waiting) {
                 return Center(
-                  child: Row(
+                  child: Column(
                     mainAxisAlignment: .center,
-                    spacing: 5,
+                    spacing: 8,
                     children: <Widget>[
-                      const CircularProgressIndicator.adaptive(),
+                      const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator.adaptive(
+                          strokeWidth: 2,
+                          strokeCap: .round,
+                        ),
+                      ),
                       Text(updating ? 'Updating...' : 'Loading...'),
                     ],
                   ),
