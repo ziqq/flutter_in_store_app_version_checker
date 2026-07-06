@@ -1,7 +1,23 @@
 # Changelog
 
+
+## 3.0.0
+- **DEPRECATED**: `InStoreAppVersionChecker.custom(...)` in favor of `InStoreAppVersionChecker.instanceFor(...)`
+- **ADDED**: The required `FlutterFramework` `Swift Package Manager` dependency
+- **ADDED**: Unit tests for `AppMetadata.fromPlatform`
+- **CHANGED**: Replaces `package_info_plus` with internal `AppMetadata` platform metadata lookup
+- **CHANGED**: Updates minimum supported SDK versions to Flutter `3.44.1` and Dart `3.12.1`
+- **CHANGED**: Refreshes `README`, `API descriptions`, and inline `documentation`
+- **CHANGED**: Migrates `Android` plugin and example app to built-in Kotlin
+- **CHANGED**: Example app migrated to `InStoreAppVersionChecker.instance.checkUpdate(...)`
+- **CHANGED**: Public package export now exposes only the response-based API
+- **REMOVED**: Legacy types `InStoreAppVersionCheckerResult` and `AndroidStore`
+- **REMOVED**: Legacy facade `InStoreAppVersionChecker(...)`
+
+
 ## 2.0.1
 - **CHANGED**: Bump dependencies
+
 
 ## 2.0.0
 - **DEPRECATED**: Legacy facade `InStoreAppVersionChecker` will be removed in next releases
@@ -16,11 +32,14 @@
 - **CHANGED**: Migration to a singleton instead of manual creation
 - **CHANGED**: Bump dependencies
 
+
 ## 1.11.0
-- **FIXED**: `canUpdate` returns allways false on Android, [#11](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/11)
+- **FIXED**: `canUpdate` returns always false on Android, [#11](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/11)
+
 
 ## 1.10.1
 - **CHANGED**: Bump dependencies
+
 
 ## 1.10.0
 - **ADDED**: Prevent cache hit on iOS (and Android) [pull_request](https://github.com/ziqq/flutter_in_store_app_version_checker/pull/9)
@@ -29,7 +48,7 @@
 
 ## 1.9.0
 - **ADDED**: `stackTrace` to [InStoreAppVersionCheckerResult]
-- **CHANGED**: parametrs of [InStoreAppVersionCheckerResult] to named
+- **CHANGED**: Parameters of [InStoreAppVersionCheckerResult] changed to named arguments
 - **CHANGED**: Android package name [#7](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/7)
 
 

@@ -88,47 +88,19 @@ class Example extends StatefulWidget {
 /// State of the [Example] widget.
 class _ExampleState extends State<Example> {
   final ValueNotifier<bool> _updating = ValueNotifier<bool>(false);
-  late final InStoreAppVersionChecker _freefirethChecker;
-  late final InStoreAppVersionChecker _robloxChecker;
-  late final InStoreAppVersionChecker _tiktokChecker;
   final _checker = InStoreAppVersionChecker.instance;
 
-  InStoreAppVersionCheckerResult? _freefireth;
-  InStoreAppVersionCheckerResult? _roblox;
-  InStoreAppVersionCheckerResult? _tiktok;
-
-  InStoreAppVersionCheckerResponse? _wildberries;
-  InStoreAppVersionCheckerResponse? _ozon;
+  InStoreAppVersionCheckerResponse? _wildberries,
+      _freefireth,
+      _roblox,
+      _tiktok,
+      _ozon;
 
   /// Whether the app is running on Android.
-  bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
+  bool get _isAndroid => defaultTargetPlatform == .android;
 
   /// Whether the app is running on iOS.
-  // ignore: unused_element
-  bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
-
-  @override
-  void initState() {
-    super.initState();
-    _freefirethChecker = InStoreAppVersionChecker(
-      appId: _isAndroid
-          ? kFreefirethStoreIDPair.googlePlayID
-          : kFreefirethStoreIDPair.appleStoreID,
-      currentVersion: kFreefirethStoreIDPair.currentVersion,
-    );
-    _robloxChecker = InStoreAppVersionChecker(
-      appId: _isAndroid
-          ? kRobloxStoreIDPair.googlePlayID
-          : kRobloxStoreIDPair.appleStoreID,
-      currentVersion: kRobloxStoreIDPair.currentVersion,
-    );
-    _tiktokChecker = InStoreAppVersionChecker(
-      appId: _isAndroid
-          ? kTikTokStoreIDPair.googlePlayID
-          : kTikTokStoreIDPair.appleStoreID,
-      currentVersion: kTikTokStoreIDPair.currentVersion,
-    );
-  }
+  bool get _isIOS => defaultTargetPlatform == .iOS; // ignore: unused_element
 
   @override
   void dispose() {
@@ -136,37 +108,42 @@ class _ExampleState extends State<Example> {
     super.dispose();
   }
 
+  /// Create [InStoreAppVersionCheckerParams] for a given [StoreIDPair].
+  InStoreAppVersionCheckerParams _paramsFor(
+    StoreIDPair storeIDPair, {
+    String locale = 'ru',
+  }) => InStoreAppVersionCheckerParams(
+    currentVersion: storeIDPair.currentVersion,
+    packageName: _isAndroid
+        ? storeIDPair.googlePlayID
+        : storeIDPair.appleStoreID,
+    locale: locale,
+  );
+
+  /// Check the current version of the app available in app stores
+  /// such as `AppStore`, `Google Play` and `ApkPure`,
+  /// comparing it with the installed version on the device.
   Future<void> _checkVersion({bool? refresh}) async {
     final stopwatch = Stopwatch()..start();
     try {
       if (refresh != null) _updating.value = true;
-      final ozonParams = InStoreAppVersionCheckerParams(
-        currentVersion: kOzonStoreIDPair.currentVersion,
-        packageName: _isAndroid
-            ? kOzonStoreIDPair.googlePlayID
-            : kOzonStoreIDPair.appleStoreID,
-        locale: 'ru',
-      );
-      final wildberisParams = InStoreAppVersionCheckerParams(
-        currentVersion: kWildberriesStoreIDPair.currentVersion,
-        packageName: _isAndroid
-            ? kWildberriesStoreIDPair.googlePlayID
-            : kWildberriesStoreIDPair.appleStoreID,
-        locale: 'ru',
-      );
-
-      _wildberries = await _checker.checkUpdate(wildberisParams);
-      _ozon = await _checker.checkUpdate(ozonParams);
-      _freefireth = await _freefirethChecker.checkUpdate();
-      _roblox = await _robloxChecker.checkUpdate();
-      _tiktok = await _tiktokChecker.checkUpdate();
-      /* await (
-        _checker.checkUpdate(wildberisParams).then((r) => _wildberries = r),
-        _checker.checkUpdate(ozonParams).then((r) => _ozon = r),
-        _robloxChecker.checkUpdate().then((r) => _roblox = r),
-        _tiktokChecker.checkUpdate().then((r) => _tiktok = r),
-        _freefirethChecker.checkUpdate().then((r) => _freefireth = r),
-      ).wait; */
+      await (
+        _checker
+            .checkUpdate(_paramsFor(kOzonStoreIDPair))
+            .then((r) => _ozon = r),
+        _checker
+            .checkUpdate(_paramsFor(kRobloxStoreIDPair))
+            .then((r) => _roblox = r),
+        _checker
+            .checkUpdate(_paramsFor(kTikTokStoreIDPair))
+            .then((r) => _tiktok = r),
+        _checker
+            .checkUpdate(_paramsFor(kFreefirethStoreIDPair))
+            .then((r) => _freefireth = r),
+        _checker
+            .checkUpdate(_paramsFor(kWildberriesStoreIDPair))
+            .then((r) => _wildberries = r),
+      ).wait;
     } on Object catch (e, _) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
@@ -206,7 +183,7 @@ class _ExampleState extends State<Example> {
       actions: <Widget>[
         IconButton(
           iconSize: 24,
-          padding: EdgeInsets.zero,
+          padding: .zero,
           onPressed: () => _checkVersion(refresh: true),
           icon: const Icon(CupertinoIcons.refresh),
         ),
@@ -223,11 +200,17 @@ class _ExampleState extends State<Example> {
               // --- Loading state --- //
               if (updating || snapshot.connectionState == .waiting) {
                 return Center(
-                  child: Row(
+                  child: Column(
                     mainAxisAlignment: .center,
-                    spacing: 5,
+                    spacing: 8,
                     children: <Widget>[
-                      const CircularProgressIndicator.adaptive(),
+                      const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator.adaptive(
+                          strokeWidth: 2,
+                          strokeCap: .round,
+                        ),
+                      ),
                       Text(updating ? 'Updating...' : 'Loading...'),
                     ],
                   ),
@@ -277,60 +260,48 @@ class _Section extends StatelessWidget {
     required this.title,
     required this.item,
     super.key, // ignore: unused_element_parameter
-  }) : assert(
-         item is InStoreAppVersionCheckerResult ||
-             item is InStoreAppVersionCheckerResponse,
-         r'item must be of type InStoreAppVersionCheckerResult or InStoreAppVersionCheckerResponse',
-       );
+  });
 
   final String title;
-  final Object? item;
+  final InStoreAppVersionCheckerResponse? item;
 
   @override
-  Widget build(BuildContext context) {
-    if (item == null) return const SizedBox.shrink();
-    final canUpdate = switch (item) {
-      InStoreAppVersionCheckerResponse i => i.canUpdate,
-      InStoreAppVersionCheckerResult i => i.canUpdate,
-      _ => false,
-    };
-    return SizedBox(
-      width: double.infinity,
-      child: Column(
-        crossAxisAlignment: .start,
-        spacing: 5,
-        children: <Widget>[
-          Row(
-            spacing: 10,
-            children: <Widget>[
-              Flexible(
-                child: Text(
-                  title,
-                  style: const TextStyle(fontWeight: .w600, fontSize: 17),
-                ),
+  Widget build(BuildContext context) => SizedBox(
+    width: double.infinity,
+    child: Column(
+      crossAxisAlignment: .start,
+      spacing: 5,
+      children: <Widget>[
+        Row(
+          spacing: 10,
+          children: <Widget>[
+            Flexible(
+              child: Text(
+                title,
+                style: const TextStyle(fontWeight: .w600, fontSize: 17),
               ),
-              if (canUpdate) ...[
-                Badge(
-                  label: const Text('Can update'),
-                  textColor: CupertinoDynamicColor.resolve(
-                    CupertinoColors.systemGreen,
-                    context,
-                  ),
-                  backgroundColor: CupertinoDynamicColor.resolve(
-                    CupertinoColors.systemGreen,
-                    context,
-                  ).withAlpha(25),
-                  padding: const .symmetric(horizontal: 8, vertical: 3),
+            ),
+            if (item?.canUpdate ?? false) ...[
+              Badge(
+                label: const Text('Can update'),
+                textColor: CupertinoDynamicColor.resolve(
+                  CupertinoColors.systemGreen,
+                  context,
                 ),
-              ],
+                backgroundColor: CupertinoDynamicColor.resolve(
+                  CupertinoColors.systemGreen,
+                  context,
+                ).withAlpha(25),
+                padding: const .symmetric(horizontal: 8, vertical: 3),
+              ),
             ],
-          ),
-          Text(
-            item.toString(),
-            style: const TextStyle(fontWeight: .normal, fontSize: 14),
-          ),
-        ],
-      ),
-    );
-  }
+          ],
+        ),
+        Text(
+          item.toString(),
+          style: const TextStyle(fontWeight: .normal, fontSize: 14),
+        ),
+      ],
+    ),
+  );
 }

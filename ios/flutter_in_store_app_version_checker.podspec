@@ -6,7 +6,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'flutter_in_store_app_version_checker'
-  s.version          = '2.0.0'
+  s.version          = '2.1.0'
   s.summary          = 'Lightweight flutter plugin to check if your app is up-to-date on GooglePlay or AppStore.'
   s.description      = 'Lightweight flutter plugin to check if your app is up-to-date on GooglePlay or AppStore.'
   s.homepage         = 'https://github.com/ziqq/flutter_in_store_app_version_checker'

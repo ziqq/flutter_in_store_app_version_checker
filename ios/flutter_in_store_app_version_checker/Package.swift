@@ -14,11 +14,15 @@ let package = Package(
             targets: ["flutter_in_store_app_version_checker"]
         )
     ],
-    dependencies: [],
+    dependencies: [
+        .package(name: "FlutterFramework", path: "../FlutterFramework")
+    ],
     targets: [
         .target(
             name: "flutter_in_store_app_version_checker",
-            dependencies: [],
+            dependencies: [
+                .product(name: "FlutterFramework", package: "FlutterFramework")
+            ],
             path: "Sources/flutter_in_store_app_version_checker",
             exclude: [
                 "InStoreAppVersionCheckerPlugin.m",
