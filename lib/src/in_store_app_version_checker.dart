@@ -198,45 +198,34 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
         }
       }
 
-      if (newVersion == null) {
-        final apiUri = Uri.https(
-          'api.playstoreapi.com',
-          '/v1.2/apps/$packageName',
-        );
-
-        final apiResponse = await _httpClient
-            .get(apiUri)
-            .timeout(const Duration(seconds: 15));
-
-        if (apiResponse.statusCode == 200) {
-          final data = jsonDecode(apiResponse.body);
-          newVersion = data['version']?.toString();
-          url = 'https://play.google.com/store/apps/details?id=$packageName';
-          return InStoreAppVersionCheckerResponse.success(
-            currentVersion: currentVersion,
-            newVersion: newVersion,
-            appURL: url,
-          );
-        } else {
-          return InStoreAppVersionCheckerResponse.error(
-            currentVersion: currentVersion,
-            newVersion: newVersion,
-            appURL: url,
-            stackTrace: StackTrace.current,
-            errorMessage:
-                'PlayStoreApi error: ${apiResponse.statusCode} ${apiResponse.reasonPhrase}',
-          );
-        }
-      }
-
-      return InStoreAppVersionCheckerResponse.error(
-        currentVersion: currentVersion,
-        newVersion: newVersion,
-        appURL: url,
-        stackTrace: StackTrace.current,
-        errorMessage:
-            'Cannot find an app in the Play Store with the id: $packageName',
+      final apiUri = Uri.https(
+        'api.playstoreapi.com',
+        '/v1.2/apps/$packageName',
       );
+
+      final apiResponse = await _httpClient
+          .get(apiUri)
+          .timeout(const Duration(seconds: 15));
+
+      if (apiResponse.statusCode == 200) {
+        final data = jsonDecode(apiResponse.body);
+        newVersion = data['version']?.toString();
+        url = 'https://play.google.com/store/apps/details?id=$packageName';
+        return InStoreAppVersionCheckerResponse.success(
+          currentVersion: currentVersion,
+          newVersion: newVersion,
+          appURL: url,
+        );
+      } else {
+        return InStoreAppVersionCheckerResponse.error(
+          currentVersion: currentVersion,
+          newVersion: newVersion,
+          appURL: url,
+          stackTrace: StackTrace.current,
+          errorMessage:
+              'PlayStoreApi error: ${apiResponse.statusCode} ${apiResponse.reasonPhrase}',
+        );
+      }
     } on Object catch (e, st) {
       return InStoreAppVersionCheckerResponse.error(
         currentVersion: currentVersion,

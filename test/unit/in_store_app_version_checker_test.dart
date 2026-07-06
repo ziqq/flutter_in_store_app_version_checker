@@ -323,6 +323,23 @@ void main() {
         expect(r.newVersion, isNull);
         expect(r.canUpdate, isFalse);
       });
+
+      test('request exception -> error', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        when(mockHttpClient.get(any)).thenThrow(StateError('apkpure boom'));
+        final r =
+            await InStoreAppVersionChecker.instanceFor(
+              httpClient: mockHttpClient,
+            ).checkUpdate(
+              const InStoreAppVersionCheckerParams(
+                locale: 'en',
+                androidStore: InStoreAppVersionCheckerAndroidStoreType.apkPure,
+              ),
+            );
+        expect(r.isError, isTrue);
+        expect(r.errorMessage, contains('apkpure boom'));
+        expect(r.canUpdate, isFalse);
+      });
     });
 
     group('Unsupported platform', () {
@@ -373,6 +390,20 @@ void main() {
           ),
           isTrue,
         );
+      });
+
+      test('custom factory forwards custom client', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        when(
+          mockHttpClient.get(any),
+        ).thenAnswer((_) async => http.Response(',[[["1.0.1"]],', 200));
+
+        final result = await InStoreAppVersionChecker.custom(
+          httpClient: mockHttpClient,
+        ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
+
+        expect(result.isSuccess, isTrue);
+        expect(result.newVersion, '1.0.1');
       });
 
       test('instanceFor without client creates a usable checker', () async {
