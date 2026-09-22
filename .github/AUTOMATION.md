@@ -38,6 +38,16 @@ Lifecycle transitions:
 - manually assigning lifecycle labels normalizes mutually exclusive states;
 - Markdown and test changes add their configured path labels to pull requests.
 
+## GitHub releases
+
+`.github/workflows/release.yml` creates a GitHub release when an exact stable
+semantic version tag such as `v3.1.0` is pushed. The release is named
+`Release v3.1.0` and uses `Automated release for version v3.1.0` as its body.
+Existing releases are left unchanged, so rerunning the workflow is safe.
+
+The release workflow runs independently from the pub.dev publication workflow.
+Both are triggered by the version tag created and pushed with `make tag`.
+
 ## Manual plan and apply
 
 Run the `Semantic labels` workflow from the Actions tab. Manual runs default to
