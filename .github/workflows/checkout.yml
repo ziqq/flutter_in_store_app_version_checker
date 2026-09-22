@@ -212,7 +212,9 @@ jobs:
           template-path: .github/notify/ci.md.tmpl
           variables: |
             {
-              "status": ${{ toJSON(needs.checkout.result) }}
+              "event_label": ${{ toJSON(github.event_name == 'push' && 'Push' || github.event_name == 'pull_request' && 'Pull request' || github.event_name == 'workflow_dispatch' && 'Manual run' || github.event_name) }},
+              "status_icon": ${{ toJSON(needs.checkout.result == 'success' && '✅' || needs.checkout.result == 'cancelled' && '⏹️' || '❌') }},
+              "status_label": ${{ toJSON(needs.checkout.result == 'success' && 'passed' || needs.checkout.result == 'cancelled' && 'cancelled' || 'failed') }}
             }
           failure-policy: best-effort
           timeout-ms: "10000"
