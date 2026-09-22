@@ -2,7 +2,7 @@ name: flutter_in_store_app_version_checker
 
 description: A lightweight Flutter plugin to check app versions in Google Play, Apple App Store, ApkPure, RuStore, and AppGallery
 
-version: 3.1.0
+version: 3.1.0-dev.1
 
 homepage: https://github.com/ziqq/flutter_in_store_app_version_checker
 

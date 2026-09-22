@@ -1,7 +1,7 @@
 # Changelog
 
 
-## 3.1.0
+## 3.1.0-dev.1
 - **ADDED**: RuStore version checks through public catalog JSON-LD ([#20](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/20))
 - **ADDED**: AppGallery web checks for arbitrary applications through `storeID`
 - **ADDED**: Official AppGallery native checks through Huawei `AppUpdateClient`
