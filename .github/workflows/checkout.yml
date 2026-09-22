@@ -212,6 +212,7 @@ jobs:
           template-path: .github/notify/ci.md.tmpl
           variables: |
             {
+              "package_url": "https://pub.dev/packages/flutter_in_store_app_version_checker",
               "status_label": ${{ toJSON(needs.checkout.result == 'success' && 'success' || needs.checkout.result == 'cancelled' && 'cancelled' || 'failure') }}
             }
           failure-policy: best-effort
