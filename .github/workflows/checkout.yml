@@ -163,3 +163,59 @@ jobs:
         with:
           files: ./coverage/lcov.info
           token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+
+  notify:
+    name: Notify CI result
+    needs: checkout
+    if: >-
+      always() &&
+      github.actor != 'dependabot[bot]' &&
+      (github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    env:
+      NOTIFY_DISCORD_WEBHOOKS: ${{ secrets.DISCORD_WEBHOOKS }}
+      NOTIFY_TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      NOTIFY_TELEGRAM_TARGETS: ${{ secrets.TELEGRAM_TARGETS }}
+    steps:
+      - name: Report missing notification secrets
+        if: >-
+          env.NOTIFY_DISCORD_WEBHOOKS == '' ||
+          env.NOTIFY_TELEGRAM_BOT_TOKEN == '' ||
+          env.NOTIFY_TELEGRAM_TARGETS == ''
+        shell: bash
+        run: >-
+          echo "::warning::CI notification skipped because one or more notification secrets are not configured."
+
+      - name: Checkout trusted notification template
+        if: >-
+          env.NOTIFY_DISCORD_WEBHOOKS != '' &&
+          env.NOTIFY_TELEGRAM_BOT_TOKEN != '' &&
+          env.NOTIFY_TELEGRAM_TARGETS != ''
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.sha }}
+
+      - name: Notify Discord and Telegram
+        if: >-
+          env.NOTIFY_DISCORD_WEBHOOKS != '' &&
+          env.NOTIFY_TELEGRAM_BOT_TOKEN != '' &&
+          env.NOTIFY_TELEGRAM_TARGETS != '' &&
+          hashFiles('.github/notify/ci.md.tmpl') != ''
+        uses: ziqq/actions/notify@13a75bd597578c7ca9109d6a43c772cb3b023e9e
+        with:
+          providers: discord,telegram
+          template-path: .github/notify/ci.md.tmpl
+          variables: |
+            {
+              "status": ${{ toJSON(needs.checkout.result) }}
+            }
+          failure-policy: best-effort
+          timeout-ms: "10000"
+          max-attempts: "5"
+          discord-webhooks: ${{ env.NOTIFY_DISCORD_WEBHOOKS }}
+          telegram-bot-token: ${{ env.NOTIFY_TELEGRAM_BOT_TOKEN }}
+          telegram-targets: ${{ env.NOTIFY_TELEGRAM_TARGETS }}
