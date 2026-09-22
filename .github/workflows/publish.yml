@@ -32,7 +32,7 @@ jobs:
         uses: ziqq/actions/notify@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
         with:
           providers: discord,telegram
-          template-path: .github/notify/release.md.tmpl
+          template-path: .github/notify/templates/release.md
           variables: |
             {
               "status": "${{ needs.publish.result }}"

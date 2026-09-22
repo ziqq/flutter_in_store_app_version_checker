@@ -101,7 +101,7 @@ API `getUpdates` method. Read `message.chat.id`; channel updates use
 Never commit or paste the bot token, webhook URL, or target list into workflow
 files.
 
-All templates live in `.github/notify/`. Dynamic issue titles are escaped by
-the action. Delivery uses a 10-second per-request timeout and at most five
-attempts for retryable failures. Logs and outputs contain neither credentials,
-target identifiers, nor rendered message bodies.
+All templates live in `.github/notify/templates/`. Dynamic issue titles are
+escaped by the action. Delivery uses a 10-second per-request timeout and at
+most five attempts for retryable failures. Logs and outputs contain neither
+credentials, target identifiers, nor rendered message bodies.
