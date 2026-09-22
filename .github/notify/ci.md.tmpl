@@ -1,2 +1,7 @@
-**{{status_icon}} CI {{status_label}}** · **{{github.repository}}**
-`{{github.ref_name}}` · [Run #{{github.run_number}} ↗]({{url github.run_url}}) · {{event_label}} by **{{github.actor}}**
+**{{github.workflow}}: {{github.repository}}**
+
+Status: **{{status_label}}**
+Ref: `{{github.ref_name}}`
+Triggered by: {{github.actor}}
+
+[Open workflow run]({{url github.run_url}})
