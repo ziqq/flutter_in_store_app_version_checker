@@ -54,6 +54,10 @@ const StoreIDPair kOzonStoreIDPair = (
   currentVersion: '',
 );
 
+const _tetradkaPackageName = 'ru.beautybox.twa';
+const _tetradkaAppGalleryStoreID = 'C107631977';
+const _tetradkaCurrentVersion = '38.2.0';
+
 void main() => runZonedGuarded<void>(
   () => runApp(const App()),
   (e, s) => dev.log('Top level exception: $e\n$s'),
@@ -89,18 +93,28 @@ class Example extends StatefulWidget {
 class _ExampleState extends State<Example> {
   final ValueNotifier<bool> _updating = ValueNotifier<bool>(false);
   final _checker = InStoreAppVersionChecker.instance;
+  Future<void>? _checkFuture;
 
   InStoreAppVersionCheckerResponse? _wildberries,
       _freefireth,
       _roblox,
       _tiktok,
-      _ozon;
+      _ozon,
+      _ruStore,
+      _appGallery,
+      _appGalleryNative;
 
   /// Whether the app is running on Android.
   bool get _isAndroid => defaultTargetPlatform == .android;
 
   /// Whether the app is running on iOS.
   bool get _isIOS => defaultTargetPlatform == .iOS; // ignore: unused_element
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _checkFuture ??= _checkVersion();
+  }
 
   @override
   void dispose() {
@@ -118,14 +132,16 @@ class _ExampleState extends State<Example> {
         locale: View.of(context).platformDispatcher.locale.toLanguageTag(),
       );
 
+  String get _locale =>
+      View.of(context).platformDispatcher.locale.toLanguageTag();
+
   /// Check the current version of the app available in app stores
-  /// such as `AppStore`, `Google Play` and `ApkPure`,
+  /// such as `AppStore`, `Google Play`, `ApkPure`, `RuStore`, and `AppGallery`,
   /// comparing it with the installed version on the device.
-  Future<void> _checkVersion({bool? refresh}) async {
+  Future<void> _checkVersion() async {
     final stopwatch = Stopwatch()..start();
     try {
-      if (refresh != null) _updating.value = true;
-      await (
+      await <Future<void>>[
         _checker
             .checkUpdate(_paramsFor(kOzonStoreIDPair))
             .then((r) => _ozon = r),
@@ -141,7 +157,41 @@ class _ExampleState extends State<Example> {
         _checker
             .checkUpdate(_paramsFor(kWildberriesStoreIDPair))
             .then((r) => _wildberries = r),
-      ).wait;
+        if (_isAndroid) ...<Future<void>>[
+          _checker
+              .checkUpdate(
+                InStoreAppVersionCheckerParams(
+                  locale: _locale,
+                  packageName: _tetradkaPackageName,
+                  currentVersion: _tetradkaCurrentVersion,
+                  androidStore:
+                      InStoreAppVersionCheckerAndroidStoreType.ruStore,
+                ),
+              )
+              .then((r) => _ruStore = r),
+          _checker
+              .checkUpdate(
+                InStoreAppVersionCheckerParams(
+                  locale: _locale,
+                  packageName: _tetradkaPackageName,
+                  storeID: _tetradkaAppGalleryStoreID,
+                  currentVersion: _tetradkaCurrentVersion,
+                  androidStore:
+                      InStoreAppVersionCheckerAndroidStoreType.appGallery,
+                ),
+              )
+              .then((r) => _appGallery = r),
+          _checker
+              .checkUpdate(
+                InStoreAppVersionCheckerParams(
+                  locale: _locale,
+                  androidStore:
+                      InStoreAppVersionCheckerAndroidStoreType.appGalleryNative,
+                ),
+              )
+              .then((r) => _appGalleryNative = r),
+        ],
+      ].wait;
     } on Object catch (e, _) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
@@ -161,13 +211,20 @@ class _ExampleState extends State<Example> {
           ),
         );
     } finally {
-      _updating.value = false;
       dev.log(
         '${(stopwatch..stop()).elapsedMicroseconds / 10000} μs',
         name: 'check_version',
         level: 100,
       );
     }
+  }
+
+  Future<void> _refresh() async {
+    _updating.value = true;
+    final future = _checkVersion();
+    setState(() => _checkFuture = future);
+    await future;
+    if (mounted) _updating.value = false;
   }
 
   @override
@@ -182,7 +239,7 @@ class _ExampleState extends State<Example> {
         IconButton(
           iconSize: 24,
           padding: .zero,
-          onPressed: () => _checkVersion(refresh: true),
+          onPressed: _refresh,
           icon: const Icon(CupertinoIcons.refresh),
         ),
       ],
@@ -193,7 +250,7 @@ class _ExampleState extends State<Example> {
         child: ValueListenableBuilder(
           valueListenable: _updating,
           builder: (_, updating, _) => FutureBuilder(
-            future: _checkVersion(),
+            future: _checkFuture,
             builder: (context, snapshot) {
               // --- Loading state --- //
               if (updating || snapshot.connectionState == .waiting) {
@@ -234,11 +291,28 @@ class _ExampleState extends State<Example> {
                 child: Column(
                   spacing: 16,
                   children: <Widget>[
-                    _Section(title: 'Ozon', item: _ozon),
-                    _Section(title: 'Wildberries', item: _wildberries),
-                    _Section(title: 'Roblox', item: _roblox),
-                    _Section(title: 'Tik Tok', item: _tiktok),
-                    _Section(title: 'Freefeireth', item: _freefireth),
+                    StoreResultSection(title: 'Ozon', item: _ozon),
+                    StoreResultSection(
+                      title: 'Wildberries',
+                      item: _wildberries,
+                    ),
+                    StoreResultSection(title: 'Roblox', item: _roblox),
+                    StoreResultSection(title: 'Tik Tok', item: _tiktok),
+                    StoreResultSection(title: 'Freefeireth', item: _freefireth),
+                    if (_isAndroid) ...<Widget>[
+                      StoreResultSection(
+                        title: 'Tetradka · RuStore',
+                        item: _ruStore,
+                      ),
+                      StoreResultSection(
+                        title: 'Tetradka · AppGallery web',
+                        item: _appGallery,
+                      ),
+                      StoreResultSection(
+                        title: 'Installed app · AppGallery native',
+                        item: _appGalleryNative,
+                      ),
+                    ],
                   ],
                 ),
               );
@@ -250,11 +324,11 @@ class _ExampleState extends State<Example> {
   );
 }
 
-/// _Section widget.
+/// Displays a store-check result.
 /// {@macro example}
-class _Section extends StatelessWidget {
+class StoreResultSection extends StatelessWidget {
   /// {@macro main}
-  const _Section({
+  const StoreResultSection({
     required this.title,
     required this.item,
     super.key, // ignore: unused_element_parameter
@@ -264,42 +338,53 @@ class _Section extends StatelessWidget {
   final InStoreAppVersionCheckerResponse? item;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-    width: double.infinity,
-    child: Column(
-      crossAxisAlignment: .start,
-      spacing: 5,
-      children: <Widget>[
-        Row(
-          spacing: 10,
-          children: <Widget>[
-            Flexible(
-              child: Text(
-                title,
-                style: const TextStyle(fontWeight: .w600, fontSize: 17),
-              ),
-            ),
-            if (item?.canUpdate ?? false) ...[
-              Badge(
-                label: const Text('Can update'),
-                textColor: CupertinoDynamicColor.resolve(
-                  CupertinoColors.systemGreen,
-                  context,
+  Widget build(BuildContext context) {
+    final response = item;
+    final (status, color) = switch (response) {
+      null => ('Not checked', CupertinoColors.systemGrey),
+      _ when response.isError => ('Error', CupertinoColors.systemRed),
+      _ when response.canUpdate => ('Can update', CupertinoColors.systemGreen),
+      _ => ('Up to date', CupertinoColors.systemBlue),
+    };
+    final resolvedColor = CupertinoDynamicColor.resolve(color, context);
+
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: .start,
+        spacing: 5,
+        children: <Widget>[
+          Row(
+            spacing: 10,
+            children: <Widget>[
+              Flexible(
+                child: Text(
+                  title,
+                  style: const TextStyle(fontWeight: .w600, fontSize: 17),
                 ),
-                backgroundColor: CupertinoDynamicColor.resolve(
-                  CupertinoColors.systemGreen,
-                  context,
-                ).withAlpha(25),
+              ),
+              Badge(
+                label: Text(status),
+                textColor: resolvedColor,
+                backgroundColor: resolvedColor.withAlpha(25),
                 padding: const .symmetric(horizontal: 8, vertical: 3),
               ),
             ],
+          ),
+          if (response == null)
+            const Text('No result yet.')
+          else if (response.isError)
+            Text(
+              response.errorMessage ?? 'Unknown store error.',
+              style: TextStyle(color: resolvedColor),
+            )
+          else ...<Widget>[
+            Text('Current version: ${response.currentVersion}'),
+            Text('Store version: ${response.newVersion ?? 'not reported'}'),
+            Text('App URL: ${response.appURL ?? 'not reported'}'),
           ],
-        ),
-        Text(
-          item.toString(),
-          style: const TextStyle(fontWeight: .normal, fontSize: 14),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }
