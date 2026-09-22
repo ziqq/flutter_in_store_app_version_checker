@@ -9,7 +9,12 @@ rootProject.allprojects {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://developer.huawei.com/repo/' }
     }
+}
+
+dependencies {
+    implementation 'com.huawei.hms:appservice:6.16.2.300'
 }
 
 android {

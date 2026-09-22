@@ -1,0 +1,50 @@
+name: Notifications
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+
+jobs:
+  issue-opened:
+    if: github.event_name == 'issues' && github.event.action == 'opened'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      NOTIFY_DISCORD_WEBHOOKS: ${{ secrets.DISCORD_WEBHOOKS }}
+      NOTIFY_TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      NOTIFY_TELEGRAM_TARGETS: ${{ secrets.TELEGRAM_TARGETS }}
+    steps:
+      - name: Verify notification secrets
+        if: >-
+          env.NOTIFY_DISCORD_WEBHOOKS == '' ||
+          env.NOTIFY_TELEGRAM_BOT_TOKEN == '' ||
+          env.NOTIFY_TELEGRAM_TARGETS == ''
+        shell: bash
+        run: |
+          echo "::error::Configure DISCORD_WEBHOOKS, TELEGRAM_BOT_TOKEN, and TELEGRAM_TARGETS."
+          exit 1
+
+      - name: Checkout trusted notification template
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Notify about new issue
+        uses: ziqq/actions/notify@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
+        with:
+          providers: discord,telegram
+          template-path: .github/notify/templates/issue.md
+          variables: |
+            {
+              "issue_number": ${{ toJSON(github.event.issue.number) }},
+              "issue_title": ${{ toJSON(github.event.issue.title) }},
+              "issue_author": ${{ toJSON(github.event.issue.user.login) }},
+              "issue_url": ${{ toJSON(github.event.issue.html_url) }}
+            }
+          failure-policy: required
+          timeout-ms: "10000"
+          max-attempts: "5"
+          discord-webhooks: ${{ env.NOTIFY_DISCORD_WEBHOOKS }}
+          telegram-bot-token: ${{ env.NOTIFY_TELEGRAM_BOT_TOKEN }}
+          telegram-targets: ${{ env.NOTIFY_TELEGRAM_TARGETS }}

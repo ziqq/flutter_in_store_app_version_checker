@@ -9,14 +9,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_interface.dart';
 import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_params.dart';
 import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_response.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/app_gallery_web_store.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/ru_store.dart';
+import 'package:flutter_in_store_app_version_checker/src/util/app_gallery_native.dart';
 import 'package:flutter_in_store_app_version_checker/src/util/app_metadata.dart';
 import 'package:http/http.dart' as http;
 
 /// {@template in_store_app_version_checker}
 /// [InStoreAppVersionChecker] is an implementation
 /// of [IInStoreAppVersionChecker] for checking the current version
-/// of an app available in app stores such as `AppStore`, `Google Play`
-/// and `ApkPure`, comparing it with the installed version on the device.
+/// of an app available in app stores such as `AppStore`, `Google Play`,
+/// `ApkPure`, `RuStore`, and `AppGallery`, comparing it with the installed
+/// version on the device.
 /// It supports both `Android` and `iOS` platforms.
 /// {@endtemplate}
 final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
@@ -61,7 +65,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
   bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
 
   /// Check the current version of the app available in app stores
-  /// such as `AppStore`, `Google Play` and `ApkPure`,
+  /// such as `AppStore`, `Google Play`, `ApkPure`, `RuStore`, and `AppGallery`,
   /// comparing it with the installed version on the device.
   @override
   Future<InStoreAppVersionCheckerResponse> checkUpdate(
@@ -75,7 +79,26 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
         return await switch (params.androidStore) {
           InStoreAppVersionCheckerAndroidStoreType.apkPure =>
             _checkPlayStore$ApkPure(currentVersion, packageName),
-          _ => _checkPlayStore(currentVersion, packageName, params.locale),
+          InStoreAppVersionCheckerAndroidStoreType.ruStore => _checkRuStore(
+            currentVersion,
+            packageName,
+          ),
+          InStoreAppVersionCheckerAndroidStoreType.appGallery =>
+            _checkAppGallery(
+              currentVersion: currentVersion,
+              expectedPackageName: params.packageName,
+              locale: params.locale,
+              storeID: params.storeID,
+            ),
+          InStoreAppVersionCheckerAndroidStoreType.appGalleryNative =>
+            _checkAppGallery$Native(
+              currentPackageName: appMetadata.packageName,
+              currentVersion: appMetadata.version,
+              hasOverrides:
+                  params.packageName != null || params.currentVersion != null,
+            ),
+          InStoreAppVersionCheckerAndroidStoreType.googlePlayStore =>
+            _checkPlayStore(currentVersion, packageName, params.locale),
         };
       } else if (_isIOS) {
         return await _checkAppleStore(
@@ -258,7 +281,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
     }
   }
 
-  static String _resolveLocaleForGooglePlay(String locale) {
+  String _resolveLocaleForGooglePlay(String locale) {
     final value = locale.trim();
     final match = _localePattern.firstMatch(value);
     if (match == null || match.end != value.length) return locale;
@@ -273,7 +296,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
     ].join('-');
   }
 
-  static String _resolveCountryForAppleStore(String locale) {
+  String _resolveCountryForAppleStore(String locale) {
     final value = locale.trim();
     final match = _localePattern.firstMatch(value);
     if (match != null && match.end == value.length) {
@@ -329,6 +352,126 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
         error: e,
         stackTrace: st,
         errorMessage: e.toString(),
+      );
+    }
+  }
+
+  /// Check update in [RuStore].
+  Future<InStoreAppVersionCheckerResponse> _checkRuStore(
+    String currentVersion,
+    String packageName,
+  ) async {
+    String? newVersion, url;
+    try {
+      final listing = await RuStore(_httpClient).getListing(packageName);
+      newVersion = listing.version;
+      url = listing.appURL;
+      return InStoreAppVersionCheckerResponse.success(
+        currentVersion: currentVersion,
+        newVersion: newVersion,
+        appURL: url,
+      );
+    } on Object catch (error, stackTrace) {
+      return InStoreAppVersionCheckerResponse.error(
+        currentVersion: currentVersion,
+        newVersion: newVersion,
+        appURL: url,
+        error: error,
+        stackTrace: stackTrace,
+        errorMessage: error.toString(),
+      );
+    }
+  }
+
+  /// Check an arbitrary application in [AppGallery] by its store ID.
+  Future<InStoreAppVersionCheckerResponse> _checkAppGallery({
+    required String currentVersion,
+    required String locale,
+    required String? storeID,
+    String? expectedPackageName,
+  }) async {
+    String? newVersion, url;
+    try {
+      final resolvedStoreID = storeID?.trim();
+      if (resolvedStoreID == null ||
+          !RegExp(r'^C\d+$').hasMatch(resolvedStoreID)) {
+        throw FormatException(
+          'AppGallery web checks require storeID in the format "C107631977".',
+          storeID,
+        );
+      }
+
+      final listing = await AppGalleryWebStore(_httpClient).getListing(
+        storeID: resolvedStoreID,
+        locale: locale,
+        expectedPackageName: expectedPackageName,
+      );
+      newVersion = listing.version;
+      url = listing.appURL;
+      return InStoreAppVersionCheckerResponse.success(
+        currentVersion: currentVersion,
+        newVersion: newVersion,
+        appURL: url,
+      );
+    } on Object catch (error, stackTrace) {
+      return InStoreAppVersionCheckerResponse.error(
+        currentVersion: currentVersion,
+        newVersion: newVersion,
+        appURL: url,
+        error: error,
+        stackTrace: stackTrace,
+        errorMessage: error.toString(),
+      );
+    }
+  }
+
+  /// Check the installed application with Huawei `AppUpdateClient`.
+  Future<InStoreAppVersionCheckerResponse> _checkAppGallery$Native({
+    required String currentPackageName,
+    required String currentVersion,
+    required bool hasOverrides,
+  }) async {
+    String? newVersion, url;
+    try {
+      if (hasOverrides) {
+        throw ArgumentError(
+          'AppGallery native checks do not support packageName or '
+          'currentVersion overrides.',
+        );
+      }
+
+      final result = await AppGalleryNative.checkUpdate();
+      if (result.packageName != null &&
+          result.packageName != currentPackageName) {
+        throw StateError(
+          'Huawei AppUpdateClient returned package "${result.packageName}" '
+          'for installed package "$currentPackageName".',
+        );
+      }
+
+      newVersion = result.version;
+      final storeID = result.storeID;
+      if (storeID != null) {
+        url = Uri(
+          scheme: 'https',
+          host: 'appgallery.huawei.com',
+          path: '/',
+          fragment: '/app/$storeID',
+        ).toString();
+      }
+      return InStoreAppVersionCheckerResponse.success(
+        currentVersion: currentVersion,
+        newVersion: newVersion,
+        appURL: url,
+      );
+    } on Object catch (error, stackTrace) {
+      return InStoreAppVersionCheckerResponse.error(
+        currentVersion: currentVersion,
+        newVersion: newVersion,
+        appURL: url,
+        error: error,
+        stackTrace: stackTrace,
+        errorMessage: error.toString(),
       );
     }
   }

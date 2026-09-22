@@ -1,0 +1,196 @@
+name: Semantic labels
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/labels.json
+      - .github/workflows/labels.yml
+  create:
+  pull_request_target:
+    types: [opened, reopened, ready_for_review, synchronize, closed, labeled, unlabeled]
+  issues:
+    types: [labeled, unlabeled]
+  discussion:
+    types: [labeled, unlabeled]
+  issue_comment:
+    types: [created]
+  discussion_comment:
+    types: [created]
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Manual semantic operation
+        type: choice
+        required: true
+        default: sync-labels
+        options:
+          - sync-labels
+          - apply
+      transition:
+        description: Transition ID for apply
+        type: string
+        required: false
+      target_numbers:
+        description: Comma-separated target numbers for apply
+        type: string
+        required: false
+      target_kind:
+        description: Target kind for apply
+        type: choice
+        required: true
+        default: issue
+        options:
+          - issue
+          - pull-request
+          - discussion
+      dry_run:
+        description: Build a plan without mutations
+        type: boolean
+        required: true
+        default: true
+      allow_pattern_removal:
+        description: Allow removeIdPatterns in the selected transition
+        type: boolean
+        required: true
+        default: false
+      allow_label_deletion:
+        description: Allow configured orphan label deletion
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: labels-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && inputs.operation == 'sync-labels')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: ziqq/actions/labeler@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
+        with:
+          operation: sync-labels
+          github-token: ${{ github.token }}
+          dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+          allow-label-deletion: ${{ github.event_name == 'workflow_dispatch' && inputs.allow_label_deletion || false }}
+
+  branch-created:
+    if: github.event_name == 'create' && github.event.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - uses: ziqq/actions/labeler@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
+        with:
+          operation: branch-created
+          github-token: ${{ github.token }}
+          allow-empty: true
+
+  pull-request:
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      contains(fromJSON('["opened","reopened","ready_for_review","closed"]'), github.event.action)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: ziqq/actions/labeler@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
+        with:
+          operation: pull-request
+          github-token: ${{ github.token }}
+          allow-empty: true
+
+  path-labels:
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      contains(fromJSON('["opened","reopened","ready_for_review","synchronize"]'), github.event.action)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: ziqq/actions/labeler@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
+        with:
+          operation: path-labels
+          github-token: ${{ github.token }}
+
+  release:
+    if: github.event_name == 'release' && github.event.action == 'published'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: ziqq/actions/labeler@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
+        with:
+          operation: release-published
+          github-token: ${{ github.token }}
+          allow-pattern-removal: true
+
+  comment-event:
+    if: github.event_name == 'issue_comment' || github.event_name == 'discussion_comment'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      discussions: write
+    steps:
+      - uses: ziqq/actions/labeler@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
+        with:
+          operation: comment-event
+          github-token: ${{ github.token }}
+          allow-empty: true
+
+  label-event:
+    if: >-
+      github.event_name == 'issues' ||
+      github.event_name == 'discussion' ||
+      (github.event_name == 'pull_request_target' &&
+      contains(fromJSON('["labeled","unlabeled"]'), github.event.action))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+      discussions: write
+    steps:
+      - uses: ziqq/actions/labeler@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
+        with:
+          operation: label-event
+          github-token: ${{ github.token }}
+          allow-empty: true
+
+  manual-apply:
+    if: github.event_name == 'workflow_dispatch' && inputs.operation == 'apply'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+      discussions: write
+    steps:
+      - uses: ziqq/actions/labeler@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
+        with:
+          operation: apply
+          github-token: ${{ github.token }}
+          transition: ${{ inputs.transition }}
+          target-numbers: ${{ inputs.target_numbers }}
+          target-kind: ${{ inputs.target_kind }}
+          dry-run: ${{ inputs.dry_run }}
+          allow-pattern-removal: ${{ inputs.allow_pattern_removal }}

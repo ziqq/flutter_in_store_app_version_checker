@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 3.1.0-dev.1
+- **ADDED**: RuStore version checks through public catalog JSON-LD ([#20](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/20))
+- **ADDED**: AppGallery web checks for arbitrary applications through `storeID`
+- **ADDED**: Official AppGallery native checks through Huawei `AppUpdateClient`
+- **CHANGED**: Document AppGallery mode capabilities, integration requirements, and web endpoint stability
+
+
 ## 3.0.1
 - **CHANGED**: Document platform-specific locale handling and error-first response handling; correct iOS and shared examples
 - **FIXED**: Resolve regional `locale` values such as `en-US`, `en_AE`, and `zh-Hant-TW` to Apple storefront countries while preserving country-only iOS inputs ([#18](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/18))

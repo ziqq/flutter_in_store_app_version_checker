@@ -1,0 +1,175 @@
+{
+  "schema": 4,
+  "labels": {
+    "bug": {
+      "name": "bug",
+      "color": "d73a4a",
+      "description": "Something isn't working"
+    },
+    "documentation": {
+      "name": "documentation",
+      "color": "0075ca",
+      "description": "Improvements or additions to documentation",
+      "paths": ["**/*.md"]
+    },
+    "completed": {
+      "name": "done",
+      "color": "0e8a16",
+      "description": "The issue was done"
+    },
+    "duplicate": {
+      "name": "duplicate",
+      "color": "cfd3d7",
+      "description": "This issue or pull request already exists"
+    },
+    "help_wanted": {
+      "name": "help wanted",
+      "color": "1d76db",
+      "description": "Extra attention is needed"
+    },
+    "improvement": {
+      "name": "improvement",
+      "color": "a2eeef",
+      "description": "An issue to improve existing functionality"
+    },
+    "needs_testing": {
+      "name": "need test's",
+      "color": "ffffff",
+      "description": "Issue to be tested",
+      "paths": ["test/**", "**/test/**"]
+    },
+    "new_feature": {
+      "name": "new feature",
+      "color": "fbca04",
+      "description": "Requires planning and detailed comments of what will be done to build this",
+      "previousNames": ["enhancement"]
+    },
+    "waiting_for_release": {
+      "name": "waiting for publish",
+      "color": "0e8a16",
+      "description": "Already being merged on. We're waiting on a Publish to pub.dev"
+    },
+    "waiting_for_pull_request": {
+      "name": "waiting for pull request",
+      "color": "fbca04",
+      "description": "The work is already completed, the task is awaiting a merge request"
+    },
+    "waiting_for_response": {
+      "name": "waiting for response",
+      "color": "b60205",
+      "description": "Blocked until the original reporter or owner provides more information"
+    },
+    "in_progress": {
+      "name": "working in progress",
+      "color": "ffffff",
+      "description": "Don't merge this yet"
+    }
+  },
+  "references": {
+    "branchIssuePattern": "github-(\\d+)",
+    "closingIssuePattern": "(?:close[sd]?|fixe[sd]?|resolve[sd]?)\\s+#(\\d+)"
+  },
+  "transitions": {
+    "start_progress": {
+      "add": ["in_progress"],
+      "remove": ["completed", "waiting_for_release", "waiting_for_pull_request", "waiting_for_response"]
+    },
+    "pull_request_opened": {
+      "add": ["in_progress"],
+      "remove": ["completed", "waiting_for_pull_request", "waiting_for_response"]
+    },
+    "pull_request_merged": {
+      "add": ["waiting_for_release"],
+      "remove": ["completed", "in_progress", "waiting_for_pull_request", "waiting_for_response"]
+    },
+    "release_published": {
+      "add": ["completed"],
+      "remove": [],
+      "removeIdPatterns": ["in_*", "waiting_*"]
+    },
+    "resume_after_response": {
+      "add": ["in_progress"],
+      "remove": ["waiting_for_response"]
+    },
+    "pause_for_response": {
+      "add": [],
+      "remove": ["in_progress"]
+    },
+    "await_pull_request": {
+      "add": [],
+      "remove": ["completed", "in_progress", "waiting_for_release"]
+    },
+    "normalize_waiting_release": {
+      "add": [],
+      "remove": ["completed", "in_progress", "waiting_for_pull_request", "waiting_for_response"]
+    },
+    "normalize_completed": {
+      "add": [],
+      "remove": ["in_progress", "waiting_for_release", "waiting_for_pull_request", "waiting_for_response"]
+    }
+  },
+  "events": {
+    "branchCreated": {
+      "transition": "start_progress",
+      "linkBranch": true
+    },
+    "pullRequestOpened": {
+      "transition": "pull_request_opened",
+      "baseBranches": ["main"]
+    },
+    "pullRequestMerged": {
+      "transition": "pull_request_merged",
+      "baseBranches": ["main"]
+    },
+    "releasePublished": {
+      "transition": "release_published",
+      "selector": {
+        "all": ["waiting_for_release"],
+        "any": [],
+        "not": ["completed"],
+        "state": "all"
+      }
+    },
+    "issueCommented": {
+      "transition": "resume_after_response",
+      "allowedActors": ["issue-author", "assignee"],
+      "requireLabels": ["waiting_for_response"]
+    },
+    "discussionCommented": {
+      "transition": "resume_after_response",
+      "allowedActors": ["discussion-author"],
+      "requireLabels": ["waiting_for_response"]
+    },
+    "labelChanged": [
+      {
+        "action": "labeled",
+        "label": "waiting_for_response",
+        "targets": ["issue", "pull-request", "discussion"],
+        "transition": "pause_for_response"
+      },
+      {
+        "action": "labeled",
+        "label": "waiting_for_pull_request",
+        "targets": ["issue"],
+        "transition": "await_pull_request"
+      },
+      {
+        "action": "labeled",
+        "label": "waiting_for_release",
+        "targets": ["issue", "pull-request", "discussion"],
+        "transition": "normalize_waiting_release"
+      },
+      {
+        "action": "labeled",
+        "label": "completed",
+        "targets": ["issue", "pull-request", "discussion"],
+        "transition": "normalize_completed"
+      }
+    ]
+  },
+  "sync": {
+    "managedNamePatterns": [],
+    "excludeNamePatterns": [],
+    "orphanPolicy": "keep"
+  }
+}
