@@ -114,7 +114,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
   ) async {
     String? newVersion, url;
     try {
-      final countryCode = _appleStoreCountry(locale);
+      final countryCode = _resolveCountryForAppleStore(locale);
       final uri = Uri.https(
         'itunes.apple.com',
         '/$countryCode/lookup',
@@ -190,7 +190,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
       final uri =
           Uri.https('play.google.com', '/store/apps/details', <String, Object?>{
             'id': packageName,
-            'hl': _normalizeLocale(locale),
+            'hl': _resolveLocaleForGooglePlay(locale),
             '_ts': DateTime.now().millisecondsSinceEpoch.toString(),
           });
 
@@ -258,7 +258,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
     }
   }
 
-  static String _normalizeLocale(String locale) {
+  static String _resolveLocaleForGooglePlay(String locale) {
     final value = locale.trim();
     final match = _localePattern.firstMatch(value);
     if (match == null || match.end != value.length) return locale;
@@ -273,7 +273,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
     ].join('-');
   }
 
-  static String _appleStoreCountry(String locale) {
+  static String _resolveCountryForAppleStore(String locale) {
     final value = locale.trim();
     final match = _localePattern.firstMatch(value);
     if (match != null && match.end == value.length) {

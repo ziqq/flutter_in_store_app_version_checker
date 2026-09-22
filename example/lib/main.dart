@@ -109,16 +109,14 @@ class _ExampleState extends State<Example> {
   }
 
   /// Create [InStoreAppVersionCheckerParams] for a given [StoreIDPair].
-  InStoreAppVersionCheckerParams _paramsFor(
-    StoreIDPair storeIDPair, {
-    String locale = 'ru-RU',
-  }) => InStoreAppVersionCheckerParams(
-    currentVersion: storeIDPair.currentVersion,
-    packageName: _isAndroid
-        ? storeIDPair.googlePlayID
-        : storeIDPair.appleStoreID,
-    locale: locale,
-  );
+  InStoreAppVersionCheckerParams _paramsFor(StoreIDPair storeIDPair) =>
+      InStoreAppVersionCheckerParams(
+        currentVersion: storeIDPair.currentVersion,
+        packageName: _isAndroid
+            ? storeIDPair.googlePlayID
+            : storeIDPair.appleStoreID,
+        locale: View.of(context).platformDispatcher.locale.toLanguageTag(),
+      );
 
   /// Check the current version of the app available in app stores
   /// such as `AppStore`, `Google Play` and `ApkPure`,
