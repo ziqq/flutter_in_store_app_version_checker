@@ -30,7 +30,24 @@ class InStoreAppVersionCheckerParams {
         InStoreAppVersionCheckerAndroidStoreType.googlePlayStore,
   });
 
-  /// The locale used for store requests.
+  /// The locale used for store requests, for example `en-US` or `zh-Hant-TW`.
+  ///
+  /// Regional locales accept hyphens or underscores, with case normalized.
+  /// Google Play receives the complete locale as its `hl` parameter; a
+  /// language-only value such as `en` is also supported there.
+  ///
+  /// On iOS, the two-letter region selects the App Store storefront.
+  /// Country-only values such as `us`, `ae`, and `ru` remain supported.
+  /// Short values are always interpreted as countries on iOS: `ar` means
+  /// Argentina, while `ar-AE` selects the UAE storefront. A language such as
+  /// `en` is not a country and must not be used alone on iOS.
+  ///
+  /// iOS accepts `language-REGION`, `language-Script-REGION`, or a two-letter
+  /// country code. Script-only locales, numeric regions, variants, and
+  /// extensions are not supported on iOS. Apple validates storefront
+  /// availability; a valid format does not guarantee a supported country.
+  /// No country is inferred from the language and no fallback country is used.
+  /// ApkPure ignores this value.
   final String locale;
 
   /// The package name of the app, for example `com.example.your_app`.

@@ -111,7 +111,7 @@ class _ExampleState extends State<Example> {
   /// Create [InStoreAppVersionCheckerParams] for a given [StoreIDPair].
   InStoreAppVersionCheckerParams _paramsFor(
     StoreIDPair storeIDPair, {
-    String locale = 'ru',
+    String locale = 'ru-RU',
   }) => InStoreAppVersionCheckerParams(
     currentVersion: storeIDPair.currentVersion,
     packageName: _isAndroid

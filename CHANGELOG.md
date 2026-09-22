@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 3.0.1
+- **CHANGED**: Document platform-specific locale handling and error-first response handling; correct iOS and shared examples
+- **FIXED**: Resolve regional `locale` values such as `en-US`, `en_AE`, and `zh-Hant-TW` to Apple storefront countries while preserving country-only iOS inputs ([#18](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/18))
+- **FIXED**: Normalize Google Play locales without dropping script or region information
+- **FIXED**: Distinguish Apple HTTP failures from apps unavailable in the selected storefront, and add country-code guidance for HTTP 400
+
+
 ## 3.0.0
 - **DEPRECATED**: `InStoreAppVersionChecker.custom(...)` in favor of `InStoreAppVersionChecker.instanceFor(...)`
 - **ADDED**: The required `FlutterFramework` `Swift Package Manager` dependency
