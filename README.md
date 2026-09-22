@@ -64,28 +64,68 @@ Version comparison logic considers:
 - Mixed alphanumeric pre-release segments compared token-by-token with numeric-aware ordering.
 
 
+## Store locale
+
+Use one regional `locale` for both platforms, for example `en-US` or `en-AE`.
+Google Play uses the complete locale for its `hl` language parameter. On iOS,
+the region selects the App Store storefront country; it does not automatically
+detect the country of the user's App Store account.
+
+| `locale` | Google Play `hl` | App Store country |
+|----------|------------------|-------------------|
+| `en-US` | `en-US` | `us` |
+| `en_AE` | `en-AE` | `ae` |
+| `pt-BR` | `pt-BR` | `br` |
+| `zh-Hant-TW` | `zh-Hant-TW` | `tw` |
+| `ru` | `ru` | `ru` (legacy country-only input) |
+| `en` | `en` | Invalid country; Apple returns an error |
+
+Supported regional forms are `language-REGION` and `language-Script-REGION`.
+Underscores are accepted as separators; surrounding whitespace and letter case
+are normalized. On Google Play, other locale forms are passed through unchanged.
+ApkPure ignores `locale`.
+
+On iOS, existing two-letter country-only values such as `us`, `ae`, and `ru`
+remain supported. Short values are interpreted as countries: `ar` means
+Argentina, while `ar-AE` explicitly selects the UAE storefront. A language such
+as `en` cannot determine a country, and the package never silently falls back
+to a different storefront.
+
+iOS rejects malformed values, locales without a country such as `zh-Hant`,
+numeric regions such as `es-419`, and locale variants or extensions. This is
+structural validation, not a list of supported storefronts: Apple determines
+whether the requested country is supported and whether the app is available
+there. See Apple's [country parameter documentation](https://developer.apple.com/library/archive/documentation/AudioVideo/Conceptual/iTuneSearchAPI/Searching.html).
+
+
 ## Example
 
 ### Simple check (Play Store HTML with fallback API)
 ```dart
+import 'dart:developer' as dev;
+
 import 'package:flutter_in_store_app_version_checker/flutter_in_store_app_version_checker.dart';
 
 Future<void> check() async {
   const params = InStoreAppVersionCheckerParams(
-    locale: 'en',
+    locale: 'en-US',
     // packageName:    'com.example.app', // optional override
     // currentVersion: '1.2.3',           // optional override
     // androidStore:   InStoreAppVersionCheckerAndroidStoreType.apkPure,
   );
   final res = await InStoreAppVersionChecker.instance.checkUpdate(params);
-  if (res.isSuccess) {
-    print('Current version: ${res.currentVersion}');
-    print('New version    : ${res.newVersion}');
-    print('App url        : ${res.appURL}');
-    print('Can update     : ${res.canUpdate}');
-  } else {
-    print('Error          : ${res.errorMessage}');
+  if (res.isError) {
+    dev.log(
+      res.errorMessage ?? 'Update check failed',
+      error: res.error,
+      stackTrace: res.stackTrace,
+    );
+    return;
   }
+  dev.log('Current version: ${res.currentVersion}');
+  dev.log('New version    : ${res.newVersion}');
+  dev.log('App url        : ${res.appURL}');
+  dev.log('Can update     : ${res.canUpdate}');
 }
 ```
 
@@ -100,16 +140,19 @@ final res = await InStoreAppVersionChecker.instance.checkUpdate(params);
 
 ### iOS
 ```dart
-const params = InStoreAppVersionCheckerParams(locale: 'en');
+const params = InStoreAppVersionCheckerParams(locale: 'en-AE');
 final res = await InStoreAppVersionChecker.instance.checkUpdate(params);
 ```
+
+This explicitly checks the UAE storefront. Choose the region where the app is
+available; the English language alone (`en`) is not an App Store country.
 
 ### Custom HTTP client
 ```dart
 final checker = InStoreAppVersionChecker.instanceFor(
   httpClient: customHTTPClient,
 );
-const params = InStoreAppVersionCheckerParams(locale: 'en');
+const params = InStoreAppVersionCheckerParams(locale: 'en-US');
 final res = await checker.checkUpdate(params);
 ```
 
@@ -135,9 +178,18 @@ See unit tests in [test/unit](test/unit) for authoritative behavior.
 ## Error handling
 Types:
 - `success`
-- `error` (network failures, app not found, unsupported platform)
+- `error` (invalid iOS locale structure, HTTP/network failures, app not found in
+  the selected storefront, unsupported platform)
 
 `errorMessage` is populated only for error responses. An error response may still indicate `canUpdate == true` if `newVersion` is greater.
+
+Check `isError` before using `canUpdate`. A failed lookup with no store version
+also returns `canUpdate == false`; that alone does not mean the app is up to date.
+
+Apple HTTP errors include the status, original locale, and resolved storefront.
+HTTP 400 includes guidance to check the country code. A successful HTTP 200
+response with empty results instead reports that the app was not found in that
+storefront; check both its bundle ID and regional availability.
 
 
 ## Platform integration notes

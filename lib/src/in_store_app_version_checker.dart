@@ -47,6 +47,13 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
 
   static InStoreAppVersionChecker? _instance;
 
+  static final RegExp _localePattern = RegExp(
+    '^([a-z]{2,3}|[a-z]{5,8})'
+    '(?:[-_]([a-z]{4}))?'
+    r'(?:[-_]([a-z]{2}|[0-9]{3}))?$',
+    caseSensitive: false,
+  );
+
   /// Whether the current platform is iOS.
   bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
 
@@ -107,20 +114,31 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
   ) async {
     String? newVersion, url;
     try {
-      final uri =
-          Uri.https('itunes.apple.com', '/$locale/lookup', <String, Object?>{
-            'bundleId': packageName,
-            '_ts': DateTime.now().toUtc().millisecondsSinceEpoch.toString(),
-          });
+      final countryCode = _resolveCountryForAppleStore(locale);
+      final uri = Uri.https(
+        'itunes.apple.com',
+        '/$countryCode/lookup',
+        <String, Object?>{
+          'bundleId': packageName,
+          '_ts': DateTime.now().toUtc().millisecondsSinceEpoch.toString(),
+        },
+      );
       final response = await _httpClient.get(uri);
       if (response.statusCode != 200) {
+        final countryGuidance = response.statusCode == 400
+            ? ' Check the storefront country code. Use a regional locale '
+                  'such as "en-US" or a country code such as "us"; '
+                  'a language such as "en" does not identify a storefront.'
+            : '';
         return InStoreAppVersionCheckerResponse.error(
           currentVersion: currentVersion,
           newVersion: newVersion,
           appURL: url,
           stackTrace: StackTrace.current,
           errorMessage:
-              'Cannot find an app in the Apple Store with the id: $packageName',
+              'Apple Store lookup failed (HTTP ${response.statusCode}) '
+              'for bundle ID "$packageName" in storefront "$countryCode" '
+              '(locale: "$locale").$countryGuidance',
         );
       } else {
         final jsonObj = jsonDecode(response.body);
@@ -135,7 +153,9 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
             appURL: url,
             stackTrace: StackTrace.current,
             errorMessage:
-                'Cannot find an app in the Apple Store with the id: $packageName',
+                'App "$packageName" was not found in the Apple Store '
+                'storefront "$countryCode" (locale: "$locale"). '
+                'Check the bundle ID and availability in this storefront.',
           );
         } else {
           newVersion = jsonObj['results'][0]['version'].toString();
@@ -170,7 +190,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
       final uri =
           Uri.https('play.google.com', '/store/apps/details', <String, Object?>{
             'id': packageName,
-            'hl': locale,
+            'hl': _resolveLocaleForGooglePlay(locale),
             '_ts': DateTime.now().millisecondsSinceEpoch.toString(),
           });
 
@@ -236,6 +256,41 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
         errorMessage: e.toString(),
       );
     }
+  }
+
+  static String _resolveLocaleForGooglePlay(String locale) {
+    final value = locale.trim();
+    final match = _localePattern.firstMatch(value);
+    if (match == null || match.end != value.length) return locale;
+
+    final scriptCode = match.group(2);
+    final countryCode = match.group(3);
+    return <String>[
+      match.group(1)!.toLowerCase(),
+      if (scriptCode != null)
+        '${scriptCode[0].toUpperCase()}${scriptCode.substring(1).toLowerCase()}',
+      if (countryCode != null) countryCode.toUpperCase(),
+    ].join('-');
+  }
+
+  static String _resolveCountryForAppleStore(String locale) {
+    final value = locale.trim();
+    final match = _localePattern.firstMatch(value);
+    if (match != null && match.end == value.length) {
+      final countryCode = match.group(3);
+      if (countryCode != null && countryCode.length == 2) {
+        return countryCode.toLowerCase();
+      }
+      if (value.length == 2) return value.toLowerCase();
+    }
+
+    throw FormatException(
+      'Invalid locale "$locale" for the Apple Store. '
+      'Use language-REGION ("en-US"), language-Script-REGION '
+      '("zh-Hant-TW"), or a country code ("us"). '
+      'A two-letter storefront country is required.',
+      locale,
+    );
   }
 
   /// Check update in [ApkPure Store].
