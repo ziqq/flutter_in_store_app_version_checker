@@ -31,7 +31,7 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Notify about new issue
-        uses: ziqq/actions/notify@13a75bd597578c7ca9109d6a43c772cb3b023e9e
+        uses: ziqq/actions/notify@6bc6fdad743d4054c9b0603bb75f6aefa5235be6
         with:
           providers: discord,telegram
           template-path: .github/notify/issue.md.tmpl

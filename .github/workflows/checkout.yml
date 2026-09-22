@@ -205,7 +205,7 @@ jobs:
           env.NOTIFY_TELEGRAM_BOT_TOKEN != '' &&
           env.NOTIFY_TELEGRAM_TARGETS != '' &&
           hashFiles('.github/notify/ci.md.tmpl') != ''
-        uses: ziqq/actions/notify@13a75bd597578c7ca9109d6a43c772cb3b023e9e
+        uses: ziqq/actions/notify@6bc6fdad743d4054c9b0603bb75f6aefa5235be6
         with:
           providers: discord,telegram
           template-path: .github/notify/ci.md.tmpl

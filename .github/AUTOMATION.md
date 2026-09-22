@@ -1,7 +1,7 @@
 # Repository automation
 
 This repository uses reusable actions pinned to
-`ziqq/actions@13a75bd597578c7ca9109d6a43c772cb3b023e9e`.
+`ziqq/actions@6bc6fdad743d4054c9b0603bb75f6aefa5235be6`.
 
 ## Semantic labels
 
