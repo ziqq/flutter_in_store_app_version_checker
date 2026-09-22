@@ -167,6 +167,7 @@ jobs:
   notify:
     name: Notify CI result
     needs: checkout
+    continue-on-error: true
     if: >-
       always() &&
       github.actor != 'dependabot[bot]' &&
