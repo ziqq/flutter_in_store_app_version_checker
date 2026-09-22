@@ -1,7 +1,7 @@
 # Repository automation
 
 This repository uses reusable actions pinned to
-`ziqq/actions@6bc6fdad743d4054c9b0603bb75f6aefa5235be6`.
+`ziqq/actions@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2`.
 
 ## Semantic labels
 
@@ -80,7 +80,7 @@ Configure these repository Actions secrets:
 
 | Secret | Value |
 |---|---|
-| `DISCORD_WEBHOOKS` | JSON array of webhook URLs, for example `["https://discord.com/api/webhooks/..."]` |
+| `DISCORD_WEBHOOKS` | JSON object with a target list, for example `{"targets":[{"url":"https://discord.com/api/webhooks/..."}]}` |
 | `TELEGRAM_BOT_TOKEN` | Token issued by BotFather |
 | `TELEGRAM_TARGETS` | JSON object with a target list, for example `{"targets":[{"chatId":"123456789"}]}` |
 

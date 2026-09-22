@@ -79,7 +79,7 @@ jobs:
       contents: read
       issues: write
     steps:
-      - uses: ziqq/actions/labeler@6bc6fdad743d4054c9b0603bb75f6aefa5235be6
+      - uses: ziqq/actions/labeler@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
         with:
           operation: sync-labels
           github-token: ${{ github.token }}
@@ -93,7 +93,7 @@ jobs:
       contents: write
       issues: write
     steps:
-      - uses: ziqq/actions/labeler@6bc6fdad743d4054c9b0603bb75f6aefa5235be6
+      - uses: ziqq/actions/labeler@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
         with:
           operation: branch-created
           github-token: ${{ github.token }}
@@ -109,7 +109,7 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: ziqq/actions/labeler@6bc6fdad743d4054c9b0603bb75f6aefa5235be6
+      - uses: ziqq/actions/labeler@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
         with:
           operation: pull-request
           github-token: ${{ github.token }}
@@ -125,7 +125,7 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: ziqq/actions/labeler@6bc6fdad743d4054c9b0603bb75f6aefa5235be6
+      - uses: ziqq/actions/labeler@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
         with:
           operation: path-labels
           github-token: ${{ github.token }}
@@ -137,7 +137,7 @@ jobs:
       contents: read
       issues: write
     steps:
-      - uses: ziqq/actions/labeler@6bc6fdad743d4054c9b0603bb75f6aefa5235be6
+      - uses: ziqq/actions/labeler@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
         with:
           operation: release-published
           github-token: ${{ github.token }}
@@ -151,7 +151,7 @@ jobs:
       issues: write
       discussions: write
     steps:
-      - uses: ziqq/actions/labeler@6bc6fdad743d4054c9b0603bb75f6aefa5235be6
+      - uses: ziqq/actions/labeler@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
         with:
           operation: comment-event
           github-token: ${{ github.token }}
@@ -170,7 +170,7 @@ jobs:
       pull-requests: write
       discussions: write
     steps:
-      - uses: ziqq/actions/labeler@6bc6fdad743d4054c9b0603bb75f6aefa5235be6
+      - uses: ziqq/actions/labeler@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
         with:
           operation: label-event
           github-token: ${{ github.token }}
@@ -185,7 +185,7 @@ jobs:
       pull-requests: write
       discussions: write
     steps:
-      - uses: ziqq/actions/labeler@6bc6fdad743d4054c9b0603bb75f6aefa5235be6
+      - uses: ziqq/actions/labeler@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
         with:
           operation: apply
           github-token: ${{ github.token }}
