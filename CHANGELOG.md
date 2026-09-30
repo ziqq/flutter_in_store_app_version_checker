@@ -1,6 +1,17 @@
 # Changelog
 
 
+## Unreleased
+- **CHANGED**: Validate package, tool, and example code in CI and build Android and iOS examples with CocoaPods and Swift Package Manager
+- **CHANGED**: Use the FVM SDK consistently for checks, tests, publishing, and tagging; run each unit suite once
+- **CHANGED**: Align documented minimum SDK versions with `pubspec.yaml`
+- **FIXED**: Preserve failing test exit codes in CI pipelines
+- **FIXED**: Classify Huawei update statuses and reject failed checks or invalid upgrade data without changing version-name comparison
+- **FIXED**: Read Google Play versions from identified application data and attempt fallback after primary network failures
+- **FIXED**: Reject missing HTTP store versions and mismatched Apple bundle IDs; preserve absent Apple listing URLs as `null`
+- **FIXED**: Check unpushed commits before tagging and accept prerelease and build metadata in release versions
+
+
 ## 3.1.0-dev.1
 - **ADDED**: RuStore version checks through public catalog JSON-LD ([#20](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/20))
 - **ADDED**: AppGallery web checks for arbitrary applications through `storeID`

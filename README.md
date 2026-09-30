@@ -10,8 +10,8 @@
 A lightweight Flutter plugin to check whether your app (or any other app) has a newer version published on Google Play, ApkPure, RuStore, AppGallery, or Apple App Store.
 
 Minimum supported SDKs:
-- Flutter `>=3.44.1`
-- Dart `>=3.12.1 <4.0.0`
+- Flutter `>=3.44.0`
+- Dart `>=3.12.0 <4.0.0`
 
 The plugin uses Flutter 3.44+ built-in Kotlin support on Android and retrieves installed app metadata through its own native method channel. It no longer depends on `package_info_plus`.
 
@@ -195,6 +195,11 @@ not support arbitrary applications or `packageName` and `currentVersion`
 overrides. When Huawei reports no update, the response is successful with
 `newVersion == null` and `canUpdate == false`.
 
+Only Huawei's `NO_UPGRADE_INFO` status means no update was found. Connection
+errors, failed checks, unknown statuses, and missing upgrade data return errors.
+As in the other modes, `canUpdate` compares version names; it does not compare
+Android `versionCode` values. Equal version names return `canUpdate == false`.
+
 The plugin includes `com.huawei.hms:appservice:6.16.2.300` and the Huawei Maven
 repository. Projects that enforce repositories in `settings.gradle` must also
 allow the Huawei repository:
@@ -266,6 +271,18 @@ Types:
 
 Check `isError` before using `canUpdate`. A failed lookup with no store version
 also returns `canUpdate == false`; that alone does not mean the app is up to date.
+
+HTTP modes return success only after reading a non-empty version string from
+the requested listing. An equal or older store version is still a successful
+check with `canUpdate == false`; missing or malformed version data is an error.
+Version names are not required to follow strict SemVer. Apple's optional
+listing URL remains `null` when absent, rather than the string `"null"`.
+
+Google Play HTML checks read the application's identified web data, not any
+version-like string on the page. This undocumented web structure can change;
+unrecognized data and primary HTTP/network failures trigger the existing
+third-party PlayStoreApi fallback. If that source also fails or omits the
+version, the response is an error with both attempts described.
 
 Apple HTTP errors include the status, original locale, and resolved storefront.
 HTTP 400 includes guidance to check the country code. A successful HTTP 200

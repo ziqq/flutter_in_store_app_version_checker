@@ -73,12 +73,12 @@ analyze: get format ## Analyze code
 .PHONY: check
 check: analyze ## Check code
 				@echo "╠ RUN CECK PUBLISH..."
-				@dart pub publish --dry-run
+				@fvm dart pub publish --dry-run
 				@echo "╠ CECKED PUBLISH SUCCESSFULLY"
 
 .PHONY: publish
 publish: ## Publish package
-				@dart pub publish --server=https://pub.dartlang.org || (echo "¯\_(ツ)_/¯ Publish error"; exit 1)
+				@fvm dart pub publish --server=https://pub.dartlang.org || (echo "¯\_(ツ)_/¯ Publish error"; exit 1)
 
 .PHONY: coverage
 coverage: ## Runs get coverage
@@ -90,12 +90,12 @@ run-genhtml: ## Runs generage coverage html
 
 .PHONY: test-unit
 test-unit: ## Runs unit tests
-				@flutter test --coverage || (echo "Error while running tests"; exit 1)
+				@fvm flutter test --coverage test/unit/ || (echo "Error while running tests"; exit 1)
 				@genhtml coverage/lcov.info --output=coverage -o coverage/html || (echo "Error while running genhtml with coverage"; exit 2)
 
 .PHONY: tag
 tag: ## Add a tag to the current commit
-				@dart run tool/tag.dart
+				@fvm dart run tool/tag.dart
 
 .PHONY: tag-add
 tag-add: ## Make command to add TAG. E.g: make tag-add TAG=v1.0.0

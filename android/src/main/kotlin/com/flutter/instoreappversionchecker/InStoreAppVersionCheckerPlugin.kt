@@ -7,6 +7,7 @@ import com.huawei.hms.jos.JosApps
 import com.huawei.updatesdk.service.appmgr.bean.ApkUpgradeInfo
 import com.huawei.updatesdk.service.otaupdate.CheckUpdateCallBack
 import com.huawei.updatesdk.service.otaupdate.UpdateKey
+import com.huawei.updatesdk.service.otaupdate.UpdateStatusCode
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
@@ -82,28 +83,44 @@ class InStoreAppVersionCheckerPlugin: FlutterPlugin, MethodCallHandler {
               return
             }
 
-            val info = getUpgradeInfo(intent)
-            if (info != null) {
+            val status = intent.getIntExtra(UpdateKey.STATUS, -1)
+            val failureCode = intent.getIntExtra(UpdateKey.FAIL_CODE, 0)
+            val failureReason = intent.getStringExtra(UpdateKey.FAIL_REASON)
+            if (failureCode != 0 ||
+                (status != UpdateStatusCode.HAS_UPGRADE_INFO &&
+                 status != UpdateStatusCode.NO_UPGRADE_INFO)) {
               complete {
-                result.success(
+                result.error(
+                  "app_gallery_update_failed",
+                  failureReason ?: "Huawei AppUpdateClient failed with status $status (code $failureCode).",
                   mapOf(
-                    "storeID" to info.id_,
-                    "packageName" to info.package_,
-                    "version" to info.version_,
+                    "status" to status,
+                    "failureCode" to failureCode,
                   ),
                 )
               }
               return
             }
 
-            val failureCode = intent.getIntExtra(UpdateKey.FAIL_CODE, 0)
-            val failureReason = intent.getStringExtra(UpdateKey.FAIL_REASON)
-            if (failureCode != 0) {
+            if (status == UpdateStatusCode.HAS_UPGRADE_INFO) {
+              val info = getUpgradeInfo(intent)
+              if (info == null || info.version_.isNullOrBlank() || info.package_.isNullOrBlank()) {
+                complete {
+                  result.error(
+                    "app_gallery_invalid_response",
+                    "Huawei AppUpdateClient returned invalid upgrade information.",
+                    status,
+                  )
+                }
+                return
+              }
               complete {
-                result.error(
-                  "app_gallery_update_failed",
-                  failureReason ?: "Huawei AppUpdateClient failed with code $failureCode.",
-                  failureCode,
+                result.success(
+                  mapOf(
+                    "storeID" to info.id_,
+                    "packageName" to info.package_,
+                    "version" to info.version_.trim(),
+                  ),
                 )
               }
               return

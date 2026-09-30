@@ -164,10 +164,12 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
               '(locale: "$locale").$countryGuidance',
         );
       } else {
-        final jsonObj = jsonDecode(response.body);
-        final results = List<Object?>.from(
-          jsonObj['results'] as Iterable<Object?>,
-        );
+        final Object? data = jsonDecode(response.body);
+        if (data is! Map<String, Object?> ||
+            data['results'] is! List<Object?>) {
+          throw const FormatException('Apple Store returned invalid results.');
+        }
+        final results = data['results']! as List<Object?>;
 
         if (results.isEmpty) {
           return InStoreAppVersionCheckerResponse.error(
@@ -181,8 +183,27 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
                 'Check the bundle ID and availability in this storefront.',
           );
         } else {
-          newVersion = jsonObj['results'][0]['version'].toString();
-          url = jsonObj['results'][0]['trackViewUrl'].toString();
+          final listing = results.whereType<Map<String, Object?>>().where(
+            (item) => item['bundleId'] == packageName,
+          );
+          if (listing.isEmpty) {
+            throw FormatException(
+              'Apple Store results do not contain bundle ID "$packageName".',
+            );
+          }
+          final app = listing.first;
+          if (app['version'] case final String version
+              when version.trim().isNotEmpty) {
+            newVersion = version.trim();
+          } else {
+            throw const FormatException(
+              'Apple Store listing does not contain a version.',
+            );
+          }
+          if (app['trackViewUrl'] case final String appURL
+              when appURL.trim().isNotEmpty) {
+            url = appURL.trim();
+          }
           return InStoreAppVersionCheckerResponse.success(
             currentVersion: currentVersion,
             newVersion: newVersion,
@@ -209,6 +230,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
     String locale,
   ) async {
     String? newVersion, url;
+    Object? primaryError;
     try {
       final uri =
           Uri.https('play.google.com', '/store/apps/details', <String, Object?>{
@@ -217,28 +239,30 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
             '_ts': DateTime.now().millisecondsSinceEpoch.toString(),
           });
 
-      final response = await _httpClient
-          .get(uri)
-          .timeout(const Duration(seconds: 15));
-
-      if (response.statusCode == 200) {
-        final body = response.body;
-
-        newVersion = RegExp(
-          r',\[\[\["([0-9,\.]*)"]],',
-        ).firstMatch(body)?.group(1);
-
-        newVersion ??= RegExp(
-          r'\"([0-9]+\.[0-9]+\.[0-9]+)\"',
-        ).firstMatch(body)?.group(1);
-
-        if (newVersion != null) {
-          return InStoreAppVersionCheckerResponse.success(
-            currentVersion: currentVersion,
-            newVersion: newVersion,
-            appURL: uri.toString(),
+      try {
+        final response = await _httpClient
+            .get(uri)
+            .timeout(const Duration(seconds: 15));
+        if (response.statusCode == 200) {
+          newVersion = _parseGooglePlayVersion(response.body, packageName);
+          if (newVersion != null) {
+            return InStoreAppVersionCheckerResponse.success(
+              currentVersion: currentVersion,
+              newVersion: newVersion,
+              appURL: uri.toString(),
+            );
+          }
+          primaryError = const FormatException(
+            'Google Play listing does not contain a version.',
+          );
+        } else {
+          primaryError = http.ClientException(
+            'Google Play lookup failed (HTTP ${response.statusCode}).',
+            uri,
           );
         }
+      } on Object catch (error) {
+        primaryError = error;
       }
 
       final apiUri = Uri.https(
@@ -251,8 +275,16 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
           .timeout(const Duration(seconds: 15));
 
       if (apiResponse.statusCode == 200) {
-        final data = jsonDecode(apiResponse.body);
-        newVersion = data['version']?.toString();
+        final Object? data = jsonDecode(apiResponse.body);
+        if (data case {
+          'version': final String version,
+        } when version.trim().isNotEmpty) {
+          newVersion = version.trim();
+        } else {
+          throw const FormatException(
+            'PlayStoreApi response does not contain a version.',
+          );
+        }
         url = 'https://play.google.com/store/apps/details?id=$packageName';
         return InStoreAppVersionCheckerResponse.success(
           currentVersion: currentVersion,
@@ -266,7 +298,9 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
           appURL: url,
           stackTrace: StackTrace.current,
           errorMessage:
-              'PlayStoreApi error: ${apiResponse.statusCode} ${apiResponse.reasonPhrase}',
+              'PlayStoreApi error: ${apiResponse.statusCode} '
+              '${apiResponse.reasonPhrase}. '
+              'Google Play lookup: $primaryError',
         );
       }
     } on Object catch (e, st) {
@@ -276,9 +310,51 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
         appURL: url,
         error: e,
         stackTrace: st,
-        errorMessage: e.toString(),
+        errorMessage: '$e Google Play lookup: $primaryError',
       );
     }
+  }
+
+  String? _parseGooglePlayVersion(String body, String packageName) {
+    final match = RegExp(
+      r"AF_initDataCallback\(\{key:\s*'ds:5',\s*hash:\s*'[^']*',"
+      r'\s*data:(.*?),\s*sideChannel:',
+      dotAll: true,
+    ).firstMatch(body);
+    if (match == null) return null;
+    final Object? data = jsonDecode(match.group(1)!);
+    if (_readGooglePlayValue(data, const [1, 2, 77, 0]) != packageName) {
+      return null;
+    }
+    // Google Play uses both indexed arrays and sparse fields in its web data.
+    for (final field in const [141, 140]) {
+      final value = _readGooglePlayValue(data, [1, 2, field, 0, 0, 0]);
+      if (value case final String version when version.trim().isNotEmpty) {
+        return version.trim();
+      }
+    }
+    return null;
+  }
+
+  Object? _readGooglePlayValue(Object? data, List<int> path) {
+    var value = data;
+    for (final index in path) {
+      switch (value) {
+        case final List<Object?> fields:
+          if (index < fields.length) {
+            value = fields[index];
+          } else if (fields.lastOrNull case final Map<String, Object?> sparse) {
+            value = sparse['$index'];
+          } else {
+            return null;
+          }
+        case final Map<String, Object?> fields:
+          value = fields['$index'];
+        default:
+          return null;
+      }
+    }
+    return value;
   }
 
   String _resolveLocaleForGooglePlay(String locale) {
@@ -338,6 +414,11 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
         newVersion = RegExp(
           r'<div class="details-sdk"><span itemprop="version">(.*?)<\/span>for Android<\/div>',
         ).firstMatch(response.body)?.group(1)?.trim();
+        if (newVersion == null || newVersion.isEmpty) {
+          throw const FormatException(
+            'ApkPure listing does not contain a version.',
+          );
+        }
         return InStoreAppVersionCheckerResponse.success(
           currentVersion: currentVersion,
           newVersion: newVersion,
