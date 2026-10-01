@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.library'
+    id 'jacoco'
 }
 
 group 'com.flutter.instoreappversionchecker'
@@ -9,7 +10,17 @@ rootProject.allprojects {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://developer.huawei.com/repo/' }
     }
+}
+
+dependencies {
+    implementation 'com.huawei.hms:appservice:6.16.2.300'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.17'
+    testImplementation 'org.mockito:mockito-core:5.24.0'
+    // Mockito reflects every JosApps overload, including its Account Kit type.
+    testRuntimeOnly 'com.huawei.hms:hwid:6.12.0.300'
 }
 
 android {
@@ -28,6 +39,35 @@ android {
 
     defaultConfig {
         minSdk = flutter.minSdkVersion
+    }
+
+    testOptions {
+        unitTests.includeAndroidResources = true
+    }
+}
+
+jacoco {
+    toolVersion = '0.8.14'
+}
+
+tasks.withType(Test).configureEach {
+    jacoco.includeNoLocationClasses = true
+    jacoco.excludes = ['jdk.internal.*']
+}
+
+tasks.register('nativeCoverage', JacocoReport) {
+    dependsOn 'testDebugUnitTest'
+    executionData fileTree(layout.buildDirectory) {
+        include 'jacoco/testDebugUnitTest.exec'
+    }
+    sourceDirectories.from files('src/main/kotlin')
+    classDirectories.from fileTree(layout.buildDirectory.dir('tmp/kotlin-classes/debug')) {
+        include 'com/flutter/instoreappversionchecker/**'
+    }
+    reports {
+        xml.required = true
+        xml.outputLocation = layout.buildDirectory.file('reports/jacoco/nativeCoverage.xml')
+        html.required = true
     }
 }
 

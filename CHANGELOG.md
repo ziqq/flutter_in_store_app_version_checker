@@ -1,6 +1,33 @@
 # Changelog
 
 
+## Unreleased
+- **ADDED**: Native Android and iOS plugin tests with JaCoCo/Swift coverage and separate Dart, Android, and iOS Codecov reports
+- **CHANGED**: Validate package, tool, and example code in CI and build Android and iOS examples with CocoaPods and Swift Package Manager
+- **CHANGED**: Replace FVM and Make with pinned mise toolchains and Just commands for local development, VS Code, CI, publishing, and tagging
+- **CHANGED**: Align documented minimum SDK versions with `pubspec.yaml`
+- **CHANGED**: Update Codecov upload action to v5 while preserving the existing token
+- **FIXED**: Preserve failing test exit codes in CI pipelines
+- **FIXED**: Classify Huawei update statuses and reject failed checks or invalid upgrade data without changing version-name comparison
+- **FIXED**: Read Google Play versions from identified application data and attempt fallback after primary network failures
+- **FIXED**: Reject missing HTTP store versions and mismatched Apple bundle IDs; preserve absent Apple listing URLs as `null`
+- **FIXED**: Check unpushed commits before tagging and accept prerelease and build metadata in release versions
+- **FIXED**: Prefer release versions over prereleases with the same core version
+- **FIXED**: Include response status and error messages in equality and hash codes
+- **FIXED**: Bound Apple, ApkPure, and AppGallery native checks with timeouts
+- **FIXED**: Share concurrent AppGallery native checks and release SDK callbacks on timeout
+- **FIXED**: Skip installed-app metadata for HTTP checks with complete package and version overrides
+- **FIXED**: Avoid unused example stack traces and publish CI test reports only when artifacts exist
+- **FIXED**: Preserve the iOS example's UIScene lifecycle and iOS 15 deployment configuration
+
+
+## 3.1.0-dev.1
+- **ADDED**: RuStore version checks through public catalog JSON-LD ([#20](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/20))
+- **ADDED**: AppGallery web checks for arbitrary applications through `storeID`
+- **ADDED**: Official AppGallery native checks through Huawei `AppUpdateClient`
+- **CHANGED**: Document AppGallery mode capabilities, integration requirements, and web endpoint stability
+
+
 ## 3.0.1
 - **CHANGED**: Document platform-specific locale handling and error-first response handling; correct iOS and shared examples
 - **FIXED**: Resolve regional `locale` values such as `en-US`, `en_AE`, and `zh-Hant-TW` to Apple storefront countries while preserving country-only iOS inputs ([#18](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/18))

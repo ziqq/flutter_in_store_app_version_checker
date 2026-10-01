@@ -1,0 +1,23 @@
+min_version = "2026.9.15"
+
+[settings]
+lockfile = true
+
+[tools]
+java = "temurin-17.0.19+10"
+just = "1.57.0"
+ruby = { version = "3.4.10", os = ["macos"] }
+cocoapods = { version = "1.17.0", os = ["macos"] }
+
+[tools.flutter]
+version = "3.47.5"
+version_list_url = "https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json"
+version_expr = 'fromJSON(body).releases | filter({ #.channel == "stable" }) | map({ replace(#.version, "-stable", "") }) | sortVersions()'
+checksum_url = "https://storage.googleapis.com/flutter_infra_release/releases/releases_{{ os() }}.json"
+checksum_expr = '"sha256:" + filter(fromJSON(body).releases, { #.archive == replace(url, "https://storage.googleapis.com/flutter_infra_release/releases/", "") })[0].sha256'
+
+[tools.flutter.platforms]
+linux-x64 = { url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_{{ version }}-stable.tar.xz" }
+macos-arm64 = { url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_arm64_{{ version }}-stable.zip" }
+macos-x64 = { url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_{{ version }}-stable.zip" }
+windows-x64 = { url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_{{ version }}-stable.zip" }

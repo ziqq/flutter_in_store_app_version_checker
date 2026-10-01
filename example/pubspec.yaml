@@ -1,6 +1,6 @@
 name: example
 
-description: Demonstrates how to use the flutter_in_store_app_version_checker package to check for app updates on Google Play and App Store.
+description: Demonstrates flutter_in_store_app_version_checker with Google Play, App Store, RuStore, and AppGallery.
 
 publish_to: none
 

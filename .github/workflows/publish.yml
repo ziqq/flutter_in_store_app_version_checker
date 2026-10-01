@@ -6,12 +6,115 @@ on:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+*"
 
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
 jobs:
   publish:
-    uses: ziqq/flutter_ci_workflows/.github/workflows/publish_to_pub.yml@main
-    with:
-      PANA_TOTAL: '110'
-    secrets:
-      PUB_CREDENTIAL_JSON: ${{ secrets.PUB_CREDENTIAL_JSON }}
-      PUB_OAUTH_ACCESS_TOKEN: ${{ secrets.PUB_OAUTH_ACCESS_TOKEN }}
-      PUB_OAUTH_REFRESH_TOKEN: ${{ secrets.PUB_OAUTH_REFRESH_TOKEN }}
+    name: Validate and publish package
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate release version
+        run: |
+          tag=$(git describe --tags --exact-match --match 'v*' HEAD)
+          version=$(awk '/^version:/ { print $2; exit }' pubspec.yaml)
+          changelog_version=$(awk '/^## / { print $2; exit }' CHANGELOG.md)
+          if [[ "$tag" != "v$version" || "$changelog_version" != "$version" ]]; then
+            echo '::error::Tag, pubspec version, and first changelog version must match.'
+            exit 1
+          fi
+
+      - name: Install pinned toolchain
+        uses: jdx/mise-action@v4
+        with:
+          version: '2026.9.15'
+          install_args: flutter just
+
+      - name: Validate package
+        run: just precommit
+
+      - name: Verify pub score
+        run: |
+          dart pub global activate pana
+          pana_output=$(dart pub global run pana . --no-warning)
+          printf '%s\n' "$pana_output"
+          score=$(printf '%s\n' "$pana_output" | sed -nE 's/.*Points: ([0-9]+)\/[0-9]+.*/\1/p')
+          if [[ ! "$score" =~ ^[0-9]+$ ]] || (( score < 110 )); then
+            echo '::error::Minimum pana score of 110 was not met.'
+            exit 1
+          fi
+
+      - name: Publish Flutter package
+        env:
+          PUB_CREDENTIAL_JSON: ${{ secrets.PUB_CREDENTIAL_JSON }}
+        run: |
+          node <<'JS'
+          const fs = require('node:fs');
+          const os = require('node:os');
+          const path = require('node:path');
+          if (!process.env.PUB_CREDENTIAL_JSON) {
+            throw new Error('PUB_CREDENTIAL_JSON is missing; publication aborted.');
+          }
+          let credentials;
+          try {
+            credentials = JSON.parse(process.env.PUB_CREDENTIAL_JSON);
+          } catch {
+            throw new Error('PUB_CREDENTIAL_JSON must contain valid JSON.');
+          }
+          if (!credentials || typeof credentials !== 'object' || Array.isArray(credentials)) {
+            throw new Error('PUB_CREDENTIAL_JSON must contain a credentials object.');
+          }
+          const directory = path.join(process.env.XDG_CONFIG_HOME || path.join(os.homedir(), '.config'), 'dart');
+          fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
+          fs.writeFileSync(path.join(directory, 'pub-credentials.json'), JSON.stringify(credentials), { mode: 0o600 });
+          JS
+          dart pub publish --force
+
+      - name: Remove publication credentials
+        if: always()
+        run: |
+          node <<'JS'
+          const fs = require('node:fs');
+          const os = require('node:os');
+          const path = require('node:path');
+          const directory = path.join(process.env.XDG_CONFIG_HOME || path.join(os.homedir(), '.config'), 'dart');
+          fs.rmSync(path.join(directory, 'pub-credentials.json'), { force: true });
+          JS
+
+  notify:
+    name: Notify publish result
+    needs: publish
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout trusted notification template
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Notify Discord and Telegram
+        uses: ziqq/actions/notify@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
+        with:
+          providers: discord,telegram
+          template-path: .github/notify/templates/release.md
+          variables: |
+            {
+              "status": "${{ needs.publish.result }}"
+            }
+          failure-policy: required
+          timeout-ms: "10000"
+          max-attempts: "5"
+          discord-webhooks: ${{ secrets.DISCORD_WEBHOOKS }}
+          telegram-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          telegram-targets: ${{ secrets.TELEGRAM_TARGETS }}

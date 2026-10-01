@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:l/l.dart';
 
-Future<void> _runGitCommand(List<String> args) async {
+Future<ProcessResult> _runGitCommand(List<String> args) async {
   final result = await Process.run('git', args);
-  if (result.exitCode == 0) return;
+  if (result.exitCode == 0) return result;
   l.e('Error running git ${args.join(" ")}: ${result.stderr}');
   exit(1);
 }
@@ -15,15 +15,15 @@ Future<void> _runGitCommand(List<String> args) async {
 void main() => runZonedGuarded<void>(
   () async {
     // Check if there are any uncommitted or unpushed changes
-    final statusResult = await Process.run('git', ['status', '--porcelain']);
+    final statusResult = await _runGitCommand(['status', '--porcelain']);
     if ((statusResult.stdout as String).trim().isNotEmpty) {
       l.e('There are uncommitted changes.');
       exit(1);
     }
-    final aheadResult = await Process.run('git', [
+    final aheadResult = await _runGitCommand([
       'rev-list',
       '--count',
-      '--left-only',
+      '--right-only',
       '@{u}...HEAD',
     ]);
     if ((aheadResult.stdout as String).trim() != '0') {
@@ -49,9 +49,12 @@ void main() => runZonedGuarded<void>(
     l.i('Found version: $version');
 
     // Validate version format
-    final versionParts = version.split('.');
-    if (versionParts.length != 3 ||
-        versionParts.any((e) => int.tryParse(e) == null)) {
+    final versionPattern = RegExp(
+      r'^\d+\.\d+\.\d+'
+      r'(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?'
+      r'(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$',
+    );
+    if (!versionPattern.hasMatch(version)) {
       l.e('Invalid version format: $version');
       exit(1);
     }
@@ -59,7 +62,7 @@ void main() => runZonedGuarded<void>(
     final tagName = 'v$version'; // Tag format: v1.2.3
 
     // Check if the tag already exists
-    final tagResult = await Process.run('git', ['tag', '-l', tagName]);
+    final tagResult = await _runGitCommand(['tag', '-l', tagName]);
     if (tagResult.stdout?.toString().trim() == tagName) {
       l.e('Tag $tagName already exists.');
       exit(1);

@@ -1,0 +1,16 @@
+flags:
+  dart:
+    paths:
+      - lib/
+    carryforward: false
+  android:
+    paths:
+      - android/src/main/kotlin/
+    carryforward: false
+  ios:
+    paths:
+      - ios/flutter_in_store_app_version_checker/Sources/
+    carryforward: false
+
+comment:
+  layout: "diff, flags, files"

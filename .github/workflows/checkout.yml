@@ -17,9 +17,19 @@ on:
       - "lib/**.dart"
       - "test/**.dart"
       - "example/**.dart"
+      - "android/**"
+      - "ios/**"
+      - "example/android/**"
+      - "example/ios/**"
+      - "tool/**"
       - .github/workflows/*.yml
       - "pubspec.yaml"
       - "example/pubspec.yaml"
+      - "analysis_options.yaml"
+      - "codecov.yml"
+      - "justfile"
+      - "mise.toml"
+      - "mise.lock"
   pull_request:
     branches:
       - "main"
@@ -34,9 +44,19 @@ on:
       - "lib/**.dart"
       - "test/**.dart"
       - "example/**.dart"
+      - "android/**"
+      - "ios/**"
+      - "example/android/**"
+      - "example/ios/**"
+      - "tool/**"
       - .github/workflows/*.yml
       - "pubspec.yaml"
       - "example/pubspec.yaml"
+      - "analysis_options.yaml"
+      - "codecov.yml"
+      - "justfile"
+      - "mise.toml"
+      - "mise.lock"
 
 
 concurrency:
@@ -44,12 +64,22 @@ concurrency:
   cancel-in-progress: true
 
 
+defaults:
+  run:
+    shell: bash
+
+
 jobs:
   checkout:
     name: Checkout
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      checks: write
     defaults:
       run:
+        shell: bash
         working-directory: ./
     env:
       pub-cache-name: pub
@@ -62,15 +92,6 @@ jobs:
       - name: Checkout repository
         id: checkout_repository
         uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            .github
-            pubspec.yaml
-            lib
-            test
-            example
-            analysis_options.yaml
-            CHANGELOG.md
 
       - name: Check content
         id: check_content
@@ -84,14 +105,15 @@ jobs:
         id: check_md_files
         timeout-minutes: 1
         run: |
-          echo | grep -q Description README.md ; echo Description is exist
-          echo | grep -q Example README.md ; echo Example is exist
+          grep -q Description README.md
+          grep -q Example README.md
 
-      - name: Install flutter
-        uses: subosito/flutter-action@v2
-        id: install_flutter
+      - name: Install pinned toolchain
+        uses: jdx/mise-action@v4
+        id: install_toolchain
         with:
-          channel: 'stable'
+          version: '2026.9.15'
+          install_args: flutter just
 
       - name: Check flutter version
         id: check_flutter_version
@@ -102,8 +124,7 @@ jobs:
         id: install_dependencies
         timeout-minutes: 2
         run: |
-          apt-get update && apt-get install -y lcov
-          flutter pub get --no-example
+          just get
 
       - name: Run dependency validator
         timeout-minutes: 1
@@ -114,12 +135,22 @@ jobs:
       - name: Check format
         id: check_format
         timeout-minutes: 1
-        run: dart format --set-exit-if-changed -l 80 -o none lib/
+        run: just format-check
 
       - name: Check analyzer
         id: check_analyzer
         timeout-minutes: 1
-        run: flutter analyze --fatal-warnings --no-fatal-infos lib/ test/
+        run: flutter analyze --fatal-warnings --no-fatal-infos lib/ test/ tool/
+
+      - name: Check example analyzer
+        timeout-minutes: 1
+        working-directory: example
+        run: flutter analyze --no-pub --fatal-warnings --no-fatal-infos lib/ test/
+
+      - name: Run example tests
+        timeout-minutes: 2
+        working-directory: example
+        run: flutter test --no-pub
 
       - name: Run tests
         id: run_tests
@@ -128,13 +159,13 @@ jobs:
           echo "Creating reports directory..."
           mkdir -p reports
           echo "Running tests with coverage..."
-          flutter test --coverage --concurrency=6 --no-pub --machine test/flutter_in_store_app_version_checker_test.dart | tee reports/tests.json
+          flutter test --coverage --concurrency=6 --no-pub --machine test/unit/ | tee reports/tests.json
 
       - name: Upload test report
         id: upload_test_report
         timeout-minutes: 1
         uses: actions/upload-artifact@v4
-        if: ${{ (success() || failure()) && github.actor != 'dependabot[bot]' }}
+        if: ${{ !cancelled() && hashFiles('reports/tests.json') != '' }}
         with:
           name: test-results
           path: reports/tests.json
@@ -148,7 +179,12 @@ jobs:
         id: test_report
         timeout-minutes: 1
         uses: dorny/test-reporter@v2
-        if: ${{ !cancelled() }}
+        if: >-
+          !cancelled() &&
+          steps.upload_test_report.outputs.artifact-id != '' &&
+          github.actor != 'dependabot[bot]' &&
+          (github.event_name != 'pull_request' ||
+          github.event.pull_request.head.repo.full_name == github.repository)
         with:
           artifact: test-results
           name: Test report
@@ -159,7 +195,164 @@ jobs:
       - name: Upload coverage to codecov
         id: upload_coverage
         timeout-minutes: 1
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           files: ./coverage/lcov.info
-          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          flags: dart
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  android:
+    name: Android build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pinned toolchain
+        uses: jdx/mise-action@v4
+        with:
+          version: '2026.9.15'
+          install_args: flutter java just
+
+      - name: Install dependencies
+        working-directory: example
+        run: flutter pub get
+
+      - name: Build Android example
+        working-directory: example
+        run: flutter build apk --debug --no-pub
+
+      - name: Run Android native tests with coverage
+        run: just test-android-native
+
+      - name: Upload Android native test reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-native-tests
+          path: |
+            example/build/flutter_in_store_app_version_checker/test-results/testDebugUnitTest/
+            example/build/flutter_in_store_app_version_checker/reports/tests/testDebugUnitTest/
+            example/build/flutter_in_store_app_version_checker/reports/jacoco/
+
+      - name: Upload Android coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./example/build/flutter_in_store_app_version_checker/reports/jacoco/nativeCoverage.xml
+          flags: android
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  ios:
+    name: iOS build (${{ matrix.swift-package-manager && 'SPM' || 'CocoaPods' }})
+    runs-on: macos-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        swift-package-manager: [false, true]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pinned toolchain
+        uses: jdx/mise-action@v4
+        with:
+          version: '2026.9.15'
+          install_args: flutter just ruby cocoapods
+
+      - name: Select iOS dependency manager
+        run: flutter config ${{ matrix.swift-package-manager && '--enable-swift-package-manager' || '--no-enable-swift-package-manager' }}
+
+      - name: Install dependencies
+        working-directory: example
+        run: flutter pub get
+
+      - name: Build iOS example
+        working-directory: example
+        run: flutter build ios --simulator --debug --no-codesign --no-pub
+
+      - name: Select iOS test simulator on the isolated CI runner
+        id: ios_test_simulator
+        run: |
+          simulator_id="$(xcrun simctl list devices available --json | jq -er '[.devices[][] | select(.isAvailable and (.name | startswith("iPhone")))][0].udid // error("No iOS Simulator available")')"
+          echo "id=$simulator_id" >> "$GITHUB_OUTPUT"
+
+      - name: Run iOS native tests with coverage
+        env:
+          IOS_SIMULATOR_ID: ${{ steps.ios_test_simulator.outputs.id }}
+        run: just test-ios-native
+
+      - name: Upload iOS native test reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-native-tests-${{ matrix.swift-package-manager && 'spm' || 'cocoapods' }}
+          path: |
+            example/build/native-ios-results-*/Tests.xcresult/
+            coverage/ios.lcov.info
+
+      - name: Upload iOS coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage/ios.lcov.info
+          flags: ios
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  notify:
+    name: Notify CI result
+    needs: [checkout, android, ios]
+    continue-on-error: true
+    if: >-
+      always() &&
+      github.actor != 'dependabot[bot]' &&
+      (github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    env:
+      NOTIFY_DISCORD_WEBHOOKS: ${{ secrets.DISCORD_WEBHOOKS }}
+      NOTIFY_TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      NOTIFY_TELEGRAM_TARGETS: ${{ secrets.TELEGRAM_TARGETS }}
+    steps:
+      - name: Report missing notification secrets
+        if: >-
+          env.NOTIFY_DISCORD_WEBHOOKS == '' ||
+          env.NOTIFY_TELEGRAM_BOT_TOKEN == '' ||
+          env.NOTIFY_TELEGRAM_TARGETS == ''
+        shell: bash
+        run: >-
+          echo "::warning::CI notification skipped because one or more notification secrets are not configured."
+
+      - name: Checkout trusted notification template
+        if: >-
+          env.NOTIFY_DISCORD_WEBHOOKS != '' &&
+          env.NOTIFY_TELEGRAM_BOT_TOKEN != '' &&
+          env.NOTIFY_TELEGRAM_TARGETS != ''
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.sha }}
+
+      - name: Notify Discord and Telegram
+        if: >-
+          env.NOTIFY_DISCORD_WEBHOOKS != '' &&
+          env.NOTIFY_TELEGRAM_BOT_TOKEN != '' &&
+          env.NOTIFY_TELEGRAM_TARGETS != '' &&
+          hashFiles('.github/notify/templates/ci.md') != ''
+        uses: ziqq/actions/notify@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
+        with:
+          providers: discord,telegram
+          template-path: .github/notify/templates/ci.md
+          variables: |
+            {
+              "pub_dev_url": "https://pub.dev/packages/flutter_in_store_app_version_checker",
+              "status_label": ${{ toJSON(!contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && !contains(needs.*.result, 'skipped') && 'success' || contains(needs.*.result, 'failure') && 'failure' || contains(needs.*.result, 'cancelled') && 'cancelled' || 'failure') }}
+            }
+          failure-policy: best-effort
+          timeout-ms: "10000"
+          max-attempts: "5"
+          discord-webhooks: ${{ env.NOTIFY_DISCORD_WEBHOOKS }}
+          telegram-bot-token: ${{ env.NOTIFY_TELEGRAM_BOT_TOKEN }}
+          telegram-targets: ${{ env.NOTIFY_TELEGRAM_TARGETS }}
