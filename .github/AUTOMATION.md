@@ -46,7 +46,32 @@ semantic version tag such as `v3.1.0` is pushed. The release is named
 Existing releases are left unchanged, so rerunning the workflow is safe.
 
 The release workflow runs independently from the pub.dev publication workflow.
-Both are triggered by the version tag created and pushed with `make tag`.
+Both are triggered by the version tag created and pushed with
+`mise exec -- just tag`.
+
+## Pinned SDK and CI reports
+
+Checkout, Android/iOS builds, and pub.dev validation/publication install tools
+from `mise.toml` and `mise.lock` using `jdx/mise-action`. Dart comes from Flutter;
+the workflows do not independently install a different Dart SDK. Local
+validation runs with `mise exec -- just precommit`.
+
+The Checkout job explicitly uses Bash with `pipefail`, so piping test output
+through `tee` cannot hide a failing test exit code. Test artifacts are uploaded
+only when a report exists. The reporter runs only after an artifact was
+uploaded and only for trusted same-repository runs; fork and Dependabot PRs
+still run checks/tests and upload reports but cannot create write-token checks.
+Its job-scoped token permits only repository reads, artifact reads, and check
+creation. No PR head runs with `pull_request_target` privileges.
+
+The repository-local publish workflow preserves the 110-point pana gate and
+requires the exact tag, pubspec version, and first changelog version to match.
+It uses the existing `PUB_CREDENTIAL_JSON` secret with the pinned Dart CLI,
+rather than a Docker publisher that installs a separate SDK. Credentials are
+written only to the ephemeral runner's Dart config with owner-only permissions,
+never printed, and removed after the publication step. No new secret or pub.dev
+account configuration is required. Actual publication is not part of local
+validation; `just publish-check` performs a dry run.
 
 ## Manual plan and apply
 

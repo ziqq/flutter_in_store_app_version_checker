@@ -5,7 +5,7 @@
       "label": "dart:pub:get",
       "type": "shell",
       "command": [
-        "flutter pub get"
+        "mise exec -- just get"
       ],
       "group": {
         "kind": "none",
@@ -17,7 +17,7 @@
       "label": "dart:format",
       "type": "shell",
       "command": [
-        "dart format --fix -l 80"
+        "mise exec -- just format"
       ],
       "group": {
         "kind": "none",
@@ -29,7 +29,7 @@
       "label": "dart:build_runner:dir",
       "type": "shell",
       "command": [
-        "dart run build_runner build --build-filter '${fileDirname}/*.dart'"
+        "mise exec -- dart run build_runner build --build-filter '${fileDirname}/*.dart'"
       ],
       "group": {
         "kind": "none",
@@ -43,8 +43,8 @@
       "label": "example:dart:build_runner:dir",
       "type": "shell",
       "command": [
-        "dart run build_runner build --build-filter '${fileDirname}/*.dart'",
-        "&& dart format --fix -l 80 '${fileDirname}'"
+        "mise exec -- dart run build_runner build --build-filter '${fileDirname}/*.dart'",
+        "&& mise exec -- dart format -l 80 '${fileDirname}'"
       ],
       "group": {
         "kind": "none",
@@ -58,7 +58,7 @@
     {
       "label": "clear:example:build",
       "type": "shell",
-      "command": "make clear-client",
+      "command": "mise exec -- just clean",
       "windows": {
         "command": "powershell.exe",
         "args": [
@@ -95,7 +95,7 @@
       "label": "dart:build_runner:test_dir",
       "type": "shell",
       "command": [
-        "dart run build_runner build --build-filter 'test/**'"
+        "mise exec -- dart run build_runner build --build-filter 'test/**'"
       ],
       "group": {
         "kind": "none",
@@ -110,15 +110,7 @@
       "label": "init:ios:pods",
       "type": "shell",
       "command": [
-        "fvm flutter config --no-enable-swift-package-manager && flutter config --no-enable-swift-package-manager",
-        "&& cd example",
-        "&& fvm flutter clean",
-        "&& fvm flutter pub get",
-        "&& cd ios",
-        "&& ( [ -f \"_Podfile\" ] && [ ! -f \"Podfile\" ] && mv \"_Podfile\" \"Podfile\" || true )",
-        "&& rm -rf Pods Podfile.lock",
-        "&& pod install",
-        "&& cd .. && fvm flutter pub get || (echo \"¯\\\\_(ツ)_/¯ Init ios pods error\"; exit 1)"
+        "mise exec -- just init-ios-pods"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -134,14 +126,7 @@
       "label": "init:ios:spm",
       "type": "shell",
       "command": [
-        "fvm flutter config --enable-swift-package-manager && flutter config --enable-swift-package-manager",
-        "&& cd example",
-        "&& fvm flutter clean",
-        "&& cd ios",
-        "&& ( [ -f \"Podfile\" ] && mv \"Podfile\" \"_Podfile\" || true )",
-        "&& rm -rf Pods Podfile.lock",
-        "&& ( pod deintegrate || true )",
-        "&& cd .. && fvm flutter pub get || (echo \"¯\\\\_(ツ)_/¯ Init ios swift package manager error\"; exit 1)"
+        "mise exec -- just init-ios-spm"
       ],
       "options": {
         "cwd": "${workspaceFolder}"

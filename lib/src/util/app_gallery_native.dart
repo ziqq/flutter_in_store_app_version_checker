@@ -15,12 +15,20 @@ final class AppGalleryNative {
     'github.com/ziqq/instoreappversionchecker/app_metadata',
   );
 
+  static Future<({String? packageName, String? storeID, String? version})>?
+  _pendingCheck;
+
   /// Checks AppGallery for an update to the installed Android application.
   static Future<({String? packageName, String? storeID, String? version})>
-  checkUpdate() async {
-    final data = await _channel.invokeMapMethod<String, Object?>(
-      'checkAppGalleryUpdate',
-    );
+  checkUpdate() => _pendingCheck ??= _checkUpdate().whenComplete(() {
+    _pendingCheck = null;
+  });
+
+  static Future<({String? packageName, String? storeID, String? version})>
+  _checkUpdate() async {
+    final data = await _channel
+        .invokeMapMethod<String, Object?>('checkAppGalleryUpdate')
+        .timeout(const Duration(seconds: 20));
     if (data == null) {
       throw PlatformException(
         code: 'invalid_app_gallery_response',

@@ -26,7 +26,9 @@ on:
       - "pubspec.yaml"
       - "example/pubspec.yaml"
       - "analysis_options.yaml"
-      - "Makefile"
+      - "justfile"
+      - "mise.toml"
+      - "mise.lock"
   pull_request:
     branches:
       - "main"
@@ -50,7 +52,9 @@ on:
       - "pubspec.yaml"
       - "example/pubspec.yaml"
       - "analysis_options.yaml"
-      - "Makefile"
+      - "justfile"
+      - "mise.toml"
+      - "mise.lock"
 
 
 concurrency:
@@ -67,8 +71,13 @@ jobs:
   checkout:
     name: Checkout
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      checks: write
     defaults:
       run:
+        shell: bash
         working-directory: ./
     env:
       pub-cache-name: pub
@@ -97,11 +106,12 @@ jobs:
           grep -q Description README.md
           grep -q Example README.md
 
-      - name: Install flutter
-        uses: subosito/flutter-action@v2
-        id: install_flutter
+      - name: Install pinned toolchain
+        uses: jdx/mise-action@v4
+        id: install_toolchain
         with:
-          channel: 'stable'
+          version: '2026.9.15'
+          install_args: flutter just
 
       - name: Check flutter version
         id: check_flutter_version
@@ -112,8 +122,7 @@ jobs:
         id: install_dependencies
         timeout-minutes: 2
         run: |
-          flutter pub get
-          (cd example && flutter pub get)
+          just get
 
       - name: Run dependency validator
         timeout-minutes: 1
@@ -124,7 +133,7 @@ jobs:
       - name: Check format
         id: check_format
         timeout-minutes: 1
-        run: dart format --set-exit-if-changed -l 80 -o none lib/ test/ tool/ example/lib/ example/test/
+        run: just format-check
 
       - name: Check analyzer
         id: check_analyzer
@@ -154,7 +163,7 @@ jobs:
         id: upload_test_report
         timeout-minutes: 1
         uses: actions/upload-artifact@v4
-        if: ${{ (success() || failure()) && github.actor != 'dependabot[bot]' }}
+        if: ${{ !cancelled() && hashFiles('reports/tests.json') != '' }}
         with:
           name: test-results
           path: reports/tests.json
@@ -168,7 +177,12 @@ jobs:
         id: test_report
         timeout-minutes: 1
         uses: dorny/test-reporter@v2
-        if: ${{ !cancelled() }}
+        if: >-
+          !cancelled() &&
+          steps.upload_test_report.outputs.artifact-id != '' &&
+          github.actor != 'dependabot[bot]' &&
+          (github.event_name != 'pull_request' ||
+          github.event.pull_request.head.repo.full_name == github.repository)
         with:
           artifact: test-results
           name: Test report
@@ -179,10 +193,10 @@ jobs:
       - name: Upload coverage to codecov
         id: upload_coverage
         timeout-minutes: 1
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           files: ./coverage/lcov.info
-          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   android:
     name: Android build
@@ -192,16 +206,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Java
-        uses: actions/setup-java@v4
+      - name: Install pinned toolchain
+        uses: jdx/mise-action@v4
         with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Install flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
+          version: '2026.9.15'
+          install_args: flutter java just
 
       - name: Install dependencies
         working-directory: example
@@ -223,10 +232,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install flutter
-        uses: subosito/flutter-action@v2
+      - name: Install pinned toolchain
+        uses: jdx/mise-action@v4
         with:
-          channel: stable
+          version: '2026.9.15'
+          install_args: flutter just ruby cocoapods
 
       - name: Select iOS dependency manager
         run: flutter config ${{ matrix.swift-package-manager && '--enable-swift-package-manager' || '--no-enable-swift-package-manager' }}

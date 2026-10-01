@@ -192,7 +192,7 @@ class _ExampleState extends State<Example> {
               .then((r) => _appGalleryNative = r),
         ],
       ].wait;
-    } on Object catch (e, _) {
+    } on Object catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()

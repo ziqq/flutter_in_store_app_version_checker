@@ -72,7 +72,15 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
     InStoreAppVersionCheckerParams params,
   ) async {
     try {
-      final appMetadata = await AppMetadata.fromPlatform();
+      final requiresAppMetadata =
+          params.packageName == null ||
+          params.currentVersion == null ||
+          (_isAndroid &&
+              params.androidStore ==
+                  InStoreAppVersionCheckerAndroidStoreType.appGalleryNative);
+      final appMetadata = requiresAppMetadata
+          ? await AppMetadata.fromPlatform()
+          : (packageName: params.packageName!, version: params.currentVersion!);
       final packageName = params.packageName ?? appMetadata.packageName;
       final currentVersion = params.currentVersion ?? appMetadata.version;
       if (_isAndroid) {
@@ -146,7 +154,9 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
           '_ts': DateTime.now().toUtc().millisecondsSinceEpoch.toString(),
         },
       );
-      final response = await _httpClient.get(uri);
+      final response = await _httpClient
+          .get(uri)
+          .timeout(const Duration(seconds: 15));
       if (response.statusCode != 200) {
         final countryGuidance = response.statusCode == 400
             ? ' Check the storefront country code. Use a regional locale '
@@ -400,7 +410,9 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
     String? newVersion, url;
     try {
       final uri = Uri.https('apkpure.com', '$packageName/$packageName');
-      final response = await _httpClient.get(uri);
+      final response = await _httpClient
+          .get(uri)
+          .timeout(const Duration(seconds: 15));
       if (response.statusCode != 200) {
         return InStoreAppVersionCheckerResponse.error(
           currentVersion: currentVersion,

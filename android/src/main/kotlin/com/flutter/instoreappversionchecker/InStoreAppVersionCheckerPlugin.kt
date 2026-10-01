@@ -2,6 +2,8 @@ package com.flutter.instoreappversionchecker
 
 import android.content.Context
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import androidx.annotation.NonNull
 import com.huawei.hms.jos.JosApps
 import com.huawei.updatesdk.service.appmgr.bean.ApkUpgradeInfo
@@ -20,6 +22,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 class InStoreAppVersionCheckerPlugin: FlutterPlugin, MethodCallHandler {
   companion object {
     private const val CHANNEL_NAME = "github.com/ziqq/instoreappversionchecker/app_metadata"
+    private const val APP_GALLERY_TIMEOUT_MS = 15_000L
+    private val appGalleryHandler = Handler(Looper.getMainLooper())
+    private var pendingAppGalleryResults: MutableList<Result>? = null
   }
 
   /// The MethodChannel that will the communication between Flutter and native Android
@@ -57,109 +62,142 @@ class InStoreAppVersionCheckerPlugin: FlutterPlugin, MethodCallHandler {
   }
 
   private fun checkAppGalleryUpdate(result: Result) {
+    pendingAppGalleryResults?.let {
+      it.add(result)
+      return
+    }
+
     try {
       val client = JosApps.getAppUpdateClient(applicationContext)
       val completed = AtomicBoolean(false)
+      val results = mutableListOf(result)
+      pendingAppGalleryResults = results
+      lateinit var timeout: Runnable
 
-      fun complete(block: () -> Unit) {
-        if (completed.compareAndSet(false, true)) {
-          client.releaseCallBack()
-          block()
+      fun complete(block: (Result) -> Unit) {
+        appGalleryHandler.post {
+          if (completed.compareAndSet(false, true)) {
+            appGalleryHandler.removeCallbacks(timeout)
+            pendingAppGalleryResults = null
+            client.releaseCallBack()
+            results.forEach(block)
+          }
         }
       }
 
-      client.checkAppUpdate(
-        applicationContext,
-        object : CheckUpdateCallBack {
-          override fun onUpdateInfo(intent: Intent?) {
-            if (intent == null) {
-              complete {
-                result.error(
-                  "app_gallery_invalid_response",
-                  "Huawei AppUpdateClient returned no update result.",
-                  null,
-                )
-              }
-              return
-            }
+      timeout = Runnable {
+        complete {
+          it.error(
+            "app_gallery_update_timeout",
+            "Huawei AppUpdateClient did not respond within 15 seconds.",
+            null,
+          )
+        }
+      }
+      appGalleryHandler.postDelayed(timeout, APP_GALLERY_TIMEOUT_MS)
 
-            val status = intent.getIntExtra(UpdateKey.STATUS, -1)
-            val failureCode = intent.getIntExtra(UpdateKey.FAIL_CODE, 0)
-            val failureReason = intent.getStringExtra(UpdateKey.FAIL_REASON)
-            if (failureCode != 0 ||
-                (status != UpdateStatusCode.HAS_UPGRADE_INFO &&
-                 status != UpdateStatusCode.NO_UPGRADE_INFO)) {
-              complete {
-                result.error(
-                  "app_gallery_update_failed",
-                  failureReason ?: "Huawei AppUpdateClient failed with status $status (code $failureCode).",
-                  mapOf(
-                    "status" to status,
-                    "failureCode" to failureCode,
-                  ),
-                )
-              }
-              return
-            }
-
-            if (status == UpdateStatusCode.HAS_UPGRADE_INFO) {
-              val info = getUpgradeInfo(intent)
-              if (info == null || info.version_.isNullOrBlank() || info.package_.isNullOrBlank()) {
+      try {
+        client.checkAppUpdate(
+          applicationContext,
+          object : CheckUpdateCallBack {
+            override fun onUpdateInfo(intent: Intent?) {
+              if (intent == null) {
                 complete {
-                  result.error(
+                  it.error(
                     "app_gallery_invalid_response",
-                    "Huawei AppUpdateClient returned invalid upgrade information.",
-                    status,
+                    "Huawei AppUpdateClient returned no update result.",
+                    null,
                   )
                 }
                 return
               }
+
+              val status = intent.getIntExtra(UpdateKey.STATUS, -1)
+              val failureCode = intent.getIntExtra(UpdateKey.FAIL_CODE, 0)
+              val failureReason = intent.getStringExtra(UpdateKey.FAIL_REASON)
+              if (failureCode != 0 ||
+                  (status != UpdateStatusCode.HAS_UPGRADE_INFO &&
+                   status != UpdateStatusCode.NO_UPGRADE_INFO)) {
+                complete {
+                  it.error(
+                    "app_gallery_update_failed",
+                    failureReason ?: "Huawei AppUpdateClient failed with status $status (code $failureCode).",
+                    mapOf(
+                      "status" to status,
+                      "failureCode" to failureCode,
+                    ),
+                  )
+                }
+                return
+              }
+
+              if (status == UpdateStatusCode.HAS_UPGRADE_INFO) {
+                val info = getUpgradeInfo(intent)
+                if (info == null || info.version_.isNullOrBlank() || info.package_.isNullOrBlank()) {
+                  complete {
+                    it.error(
+                      "app_gallery_invalid_response",
+                      "Huawei AppUpdateClient returned invalid upgrade information.",
+                      status,
+                    )
+                  }
+                  return
+                }
+                complete {
+                  it.success(
+                    mapOf(
+                      "storeID" to info.id_,
+                      "packageName" to info.package_,
+                      "version" to info.version_.trim(),
+                    ),
+                  )
+                }
+                return
+              }
+
               complete {
-                result.success(
-                  mapOf(
-                    "storeID" to info.id_,
-                    "packageName" to info.package_,
-                    "version" to info.version_.trim(),
+                it.success(
+                  mapOf<String, String?>(
+                    "storeID" to null,
+                    "packageName" to null,
+                    "version" to null,
                   ),
                 )
               }
-              return
             }
 
-            complete {
-              result.success(
-                mapOf<String, String?>(
-                  "storeID" to null,
-                  "packageName" to null,
-                  "version" to null,
-                ),
-              )
-            }
-          }
+            override fun onMarketInstallInfo(intent: Intent?) = Unit
 
-          override fun onMarketInstallInfo(intent: Intent?) = Unit
-
-          override fun onMarketStoreError(errorCode: Int) {
-            complete {
-              result.error(
-                "app_gallery_market_error",
-                "Huawei AppGallery reported market error $errorCode.",
-                errorCode,
-              )
+            override fun onMarketStoreError(errorCode: Int) {
+              complete {
+                it.error(
+                  "app_gallery_market_error",
+                  "Huawei AppGallery reported market error $errorCode.",
+                  errorCode,
+                )
+              }
             }
-          }
 
-          override fun onUpdateStoreError(errorCode: Int) {
-            complete {
-              result.error(
-                "app_gallery_update_error",
-                "Huawei AppUpdateClient reported update error $errorCode.",
-                errorCode,
-              )
+            override fun onUpdateStoreError(errorCode: Int) {
+              complete {
+                it.error(
+                  "app_gallery_update_error",
+                  "Huawei AppUpdateClient reported update error $errorCode.",
+                  errorCode,
+                )
+              }
             }
-          }
-        },
-      )
+          },
+        )
+      } catch (error: Exception) {
+        complete {
+          it.error(
+            "app_gallery_update_exception",
+            error.message ?: "Huawei AppUpdateClient failed.",
+            error.toString(),
+          )
+        }
+      }
     } catch (error: Exception) {
       result.error(
         "app_gallery_update_exception",

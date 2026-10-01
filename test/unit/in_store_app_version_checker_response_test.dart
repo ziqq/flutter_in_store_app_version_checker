@@ -235,20 +235,20 @@ void main() => group('InStoreAppVersionCheckerResponse - ', () {
     });
   });
 
-  group('pre-release ordering (lexicographic)', () {
-    test('pre-release vs release (preA != null, preB == null) => false', () {
+  group('pre-release ordering', () {
+    test('pre-release vs release => update', () {
       const r = InStoreAppVersionCheckerResponse.success(
         currentVersion: '1.0.0-beta',
         newVersion: '1.0.0',
       );
-      expect(r.canUpdate, isFalse);
+      expect(r.canUpdate, isTrue);
     });
-    test('release vs pre-release (preA null, preB != null) => true', () {
+    test('release vs pre-release => no update', () {
       const r = InStoreAppVersionCheckerResponse.success(
         currentVersion: '1.0.0',
         newVersion: '1.0.0-beta',
       );
-      expect(r.canUpdate, isTrue);
+      expect(r.canUpdate, isFalse);
     });
     test('alpha -> beta (alpha < beta)', () {
       const r = InStoreAppVersionCheckerResponse.success(
@@ -290,14 +290,14 @@ void main() => group('InStoreAppVersionCheckerResponse - ', () {
         currentVersion: '1.0.0-',
         newVersion: '1.0.0',
       );
-      expect(r.canUpdate, isFalse);
+      expect(r.canUpdate, isTrue);
     });
     test('release vs trailing dash', () {
       const r = InStoreAppVersionCheckerResponse.success(
         currentVersion: '1.0.0',
         newVersion: '1.0.0-',
       );
-      expect(r.canUpdate, isTrue);
+      expect(r.canUpdate, isFalse);
     });
   });
 
@@ -321,8 +321,7 @@ void main() => group('InStoreAppVersionCheckerResponse - ', () {
         currentVersion: '1.2.3-beta+5',
         newVersion: '1.2.3+7',
       );
-      // pre-release < release => false
-      expect(r.canUpdate, isFalse);
+      expect(r.canUpdate, isTrue);
     });
   });
 
@@ -505,14 +504,14 @@ void main() => group('InStoreAppVersionCheckerResponse - ', () {
         currentVersion: '1-alpha',
         newVersion: '1',
       );
-      expect(r.canUpdate, isFalse);
+      expect(r.canUpdate, isTrue);
     });
     test('1 -> 1-alpha (release vs pre)', () {
       const r = InStoreAppVersionCheckerResponse.success(
         currentVersion: '1',
         newVersion: '1-alpha',
       );
-      expect(r.canUpdate, isTrue);
+      expect(r.canUpdate, isFalse);
     });
   });
 
@@ -544,8 +543,8 @@ void main() => group('InStoreAppVersionCheckerResponse - ', () {
     });
   });
 
-  group('equality ignores error fields', () {
-    test('two error responses differ only by message => equal', () {
+  group('equality distinguishes messages but ignores diagnostic identity', () {
+    test('two error responses differ only by message => not equal', () {
       const a = InStoreAppVersionCheckerResponse.error(
         currentVersion: '1.0.0',
         newVersion: '1.1.0',
@@ -556,7 +555,7 @@ void main() => group('InStoreAppVersionCheckerResponse - ', () {
         newVersion: '1.1.0',
         errorMessage: 'B',
       );
-      expect(a, equals(b));
+      expect(a, isNot(equals(b)));
     });
     test('two error responses differ only by error object => equal', () {
       final a = InStoreAppVersionCheckerResponse.error(

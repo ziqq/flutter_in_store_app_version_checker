@@ -535,11 +535,11 @@ void main() {
           );
       test(
         'pre -> release',
-        () => expect(s('1.0.0-beta', '1.0.0').canUpdate, isFalse),
+        () => expect(s('1.0.0-beta', '1.0.0').canUpdate, isTrue),
       );
       test(
         'release -> pre',
-        () => expect(s('1.0.0', '1.0.0-beta').canUpdate, isTrue),
+        () => expect(s('1.0.0', '1.0.0-beta').canUpdate, isFalse),
       );
       test(
         'alpha -> beta',
@@ -673,7 +673,7 @@ void main() {
         expect(a == b, isFalse);
       });
 
-      test('error responses only message differs -> equal', () {
+      test('error responses only message differs -> not equal', () {
         const a = InStoreAppVersionCheckerResponse.error(
           currentVersion: '1.0.0',
           newVersion: '1.1.0',
@@ -684,8 +684,7 @@ void main() {
           newVersion: '1.1.0',
           errorMessage: 'B',
         );
-        expect(a, equals(b));
-        expect(a.hashCode, b.hashCode);
+        expect(a, isNot(equals(b)));
       });
     });
 
@@ -1234,10 +1233,9 @@ void main() {
           expect(canUpdate, anyOf(isTrue, isFalse)); // placeholder flexibility
         });
 
-        test('release vs release-0 (current treats -0 as pre-release)', () {
+        test('release vs release-0 does not update to a pre-release', () {
           final canUpdate = r('1.0.0', '1.0.0-0').canUpdate;
-          // Provide explicit check: most logic counts release -> pre as update.
-          expect(canUpdate, isTrue);
+          expect(canUpdate, isFalse);
         });
       });
 

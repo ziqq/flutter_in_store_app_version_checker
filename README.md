@@ -238,7 +238,7 @@ final res = await checker.checkUpdate(params);
 ```
 
 ### How package name and version are resolved
-If `packageName` or `currentVersion` are not provided in `InStoreAppVersionCheckerParams`, the plugin resolves them from the installed app metadata on the host platform.
+If `packageName` or `currentVersion` are not provided in `InStoreAppVersionCheckerParams`, the plugin resolves them from the installed app metadata on the host platform. HTTP checks skip the native metadata request when both overrides are supplied. AppGallery native always reads the installed application's metadata and rejects overrides.
 
 - Android: package name and version from the plugin's native Android implementation
 - iOS: bundle identifier and `CFBundleShortVersionString` from the plugin's native iOS implementation
@@ -251,7 +251,7 @@ Huawei and ignore `storeID`.
 
 
 ## Version comparison notes
-- Release vs pre-release: a pure release is considered higher than a pre-release with the same core; therefore if current is release and new is pre-release -> treated as update (legacy-compatible).
+- Release vs pre-release: a pure release is higher than a pre-release with the same core. `3.1.0-dev.1` to `3.1.0` is an update; the reverse is not.
 - Numeric pre-release tokens compared numerically; mixed/alphanumeric tokens compared lexicographically after numeric segments.
 - Trailing zero segment normalization: `1.2` equals `1.2.0` (no update).
 - Fully non-numeric current vs numeric new => update.
@@ -288,6 +288,38 @@ Apple HTTP errors include the status, original locale, and resolved storefront.
 HTTP 400 includes guidance to check the country code. A successful HTTP 200
 response with empty results instead reports that the app was not found in that
 storefront; check both its bundle ID and regional availability.
+
+Every HTTP request has a 15-second timeout. A Google Play fallback or an
+AppGallery web retry can make the total check longer than one request.
+AppGallery native has a 15-second SDK timeout that releases the callback, plus
+a 20-second Dart bridge safeguard. Timeout failures return error responses.
+Concurrent native calls share one in-flight check, including across checker
+instances; after success, failure, or timeout the next call starts a new check.
+
+Response equality and `hashCode` include status, versions, listing URL, and
+`errorMessage`. The identity of the diagnostic `error` and `stackTrace` objects
+is excluded. A success changing to an error therefore notifies a
+`ValueNotifier` even when the version fields have not changed.
+
+
+## Development
+
+The repository uses [mise](https://mise.jdx.dev/) for pinned SDKs and
+[Just](https://just.systems/) for commands, following the same setup as
+`tetradka_app`. `mise.toml` is the source of truth and `mise.lock` records
+download URLs and checksums. Dart comes from the pinned Flutter SDK; the
+package's minimum supported SDK versions remain unchanged.
+
+```sh
+mise trust
+mise install
+mise exec -- just precommit
+```
+
+With mise activated in your shell, use plain `just`, `flutter`, and `dart`.
+VS Code resolves Flutter through `mise where flutter` without a local FVM path.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for native build prerequisites and the
+CocoaPods/SPM checks.
 
 
 ## Platform integration notes
