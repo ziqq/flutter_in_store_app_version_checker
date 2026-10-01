@@ -60,6 +60,16 @@ test-unit:
 test-example:
     @cd example && flutter test --no-pub
 
+# Run Android plugin JVM tests and generate JaCoCo XML/HTML coverage.
+test-android-native:
+    @cd example && flutter pub get
+    @cd example/android && ./gradlew :flutter_in_store_app_version_checker:nativeCoverage --console=plain
+
+# Run iOS plugin XCTest on an available simulator and export Swift coverage.
+[macos]
+test-ios-native:
+    @bash tool/test_ios_native.sh
+
 # Summarize an existing LCOV report (requires lcov).
 coverage:
     @lcov --summary coverage/lcov.info

@@ -2,6 +2,7 @@
 
 
 ## Unreleased
+- **ADDED**: Native Android and iOS plugin tests with JaCoCo/Swift coverage and separate Dart, Android, and iOS Codecov reports
 - **CHANGED**: Validate package, tool, and example code in CI and build Android and iOS examples with CocoaPods and Swift Package Manager
 - **CHANGED**: Replace FVM and Make with pinned mise toolchains and Just commands for local development, VS Code, CI, publishing, and tagging
 - **CHANGED**: Align documented minimum SDK versions with `pubspec.yaml`

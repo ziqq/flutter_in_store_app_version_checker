@@ -34,6 +34,34 @@ Flutter can prefer Android Studio's bundled JDK over `JAVA_HOME`. To explicitly
 select mise's JDK, run `flutter config --jdk-dir "$(mise where java)"`; this
 changes your Flutter user configuration, so it is not done automatically.
 
+## Native plugin tests and coverage
+
+After building the example, run the native tests with the pinned toolchain:
+
+```sh
+mise exec -- just test-android-native
+IOS_SIMULATOR_ID=<dedicated-test-simulator-udid> mise exec -- just test-ios-native
+```
+
+Android tests use JUnit/Robolectric and replace only the Huawei SDK client. They
+execute the plugin's method handler, Android intents, and main-looper timeout
+logic without a device or a live AppGallery request. The JaCoCo XML report is
+written to
+`example/build/flutter_in_store_app_version_checker/reports/jacoco/nativeCoverage.xml`.
+
+iOS XCTest uses the existing `RunnerTests` target and tests the plugin through
+the Flutter method codec, including registration and response routing. It
+requires a dedicated iOS Simulator and `jq`. `IOS_SIMULATOR_ID` is required:
+the command never automatically uses a simulator that might belong to another
+running task. The test command does not change Flutter's dependency-manager
+setting. CI runs it with CocoaPods and with Swift Package Manager enabled.
+Swift coverage is exported to `coverage/ios.lcov.info`.
+
+Codecov receives separate `dart`, `android`, and `ios` reports, restricted to
+the plugin's source files. SDKs, generated files, and the example application are
+not counted as plugin coverage. Native unit coverage does not replace runtime
+verification of Huawei `AppUpdateClient` on a physical Huawei device.
+
 
 ## iOS: testing (CocoaPods and Swift Package Manager)
 

@@ -21,11 +21,12 @@ on:
       - "ios/**"
       - "example/android/**"
       - "example/ios/**"
-      - "tool/**.dart"
+      - "tool/**"
       - .github/workflows/*.yml
       - "pubspec.yaml"
       - "example/pubspec.yaml"
       - "analysis_options.yaml"
+      - "codecov.yml"
       - "justfile"
       - "mise.toml"
       - "mise.lock"
@@ -47,11 +48,12 @@ on:
       - "ios/**"
       - "example/android/**"
       - "example/ios/**"
-      - "tool/**.dart"
+      - "tool/**"
       - .github/workflows/*.yml
       - "pubspec.yaml"
       - "example/pubspec.yaml"
       - "analysis_options.yaml"
+      - "codecov.yml"
       - "justfile"
       - "mise.toml"
       - "mise.lock"
@@ -196,6 +198,7 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           files: ./coverage/lcov.info
+          flags: dart
           token: ${{ secrets.CODECOV_TOKEN }}
 
   android:
@@ -219,6 +222,26 @@ jobs:
       - name: Build Android example
         working-directory: example
         run: flutter build apk --debug --no-pub
+
+      - name: Run Android native tests with coverage
+        run: just test-android-native
+
+      - name: Upload Android native test reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-native-tests
+          path: |
+            example/build/flutter_in_store_app_version_checker/test-results/testDebugUnitTest/
+            example/build/flutter_in_store_app_version_checker/reports/tests/testDebugUnitTest/
+            example/build/flutter_in_store_app_version_checker/reports/jacoco/
+
+      - name: Upload Android coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./example/build/flutter_in_store_app_version_checker/reports/jacoco/nativeCoverage.xml
+          flags: android
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   ios:
     name: iOS build (${{ matrix.swift-package-manager && 'SPM' || 'CocoaPods' }})
@@ -248,6 +271,33 @@ jobs:
       - name: Build iOS example
         working-directory: example
         run: flutter build ios --simulator --debug --no-codesign --no-pub
+
+      - name: Select iOS test simulator on the isolated CI runner
+        id: ios_test_simulator
+        run: |
+          simulator_id="$(xcrun simctl list devices available --json | jq -er '[.devices[][] | select(.isAvailable and (.name | startswith("iPhone")))][0].udid // error("No iOS Simulator available")')"
+          echo "id=$simulator_id" >> "$GITHUB_OUTPUT"
+
+      - name: Run iOS native tests with coverage
+        env:
+          IOS_SIMULATOR_ID: ${{ steps.ios_test_simulator.outputs.id }}
+        run: just test-ios-native
+
+      - name: Upload iOS native test reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-native-tests-${{ matrix.swift-package-manager && 'spm' || 'cocoapods' }}
+          path: |
+            example/build/native-ios-results-*/Tests.xcresult/
+            coverage/ios.lcov.info
+
+      - name: Upload iOS coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage/ios.lcov.info
+          flags: ios
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   notify:
     name: Notify CI result

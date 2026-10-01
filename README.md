@@ -321,6 +321,11 @@ VS Code resolves Flutter through `mise where flutter` without a local FVM path.
 See [CONTRIBUTING.md](CONTRIBUTING.md) for native build prerequisites and the
 CocoaPods/SPM checks.
 
+Native plugin tests run with `mise exec -- just test-android-native` and, on
+macOS, `mise exec -- just test-ios-native`. CI uploads Dart, Kotlin, and Swift
+coverage separately to Codecov. The Android suite substitutes the Huawei SDK
+client; it does not prove live AppGallery behavior on a physical Huawei device.
+
 
 ## Platform integration notes
 - Android example app is migrated to Flutter built-in Kotlin.
