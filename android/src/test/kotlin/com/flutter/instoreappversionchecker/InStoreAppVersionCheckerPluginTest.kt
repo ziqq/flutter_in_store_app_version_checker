@@ -116,10 +116,35 @@ class InStoreAppVersionCheckerPluginTest {
     }
 
     @Test
-    fun unknownMethodIsNotImplemented() {
-        val result = call("unknown")
+    fun unknownMethodsIncludingHashCollisionsAreNotImplemented() {
+        val collisions =
+            mapOf(
+                "getAppMetadata" to "hFtAppMetadata",
+                "checkAppGalleryUpdate" to "dIeckAppGalleryUpdate",
+                "getPlatformVersion" to "hFtPlatformVersion",
+            )
+        for ((known, unknown) in collisions) {
+            assertNotEquals(known, unknown)
+            assertEquals(known.hashCode(), unknown.hashCode())
+        }
+        for (method in listOf("unknown", "") + collisions.values) {
+            val result = call(method)
+            assertTrue(method, result.notImplemented)
+            assertEquals(1, result.replies)
+        }
+        verifyNoInteractions(client)
+    }
+
+    @Test
+    fun malformedNativeCallWithNullMethodIsNotImplemented() {
+        // MethodCall's constructor rejects null; model a malformed native input.
+        val malformedCall = mock(MethodCall::class.java)
+        assertNull(malformedCall.method)
+        val result = RecordingResult()
+        plugin.onMethodCall(malformedCall, result)
         assertTrue(result.notImplemented)
         assertEquals(1, result.replies)
+        verifyNoInteractions(client)
     }
 
     @Test
