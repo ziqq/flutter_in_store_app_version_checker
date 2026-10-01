@@ -109,7 +109,7 @@ actual checks. A whole workflow canceled by concurrency may stop before the
 notification job starts.
 
 `.github/workflows/publish.yml` also runs a required notification after the
-reusable publish job, including when publication fails.
+publish job, including when publication fails.
 
 Configure these repository Actions secrets:
 
