@@ -17,6 +17,7 @@
 - **FIXED**: Share concurrent AppGallery native checks and release SDK callbacks on timeout
 - **FIXED**: Skip installed-app metadata for HTTP checks with complete package and version overrides
 - **FIXED**: Avoid unused example stack traces and publish CI test reports only when artifacts exist
+- **FIXED**: Preserve the iOS example's UIScene lifecycle and iOS 15 deployment configuration
 
 
 ## 3.1.0-dev.1

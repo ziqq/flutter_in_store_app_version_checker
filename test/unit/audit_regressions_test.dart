@@ -146,7 +146,7 @@ void main() {
       const Object response = InStoreAppVersionCheckerResponse.success(
         currentVersion: '1.0.0',
       );
-      final Object other = Object();
+      final other = Object();
       expect(response == other, isFalse);
       expect(response, equals(response));
     });
