@@ -1,0 +1,22 @@
+name: Notifications
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  contents: read
+
+jobs:
+  new-items:
+    if: github.event_name == 'issues' || github.event_name == 'pull_request_target'
+    uses: ziqq/actions/.github/workflows/notify-events.yml@7737ce8c4d87c656b7ccf5f78138d8d7e53a1b62
+    with:
+      notify-issues: true
+      notify-pull-requests: true
+    secrets:
+      DISCORD_WEBHOOKS: ${{ secrets.DISCORD_WEBHOOKS }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_TARGETS: ${{ secrets.TELEGRAM_TARGETS }}
