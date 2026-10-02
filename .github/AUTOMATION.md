@@ -30,6 +30,13 @@ through the GitHub API. No pull request head code is checked out with a write
 token. Label jobs receive only the permissions needed for their operation;
 only branch-to-issue linking receives `contents: write`.
 
+Release transitions require a real `release: published` workflow event.
+GitHub does not start another workflow for releases created with `GITHUB_TOKEN`.
+The publish/deploy notification job runs in the original pipeline and is not
+affected, but automatically marking release issues `completed` needs an explicit
+follow-up label operation; this integration does not claim that hook is present.
+See [GitHub token event rules](https://docs.github.com/en/actions/concepts/security/github_token).
+
 ## Notifications
 
 `.github/workflows/notifications.yml` calls
