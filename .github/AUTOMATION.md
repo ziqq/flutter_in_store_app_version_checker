@@ -30,11 +30,17 @@ through the GitHub API. No pull request head code is checked out with a write
 token. Label jobs receive only the permissions needed for their operation;
 only branch-to-issue linking receives `contents: write`.
 
-Release transitions require a real `release: published` workflow event.
-GitHub does not start another workflow for releases created with `GITHUB_TOKEN`.
-The publish/deploy notification job runs in the original pipeline and is not
-affected, but automatically marking release issues `completed` needs an explicit
-follow-up label operation; this integration does not claim that hook is present.
+The successful publication job in `.github/workflows/publish.yml` now calls
+`release-completed`, pinned to
+`ziqq/actions/labeler@a991545704ba3fc43380d2b6024db3ca6935e4a7`.
+All publication/deployment prerequisites must succeed; failed, cancelled and
+skipped runs never complete issues. The hook reads the default-branch label
+configuration through the API and shares the label workflow's concurrency group.
+It selects issues by `events.releasePublished`, moves them from
+`waiting_for_release` to `completed`, and preserves unrelated labels. Empty
+selections are allowed; pattern removal is explicitly enabled and bulk work is
+limited to 100 issues. Manually published releases still use `release-published`.
+No additional PAT is required for releases created with `GITHUB_TOKEN`.
 See [GitHub token event rules](https://docs.github.com/en/actions/concepts/security/github_token).
 
 ## Notifications
@@ -80,6 +86,8 @@ the action. Delivery uses a 10-second per-request timeout and at most five
 attempts for retryable failures. Logs and outputs contain neither credentials,
 target identifiers, nor rendered message bodies.
 
-## Existing CI limitations
+## CI action maintenance
 
-The existing `checkout.yml` uses `codecov/codecov-action@v3`; current actionlint reports its JavaScript runner as obsolete. Notification and label workflows validate independently; this integration did not upgrade the existing coverage action.
+The coverage uploader uses Codecov v5 pinned to an immutable commit instead of
+the obsolete v3 runner. Coverage paths and the existing `CODECOV_TOKEN` contract
+are unchanged.
