@@ -31,7 +31,7 @@
       "name": "tests",
       "request": "launch",
       "type": "dart",
-      "program": "test/unit",
+      "program": "test",
       "env": {
         "ENVIRONMENT": "test"
       },

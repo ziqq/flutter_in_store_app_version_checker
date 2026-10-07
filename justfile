@@ -54,7 +54,7 @@ publish-check:
 
 # Run each package unit suite once, with coverage.
 test-unit:
-    @flutter test --coverage --no-pub test/unit/
+    @flutter test --coverage --no-pub test/
 
 # Run the example widget tests.
 test-example:

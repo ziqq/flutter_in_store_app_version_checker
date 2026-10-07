@@ -159,7 +159,7 @@ jobs:
           echo "Creating reports directory..."
           mkdir -p reports
           echo "Running tests with coverage..."
-          flutter test --coverage --concurrency=6 --no-pub --machine test/unit/ | tee reports/tests.json
+          flutter test --coverage --concurrency=6 --no-pub --machine test/ | tee reports/tests.json
 
       - name: Upload test report
         id: upload_test_report
