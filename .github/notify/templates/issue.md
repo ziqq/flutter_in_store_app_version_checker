@@ -1,4 +1,4 @@
-# 🆕 New issue: {{github.repository}}
+**New issue: {{github.repository}}**
 
 **#{{issue_number}} — {{issue_title}}**
 

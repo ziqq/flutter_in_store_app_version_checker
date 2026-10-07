@@ -10,7 +10,9 @@
       "name": "documentation",
       "color": "0075ca",
       "description": "Improvements or additions to documentation",
-      "paths": ["**/*.md"]
+      "paths": [
+        "**/*.md"
+      ]
     },
     "completed": {
       "name": "done",
@@ -36,18 +38,31 @@
       "name": "need test's",
       "color": "ffffff",
       "description": "Issue to be tested",
-      "paths": ["test/**", "**/test/**"]
+      "paths": [
+        "test/**",
+        "tests/**",
+        "Tests/**",
+        "**/test/**",
+        "**/tests/**",
+        "**/*Tests/**",
+        "**/*Tests.swift",
+        "**/*.test.*",
+        "**/*.spec.*",
+        "**/*_test.dart"
+      ]
     },
     "new_feature": {
       "name": "new feature",
       "color": "fbca04",
       "description": "Requires planning and detailed comments of what will be done to build this",
-      "previousNames": ["enhancement"]
+      "previousNames": [
+        "enhancement"
+      ]
     },
     "waiting_for_release": {
       "name": "waiting for publish",
       "color": "0e8a16",
-      "description": "Already being merged on. We're waiting on a Publish to pub.dev"
+      "description": "Already merged. Waiting for the next published release"
     },
     "waiting_for_pull_request": {
       "name": "waiting for pull request",
@@ -71,41 +86,86 @@
   },
   "transitions": {
     "start_progress": {
-      "add": ["in_progress"],
-      "remove": ["completed", "waiting_for_release", "waiting_for_pull_request", "waiting_for_response"]
+      "add": [
+        "in_progress"
+      ],
+      "remove": [
+        "completed",
+        "waiting_for_release",
+        "waiting_for_pull_request",
+        "waiting_for_response"
+      ]
     },
     "pull_request_opened": {
-      "add": ["in_progress"],
-      "remove": ["completed", "waiting_for_pull_request", "waiting_for_response"]
+      "add": [
+        "in_progress"
+      ],
+      "remove": [
+        "completed",
+        "waiting_for_pull_request",
+        "waiting_for_response"
+      ]
     },
     "pull_request_merged": {
-      "add": ["waiting_for_release"],
-      "remove": ["completed", "in_progress", "waiting_for_pull_request", "waiting_for_response"]
+      "add": [
+        "waiting_for_release"
+      ],
+      "remove": [
+        "completed",
+        "in_progress",
+        "waiting_for_pull_request",
+        "waiting_for_response"
+      ]
     },
     "release_published": {
-      "add": ["completed"],
+      "add": [
+        "completed"
+      ],
       "remove": [],
-      "removeIdPatterns": ["in_*", "waiting_*"]
+      "removeIdPatterns": [
+        "in_*",
+        "waiting_*"
+      ]
     },
     "resume_after_response": {
-      "add": ["in_progress"],
-      "remove": ["waiting_for_response"]
+      "add": [
+        "in_progress"
+      ],
+      "remove": [
+        "waiting_for_response"
+      ]
     },
     "pause_for_response": {
       "add": [],
-      "remove": ["in_progress"]
+      "remove": [
+        "in_progress"
+      ]
     },
     "await_pull_request": {
       "add": [],
-      "remove": ["completed", "in_progress", "waiting_for_release"]
+      "remove": [
+        "completed",
+        "in_progress",
+        "waiting_for_release"
+      ]
     },
     "normalize_waiting_release": {
       "add": [],
-      "remove": ["completed", "in_progress", "waiting_for_pull_request", "waiting_for_response"]
+      "remove": [
+        "completed",
+        "in_progress",
+        "waiting_for_pull_request",
+        "waiting_for_response"
+      ]
     },
     "normalize_completed": {
       "add": [],
-      "remove": ["in_progress", "waiting_for_release", "waiting_for_pull_request", "waiting_for_response"]
+      "remove": [
+        "in_progress",
+        "waiting_for_release",
+        "waiting_for_pull_request",
+        "waiting_for_response"
+      ]
     }
   },
   "events": {
@@ -115,54 +175,85 @@
     },
     "pullRequestOpened": {
       "transition": "pull_request_opened",
-      "baseBranches": ["main"]
+      "baseBranches": [
+        "main"
+      ]
     },
     "pullRequestMerged": {
       "transition": "pull_request_merged",
-      "baseBranches": ["main"]
+      "baseBranches": [
+        "main"
+      ]
     },
     "releasePublished": {
       "transition": "release_published",
       "selector": {
-        "all": ["waiting_for_release"],
+        "all": [
+          "waiting_for_release"
+        ],
         "any": [],
-        "not": ["completed"],
+        "not": [
+          "completed"
+        ],
         "state": "all"
       }
     },
     "issueCommented": {
       "transition": "resume_after_response",
-      "allowedActors": ["issue-author", "assignee"],
-      "requireLabels": ["waiting_for_response"]
+      "allowedActors": [
+        "issue-author",
+        "assignee"
+      ],
+      "requireLabels": [
+        "waiting_for_response"
+      ]
     },
     "discussionCommented": {
       "transition": "resume_after_response",
-      "allowedActors": ["discussion-author"],
-      "requireLabels": ["waiting_for_response"]
+      "allowedActors": [
+        "discussion-author"
+      ],
+      "requireLabels": [
+        "waiting_for_response"
+      ]
     },
     "labelChanged": [
       {
         "action": "labeled",
         "label": "waiting_for_response",
-        "targets": ["issue", "pull-request", "discussion"],
+        "targets": [
+          "issue",
+          "pull-request",
+          "discussion"
+        ],
         "transition": "pause_for_response"
       },
       {
         "action": "labeled",
         "label": "waiting_for_pull_request",
-        "targets": ["issue"],
+        "targets": [
+          "issue"
+        ],
         "transition": "await_pull_request"
       },
       {
         "action": "labeled",
         "label": "waiting_for_release",
-        "targets": ["issue", "pull-request", "discussion"],
+        "targets": [
+          "issue",
+          "pull-request",
+          "discussion"
+        ],
         "transition": "normalize_waiting_release"
       },
       {
         "action": "labeled",
         "label": "completed",
-        "targets": ["issue", "pull-request", "discussion"],
+        "targets": [
+          "issue",
+          "pull-request",
+          "discussion"
+        ],
         "transition": "normalize_completed"
       }
     ]

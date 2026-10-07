@@ -6,7 +6,7 @@ This repository uses reusable actions pinned to
 ## Semantic labels
 
 `.github/labels.json` is the repository-owned source of truth. Automation uses
-stable semantic IDs while GitHub displays configurable names:
+stable semantic IDs while visible label names remain configurable:
 
 | Semantic ID | Visible label |
 |---|---|
@@ -31,12 +31,34 @@ Lifecycle transitions:
 
 - a `github-<number>` branch starts work and links the branch to the issue;
 - opening a linked pull request keeps the issue in progress;
-- merging into `main` moves linked issues to `waiting for publish`;
-- publishing a GitHub release moves matching issues to `done`;
-- an author or assignee response resumes only an issue already marked
-  `waiting for response`;
-- manually assigning lifecycle labels normalizes mutually exclusive states;
-- Markdown and test changes add their configured path labels to pull requests.
+- merging into `main` moves linked issues to `waiting_for_release`;
+- publishing a GitHub release moves matching issues to `completed`;
+- an author or assignee response resumes work waiting for a response;
+- assigning lifecycle labels normalizes mutually exclusive states;
+- documentation and test changes add path labels to pull requests.
+
+Run the `Semantic labels` workflow manually to preview or apply an operation.
+Manual runs default to `sync-labels` with `dry_run: true`. Pattern removal
+and label deletion remain separate explicit inputs. The current configuration
+does not delete unmanaged labels.
+
+The `pull_request_target` jobs read the trusted base-branch configuration
+through the GitHub API. No pull request head code is checked out with a write
+token. Label jobs receive only the permissions needed for their operation;
+only branch-to-issue linking receives `contents: write`.
+
+The successful publication job in `.github/workflows/publish.yml` now calls
+`release-completed`, pinned to
+`ziqq/actions/labeler@a991545704ba3fc43380d2b6024db3ca6935e4a7`.
+All publication/deployment prerequisites must succeed; failed, cancelled and
+skipped runs never complete issues. The hook reads the default-branch label
+configuration through the API and shares the label workflow's concurrency group.
+It selects issues by `events.releasePublished`, moves them from
+`waiting_for_release` to `completed`, and preserves unrelated labels. Empty
+selections are allowed; pattern removal is explicitly enabled and bulk work is
+limited to 100 issues. Manually published releases still use `release-published`.
+No additional PAT is required for releases created with `GITHUB_TOKEN`.
+See [GitHub token event rules](https://docs.github.com/en/actions/concepts/security/github_token).
 
 ## GitHub releases
 
@@ -73,51 +95,43 @@ never printed, and removed after the publication step. No new secret or pub.dev
 account configuration is required. Actual publication is not part of local
 validation; `just publish-check` performs a dry run.
 
-## Manual plan and apply
-
-Run the `Semantic labels` workflow from the Actions tab. Manual runs default to
-`sync-labels` with `dry_run: true`. Review the `plan` output before rerunning
-with dry-run disabled. `apply` additionally requires a transition, target kind,
-and comma-separated target numbers.
-
-Pattern removal and label deletion are separate explicit inputs. The current
-configuration never deletes unmanaged labels. Do not enable deletion without a
-reviewed dry-run: deleting a GitHub label removes it from every issue and pull
-request.
-
-## Trust and concurrency
-
-Pull request automation runs on `pull_request_target`, but the action reads the
-configuration from the trusted base SHA through the GitHub API. No pull request
-head code is checked out with a write token. The workflow serializes label
-operations and does not cancel an in-progress transition.
-
-The first pull request introducing this workflow cannot execute its own new
-write-capable configuration. After merge, run one manual label sync; following
-events will use the trusted default-branch file.
-
 ## Notifications
 
-`.github/workflows/notifications.yml` sends a required notification to Discord
-and Telegram when a new issue is opened.
+`.github/workflows/notifications.yml` calls
+`ziqq/actions/.github/workflows/notify-events.yml@7737ce8c4d87c656b7ccf5f78138d8d7e53a1b62`
+to send required Discord and Telegram notifications for newly opened issues
+and pull requests (including drafts and forks).
 
-The final `notify` job in `.github/workflows/checkout.yml` runs after every CI
-result on pushes, manual runs, and same-repository pull requests. Fork and
-Dependabot pull requests are skipped because GitHub does not expose repository
-secrets to them. CI delivery is best-effort and cannot change the result of the
-actual checks. A whole workflow canceled by concurrency may stop before the
-notification job starts.
+Both events are explicitly enabled here with `notify-issues: true` and
+`notify-pull-requests: true`. Set either input to `false` to disable that event;
+the reusable workflow defaults both inputs to `false`. Edits, reopened items,
+and draft-to-ready changes do not send another notification.
 
-`.github/workflows/publish.yml` also runs a required notification after the
-publish job, including when publication fails.
+Templates belong to this repository: `.github/notify/templates/issue.md` and
+`.github/notify/templates/pull-request.md`. Pull request notifications use
+`pull_request_target` and check out only the trusted base SHA, never PR-head
+code with repository secrets.
 
-Configure these repository Actions secrets:
+`.github/workflows/checkout.yml` sends a best-effort notification after CI results.
+Fork and Dependabot CI pull requests are skipped because notification secrets
+are not exposed to those runs. New-item notifications still support fork PRs.
+A whole workflow cancelled by concurrency may stop before its notify job starts.
+
+`.github/workflows/publish.yml` sends a required notification after publish/release/deploy,
+including failed runs. The result summarizes all prerequisite jobs, including
+matrix deployments.
+
+Notifications use bold text at normal size, without heading markers or icons.
+Only the version-checker package includes its optional `pub_dev_url` link.
+The manual test sender remains in `ziqq/actions`; no test dispatch was added here.
+
+Configure these Actions secrets in this repository:
 
 | Secret | Value |
 |---|---|
-| `DISCORD_WEBHOOKS` | JSON object with a target list, for example `{"targets":[{"url":"https://discord.com/api/webhooks/..."}]}` |
+| `DISCORD_WEBHOOKS` | JSON object such as `{"targets":[{"url":"https://discord.com/api/webhooks/..."}]}` |
 | `TELEGRAM_BOT_TOKEN` | Token issued by BotFather |
-| `TELEGRAM_TARGETS` | JSON object with a target list, for example `{"targets":[{"chatId":"123456789"}]}` |
+| `TELEGRAM_TARGETS` | JSON object such as `{"targets":[{"chatId":"123456789"}]}` |
 
 To obtain a Telegram `chatId`, send the bot a message and call the official Bot
 API `getUpdates` method. Read `message.chat.id`; channel updates use
@@ -126,7 +140,13 @@ API `getUpdates` method. Read `message.chat.id`; channel updates use
 Never commit or paste the bot token, webhook URL, or target list into workflow
 files.
 
-All templates live in `.github/notify/templates/`. Dynamic issue titles are
-escaped by the action. Delivery uses a 10-second per-request timeout and at
-most five attempts for retryable failures. Logs and outputs contain neither
-credentials, target identifiers, nor rendered message bodies.
+Templates live in `.github/notify/templates/`. Dynamic values are escaped by
+the action. Delivery uses a 10-second per-request timeout and at most five
+attempts for retryable failures. Logs and outputs contain neither credentials,
+target identifiers, nor rendered message bodies.
+
+## CI action maintenance
+
+The coverage uploader uses Codecov v5 pinned to an immutable commit instead of
+the obsolete v3 runner. Coverage paths and the existing `CODECOV_TOKEN` contract
+are unchanged.

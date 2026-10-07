@@ -195,7 +195,7 @@ jobs:
       - name: Upload coverage to codecov
         id: upload_coverage
         timeout-minutes: 1
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5
         with:
           files: ./coverage/lcov.info
           flags: dart
@@ -237,7 +237,7 @@ jobs:
             example/build/flutter_in_store_app_version_checker/reports/jacoco/
 
       - name: Upload Android coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5
         with:
           files: ./example/build/flutter_in_store_app_version_checker/reports/jacoco/nativeCoverage.xml
           flags: android
@@ -293,7 +293,7 @@ jobs:
             coverage/ios.lcov.info
 
       - name: Upload iOS coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5
         with:
           files: ./coverage/ios.lcov.info
           flags: ios
@@ -322,9 +322,7 @@ jobs:
           env.NOTIFY_DISCORD_WEBHOOKS == '' ||
           env.NOTIFY_TELEGRAM_BOT_TOKEN == '' ||
           env.NOTIFY_TELEGRAM_TARGETS == ''
-        shell: bash
-        run: >-
-          echo "::warning::CI notification skipped because one or more notification secrets are not configured."
+        run: echo "::warning::CI notification skipped because notification secrets are not fully configured."
 
       - name: Checkout trusted notification template
         if: >-
@@ -334,6 +332,7 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.sha }}
+          persist-credentials: false
 
       - name: Notify Discord and Telegram
         if: >-
@@ -348,7 +347,7 @@ jobs:
           variables: |
             {
               "pub_dev_url": "https://pub.dev/packages/flutter_in_store_app_version_checker",
-              "status_label": ${{ toJSON(!contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && !contains(needs.*.result, 'skipped') && 'success' || contains(needs.*.result, 'failure') && 'failure' || contains(needs.*.result, 'cancelled') && 'cancelled' || 'failure') }}
+              "status_label": ${{ toJSON(contains(needs.*.result, 'failure') && 'failure' || contains(needs.*.result, 'cancelled') && 'cancelled' || contains(needs.*.result, 'skipped') && 'skipped' || 'success') }}
             }
           failure-policy: best-effort
           timeout-ms: "10000"

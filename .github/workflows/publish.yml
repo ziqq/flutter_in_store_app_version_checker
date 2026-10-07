@@ -91,17 +91,47 @@ jobs:
           fs.rmSync(path.join(directory, 'pub-credentials.json'), { force: true });
           JS
 
+  complete-issues:
+    name: Complete issues after successful publication
+    needs: [publish]
+    if: needs.publish.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    concurrency:
+      group: labels-${{ github.repository }}
+      cancel-in-progress: false
+    steps:
+      - name: Apply semantic release transition
+        uses: ziqq/actions/labeler@a991545704ba3fc43380d2b6024db3ca6935e4a7
+        with:
+          operation: release-completed
+          github-token: ${{ github.token }}
+          config-source: api
+          allow-empty: 'true'
+          allow-pattern-removal: 'true'
+          max-targets: '100'
+
   notify:
-    name: Notify publish result
-    needs: publish
+    name: Notify release or deploy result
+    needs: [publish]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
       contents: read
+    env:
+      NOTIFY_DISCORD_WEBHOOKS: ${{ secrets.DISCORD_WEBHOOKS }}
+      NOTIFY_TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      NOTIFY_TELEGRAM_TARGETS: ${{ secrets.TELEGRAM_TARGETS }}
     steps:
       - name: Checkout trusted notification template
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.sha }}
+          persist-credentials: false
 
       - name: Notify Discord and Telegram
         uses: ziqq/actions/notify@ccd1a799683cd461a45d9303ac6fcb2792f8f5d2
@@ -110,11 +140,12 @@ jobs:
           template-path: .github/notify/templates/release.md
           variables: |
             {
-              "status": "${{ needs.publish.result }}"
+              "pub_dev_url": "https://pub.dev/packages/flutter_in_store_app_version_checker",
+              "status_label": ${{ toJSON(contains(needs.*.result, 'failure') && 'failure' || contains(needs.*.result, 'cancelled') && 'cancelled' || contains(needs.*.result, 'skipped') && 'skipped' || 'success') }}
             }
           failure-policy: required
           timeout-ms: "10000"
           max-attempts: "5"
-          discord-webhooks: ${{ secrets.DISCORD_WEBHOOKS }}
-          telegram-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          telegram-targets: ${{ secrets.TELEGRAM_TARGETS }}
+          discord-webhooks: ${{ env.NOTIFY_DISCORD_WEBHOOKS }}
+          telegram-bot-token: ${{ env.NOTIFY_TELEGRAM_BOT_TOKEN }}
+          telegram-targets: ${{ env.NOTIFY_TELEGRAM_TARGETS }}
