@@ -132,26 +132,16 @@ final class GooglePlayStore {
     return null;
   }
 
-  static Object? _readValue(Object? data, List<int> path) {
-    var value = data;
-    for (final index in path) {
-      switch (value) {
-        case List<Object?> fields:
-          if (index < fields.length) {
-            value = fields[index];
-          } else if (fields.lastOrNull case Map<String, Object?> sparse) {
-            value = sparse['$index'];
-          } else {
-            return null;
-          }
-        case Map<String, Object?> fields:
-          value = fields['$index'];
-        default:
-          return null;
-      }
-    }
-    return value;
-  }
+  static Object? _readValue(Object? data, List<int> path) => path.fold(
+    data,
+    (value, index) => switch (value) {
+      List<Object?> fields when index < fields.length => fields[index],
+      List<Object?>(lastOrNull: Map<String, Object?> sparse) =>
+        sparse['$index'],
+      Map<String, Object?> fields => fields['$index'],
+      _ => null,
+    },
+  );
 
   static String _resolveLocale(String locale) {
     final value = locale.trim();

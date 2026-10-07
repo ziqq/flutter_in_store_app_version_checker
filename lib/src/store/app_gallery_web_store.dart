@@ -199,30 +199,27 @@ final class AppGalleryWebStore {
     );
   }
 
-  static Map<String, Object?>? _findListing(Object? value, String storeID) {
-    switch (value) {
-      case Map<String, Object?> map:
-        if (map['appid']?.toString() == storeID && map['versionName'] != null) {
-          return map;
-        }
-        for (final child in map.values) {
-          final listing = _findListing(child, storeID);
-          if (listing != null) return listing;
-        }
-      case Iterable<Object?> values:
-        for (final child in values) {
-          final listing = _findListing(child, storeID);
-          if (listing != null) return listing;
-        }
-    }
-    return null;
-  }
+  static Map<String, Object?>? _findListing(Object? value, String storeID) =>
+      switch (value) {
+        Map<String, Object?> map
+            when map['appid']?.toString() == storeID &&
+                map['versionName'] != null =>
+          map,
+        Map<String, Object?> map => _findFirstListing(map.values, storeID),
+        Iterable<Object?> values => _findFirstListing(values, storeID),
+        _ => null,
+      };
+
+  /// Returns the first listing found in [values], searching lazily.
+  static Map<String, Object?>? _findFirstListing(
+    Iterable<Object?> values,
+    String storeID,
+  ) => values.map((child) => _findListing(child, storeID)).nonNulls.firstOrNull;
 
   static int? _toIntOrNull(Object? value) => switch (value) {
-    final num number
-        when number.isFinite && number == number.truncateToDouble() =>
+    num number when number.isFinite && number == number.truncateToDouble() =>
       number.toInt(),
-    final String text => int.tryParse(text),
+    String text => int.tryParse(text),
     _ => null,
   };
 

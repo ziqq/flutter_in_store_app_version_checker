@@ -89,28 +89,24 @@ final class RuStore {
     );
   }
 
-  static Map<String, Object?>? _findSoftwareApplication(Object? value) {
-    switch (value) {
-      case Map<String, Object?> map:
-        if (_isSoftwareApplicationType(map['@type'])) {
-          return map;
-        }
-        for (final child in map.values) {
-          final listing = _findSoftwareApplication(child);
-          if (listing != null) return listing;
-        }
-      case Iterable<Object?> values:
-        for (final child in values) {
-          final listing = _findSoftwareApplication(child);
-          if (listing != null) return listing;
-        }
-    }
-    return null;
-  }
+  static Map<String, Object?>? _findSoftwareApplication(Object? value) =>
+      switch (value) {
+        Map<String, Object?> map
+            when _isSoftwareApplicationType(map['@type']) =>
+          map,
+        Map<String, Object?> map => _findFirstSoftwareApplication(map.values),
+        Iterable<Object?> values => _findFirstSoftwareApplication(values),
+        _ => null,
+      };
+
+  /// Returns the first `SoftwareApplication` found in [values], searching lazily.
+  static Map<String, Object?>? _findFirstSoftwareApplication(
+    Iterable<Object?> values,
+  ) => values.map(_findSoftwareApplication).nonNulls.firstOrNull;
 
   static bool _isSoftwareApplicationType(Object? value) => switch (value) {
     'SoftwareApplication' => true,
-    final Iterable<Object?> values => values.contains('SoftwareApplication'),
+    Iterable<Object?> values => values.contains('SoftwareApplication'),
     _ => false,
   };
 }
