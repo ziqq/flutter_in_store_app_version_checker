@@ -11,7 +11,11 @@ permissions:
 
 jobs:
   new-items:
-    if: github.event_name == 'issues' || github.event_name == 'pull_request_target'
+    if: >-
+      (github.event_name == 'issues' &&
+      github.event.issue.user.login != github.repository_owner) ||
+      (github.event_name == 'pull_request_target' &&
+      github.event.pull_request.user.login != github.repository_owner)
     uses: ziqq/actions/.github/workflows/notify-events.yml@7737ce8c4d87c656b7ccf5f78138d8d7e53a1b62
     with:
       notify-issues: true
