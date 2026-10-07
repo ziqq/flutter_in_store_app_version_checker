@@ -7,6 +7,9 @@
 [![codecov](https://codecov.io/gh/ziqq/flutter_in_store_app_version_checker/graph/badge.svg?token=S5CVNZKDAE)](https://codecov.io/gh/ziqq/flutter_in_store_app_version_checker)
 [![GitHub stars](https://img.shields.io/github/stars/ziqq/flutter_in_store_app_version_checker?style=social)](https://github.com/ziqq/flutter_in_store_app_version_checker)
 
+
+## Description
+
 Find out whether a newer version of your app is published on **Google Play**, **RuStore**, **AppGallery**, **ApkPure** or the **Apple App Store** — with one call and no backend.
 
 ```dart
