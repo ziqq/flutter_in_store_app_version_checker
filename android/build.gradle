@@ -3,7 +3,7 @@ plugins {
     id 'jacoco'
 }
 
-group 'com.flutter.instoreappversionchecker'
+group 'dev.ustinoff.instoreappversionchecker'
 version '1.0-SNAPSHOT'
 
 rootProject.allprojects {
@@ -24,7 +24,7 @@ dependencies {
 }
 
 android {
-    namespace  = 'com.flutter.instoreappversionchecker'
+    namespace  = 'dev.ustinoff.instoreappversionchecker'
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -62,7 +62,7 @@ tasks.register('nativeCoverage', JacocoReport) {
     }
     sourceDirectories.from files('src/main/kotlin')
     classDirectories.from fileTree(layout.buildDirectory.dir('tmp/kotlin-classes/debug')) {
-        include 'com/flutter/instoreappversionchecker/**'
+        include 'dev/ustinoff/instoreappversionchecker/**'
     }
     reports {
         xml.required = true

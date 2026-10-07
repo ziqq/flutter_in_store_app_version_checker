@@ -1,4 +1,4 @@
-package com.flutter.instoreappversionchecker
+package dev.ustinoff.instoreappversionchecker
 
 import android.content.Context
 import android.content.Intent

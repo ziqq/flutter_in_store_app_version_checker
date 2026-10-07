@@ -6,6 +6,8 @@
 - **CHANGED**: Validate package, tool, and example code in CI and build Android and iOS examples with CocoaPods and Swift Package Manager
 - **CHANGED**: Replace FVM and Make with pinned mise toolchains and Just commands for local development, VS Code, CI, publishing, and tagging
 - **CHANGED**: Align documented minimum SDK versions with `pubspec.yaml`
+- **CHANGED**: Rename the Android package, namespace, and Gradle group from `com.flutter.instoreappversionchecker` to `dev.ustinoff.instoreappversionchecker`
+- **CHANGED**: Move each store check into its own internal class under `lib/src/store/`
 - **CHANGED**: Update Codecov upload action to v5 while preserving the existing token
 - **FIXED**: Preserve failing test exit codes in CI pipelines
 - **FIXED**: Classify Huawei update statuses and reject failed checks or invalid upgrade data without changing version-name comparison
