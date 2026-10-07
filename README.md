@@ -366,9 +366,9 @@ See the unit tests in [test/unit](test/unit) for the authoritative behavior.
 - iOS supports both Swift Package Manager (with the required `FlutterFramework` dependency in `Package.swift`) and CocoaPods.
 
 
-## Migrating from 2.x
+## Migration
 
-The factory-based API from 2.0.x has been removed. Use `InStoreAppVersionChecker.instance` or `InStoreAppVersionChecker.instanceFor(...)` together with `InStoreAppVersionCheckerParams`. `InStoreAppVersionChecker.custom(...)` is deprecated and forwards to `instanceFor(...)`. See the [Changelog](https://github.com/ziqq/flutter_in_store_app_version_checker/blob/main/CHANGELOG.md) for all release notes.
+See [MIGRATION.md](MIGRATION.md) for upgrade notes, including the Android package rename and the 3.0 API changes. All release notes are in the [Changelog](https://github.com/ziqq/flutter_in_store_app_version_checker/blob/main/CHANGELOG.md).
 
 
 ## Development
