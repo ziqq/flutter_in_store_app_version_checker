@@ -74,37 +74,35 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
       };
       final packageName = params.packageName ?? appMetadata.packageName;
       final currentVersion = params.currentVersion ?? appMetadata.version;
-      switch (platform) {
-        case .android:
-          return await switch (params.androidStore) {
-            .apkPure => ApkPureStore(
-              _httpClient,
-            ).checkUpdate(currentVersion, packageName),
-            .ruStore => RuStore(
-              _httpClient,
-            ).checkUpdate(currentVersion, packageName),
-            .appGallery => AppGalleryWebStore(_httpClient).checkUpdate(
-              currentVersion: currentVersion,
-              expectedPackageName: params.packageName,
-              locale: params.locale,
-              storeID: params.storeID,
-            ),
-            .appGalleryNative => const AppGalleryNativeStore().checkUpdate(
-              currentPackageName: appMetadata.packageName,
-              currentVersion: appMetadata.version,
-              hasOverrides:
-                  params.packageName != null || params.currentVersion != null,
-            ),
-            .googlePlayStore => GooglePlayStore(
-              _httpClient,
-            ).checkUpdate(currentVersion, packageName, params.locale),
-          };
-        case .iOS:
-          return await AppleAppStore(
+      return await switch (platform) {
+        .android => switch (params.androidStore) {
+          .apkPure => ApkPureStore(
             _httpClient,
-          ).checkUpdate(currentVersion, packageName, params.locale);
-        default:
-          return InStoreAppVersionCheckerResponse.error(
+          ).checkUpdate(currentVersion, packageName),
+          .ruStore => RuStore(
+            _httpClient,
+          ).checkUpdate(currentVersion, packageName),
+          .appGallery => AppGalleryWebStore(_httpClient).checkUpdate(
+            currentVersion: currentVersion,
+            expectedPackageName: params.packageName,
+            locale: params.locale,
+            storeID: params.storeID,
+          ),
+          .appGalleryNative => const AppGalleryNativeStore().checkUpdate(
+            currentPackageName: appMetadata.packageName,
+            currentVersion: appMetadata.version,
+            hasOverrides:
+                params.packageName != null || params.currentVersion != null,
+          ),
+          .googlePlayStore => GooglePlayStore(
+            _httpClient,
+          ).checkUpdate(currentVersion, packageName, params.locale),
+        },
+        .iOS => AppleAppStore(
+          _httpClient,
+        ).checkUpdate(currentVersion, packageName, params.locale),
+        _ => Future.value(
+          InStoreAppVersionCheckerResponse.error(
             currentVersion: currentVersion,
             newVersion: null,
             appURL: null,
@@ -112,8 +110,9 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
                 'This platform is not yet supported by this package. It supports only iOS and Android.',
             stackTrace: StackTrace.current,
             error: Exception('Unsupported platform'),
-          );
-      }
+          ),
+        ),
+      };
     } on Object catch (e, s) {
       return InStoreAppVersionCheckerResponse.error(
         currentVersion: params.currentVersion ?? 'undefined',
