@@ -6,9 +6,12 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_response.dart';
 import 'package:http/http.dart' as http;
+import 'package:meta/meta.dart';
 
 /// Reads public AppGallery listing data through the AppGallery web client API.
+@internal
 final class AppGalleryWebStore {
   /// Creates an AppGallery web store client.
   const AppGalleryWebStore(this._httpClient);
@@ -17,6 +20,48 @@ final class AppGalleryWebStore {
   static const _timeout = Duration(seconds: 15);
 
   final http.Client _httpClient;
+
+  /// Checks an arbitrary AppGallery listing identified by [storeID].
+  Future<InStoreAppVersionCheckerResponse> checkUpdate({
+    required String currentVersion,
+    required String locale,
+    required String? storeID,
+    String? expectedPackageName,
+  }) async {
+    String? newVersion, url;
+    try {
+      final resolvedStoreID = storeID?.trim();
+      if (resolvedStoreID == null ||
+          !RegExp(r'^C\d+$').hasMatch(resolvedStoreID)) {
+        throw FormatException(
+          'AppGallery web checks require storeID in the format "C107631977".',
+          storeID,
+        );
+      }
+
+      final listing = await getListing(
+        storeID: resolvedStoreID,
+        locale: locale,
+        expectedPackageName: expectedPackageName,
+      );
+      newVersion = listing.version;
+      url = listing.appURL;
+      return InStoreAppVersionCheckerResponse.success(
+        currentVersion: currentVersion,
+        newVersion: newVersion,
+        appURL: url,
+      );
+    } on Object catch (error, stackTrace) {
+      return InStoreAppVersionCheckerResponse.error(
+        currentVersion: currentVersion,
+        newVersion: newVersion,
+        appURL: url,
+        error: error,
+        stackTrace: stackTrace,
+        errorMessage: error.toString(),
+      );
+    }
+  }
 
   /// Returns the published version and package for [storeID].
   Future<({String appURL, String packageName, String version})> getListing({

@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
-import '../util/store_fixtures.dart';
+import '../util/fixtures.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

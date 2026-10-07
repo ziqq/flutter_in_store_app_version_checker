@@ -3,15 +3,16 @@
  * Date: 28 October 2025
  */
 
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_interface.dart';
 import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_params.dart';
 import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_response.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/apk_pure_store.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/app_gallery_native_store.dart';
 import 'package:flutter_in_store_app_version_checker/src/store/app_gallery_web_store.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/apple_app_store.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/google_play_store.dart';
 import 'package:flutter_in_store_app_version_checker/src/store/ru_store.dart';
-import 'package:flutter_in_store_app_version_checker/src/util/app_gallery_native.dart';
 import 'package:flutter_in_store_app_version_checker/src/util/app_metadata.dart';
 import 'package:http/http.dart' as http;
 
@@ -51,13 +52,6 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
 
   static InStoreAppVersionChecker? _instance;
 
-  static final RegExp _localePattern = RegExp(
-    '^([a-z]{2,3}|[a-z]{5,8})'
-    '(?:[-_]([a-z]{4}))?'
-    r'(?:[-_]([a-z]{2}|[0-9]{3}))?$',
-    caseSensitive: false,
-  );
-
   /// Whether the current platform is iOS.
   bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
 
@@ -85,35 +79,35 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
       final currentVersion = params.currentVersion ?? appMetadata.version;
       if (_isAndroid) {
         return await switch (params.androidStore) {
-          InStoreAppVersionCheckerAndroidStoreType.apkPure =>
-            _checkPlayStore$ApkPure(currentVersion, packageName),
-          InStoreAppVersionCheckerAndroidStoreType.ruStore => _checkRuStore(
-            currentVersion,
-            packageName,
-          ),
+          InStoreAppVersionCheckerAndroidStoreType.apkPure => ApkPureStore(
+            _httpClient,
+          ).checkUpdate(currentVersion, packageName),
+          InStoreAppVersionCheckerAndroidStoreType.ruStore => RuStore(
+            _httpClient,
+          ).checkUpdate(currentVersion, packageName),
           InStoreAppVersionCheckerAndroidStoreType.appGallery =>
-            _checkAppGallery(
+            AppGalleryWebStore(_httpClient).checkUpdate(
               currentVersion: currentVersion,
               expectedPackageName: params.packageName,
               locale: params.locale,
               storeID: params.storeID,
             ),
           InStoreAppVersionCheckerAndroidStoreType.appGalleryNative =>
-            _checkAppGallery$Native(
+            const AppGalleryNativeStore().checkUpdate(
               currentPackageName: appMetadata.packageName,
               currentVersion: appMetadata.version,
               hasOverrides:
                   params.packageName != null || params.currentVersion != null,
             ),
           InStoreAppVersionCheckerAndroidStoreType.googlePlayStore =>
-            _checkPlayStore(currentVersion, packageName, params.locale),
+            GooglePlayStore(
+              _httpClient,
+            ).checkUpdate(currentVersion, packageName, params.locale),
         };
       } else if (_isIOS) {
-        return await _checkAppleStore(
-          currentVersion,
-          packageName,
-          params.locale,
-        );
+        return await AppleAppStore(
+          _httpClient,
+        ).checkUpdate(currentVersion, packageName, params.locale);
       } else {
         return InStoreAppVersionCheckerResponse.error(
           currentVersion: currentVersion,
@@ -133,438 +127,6 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
         error: e,
         stackTrace: s,
         errorMessage: 'Error checking for update: $e',
-      );
-    }
-  }
-
-  /// Check update in [Apple Store].
-  Future<InStoreAppVersionCheckerResponse> _checkAppleStore(
-    String currentVersion,
-    String packageName,
-    String locale,
-  ) async {
-    String? newVersion, url;
-    try {
-      final countryCode = _resolveCountryForAppleStore(locale);
-      final uri = Uri.https(
-        'itunes.apple.com',
-        '/$countryCode/lookup',
-        <String, Object?>{
-          'bundleId': packageName,
-          '_ts': DateTime.now().toUtc().millisecondsSinceEpoch.toString(),
-        },
-      );
-      final response = await _httpClient
-          .get(uri)
-          .timeout(const Duration(seconds: 15));
-      if (response.statusCode != 200) {
-        final countryGuidance = response.statusCode == 400
-            ? ' Check the storefront country code. Use a regional locale '
-                  'such as "en-US" or a country code such as "us"; '
-                  'a language such as "en" does not identify a storefront.'
-            : '';
-        return InStoreAppVersionCheckerResponse.error(
-          currentVersion: currentVersion,
-          newVersion: newVersion,
-          appURL: url,
-          stackTrace: StackTrace.current,
-          errorMessage:
-              'Apple Store lookup failed (HTTP ${response.statusCode}) '
-              'for bundle ID "$packageName" in storefront "$countryCode" '
-              '(locale: "$locale").$countryGuidance',
-        );
-      } else {
-        final Object? data = jsonDecode(response.body);
-        if (data is! Map<String, Object?> ||
-            data['results'] is! List<Object?>) {
-          throw const FormatException('Apple Store returned invalid results.');
-        }
-        final results = data['results']! as List<Object?>;
-
-        if (results.isEmpty) {
-          return InStoreAppVersionCheckerResponse.error(
-            currentVersion: currentVersion,
-            newVersion: newVersion,
-            appURL: url,
-            stackTrace: StackTrace.current,
-            errorMessage:
-                'App "$packageName" was not found in the Apple Store '
-                'storefront "$countryCode" (locale: "$locale"). '
-                'Check the bundle ID and availability in this storefront.',
-          );
-        } else {
-          final listing = results.whereType<Map<String, Object?>>().where(
-            (item) => item['bundleId'] == packageName,
-          );
-          if (listing.isEmpty) {
-            throw FormatException(
-              'Apple Store results do not contain bundle ID "$packageName".',
-            );
-          }
-          final app = listing.first;
-          if (app['version'] case final String version
-              when version.trim().isNotEmpty) {
-            newVersion = version.trim();
-          } else {
-            throw const FormatException(
-              'Apple Store listing does not contain a version.',
-            );
-          }
-          if (app['trackViewUrl'] case final String appURL
-              when appURL.trim().isNotEmpty) {
-            url = appURL.trim();
-          }
-          return InStoreAppVersionCheckerResponse.success(
-            currentVersion: currentVersion,
-            newVersion: newVersion,
-            appURL: url,
-          );
-        }
-      }
-    } on Object catch (e, st) {
-      return InStoreAppVersionCheckerResponse.error(
-        currentVersion: currentVersion,
-        newVersion: newVersion,
-        appURL: url,
-        error: e,
-        stackTrace: st,
-        errorMessage: e.toString(),
-      );
-    }
-  }
-
-  /// Check update in [Play Store].
-  Future<InStoreAppVersionCheckerResponse> _checkPlayStore(
-    String currentVersion,
-    String packageName,
-    String locale,
-  ) async {
-    String? newVersion, url;
-    Object? primaryError;
-    try {
-      final uri =
-          Uri.https('play.google.com', '/store/apps/details', <String, Object?>{
-            'id': packageName,
-            'hl': _resolveLocaleForGooglePlay(locale),
-            '_ts': DateTime.now().millisecondsSinceEpoch.toString(),
-          });
-
-      try {
-        final response = await _httpClient
-            .get(uri)
-            .timeout(const Duration(seconds: 15));
-        if (response.statusCode == 200) {
-          newVersion = _parseGooglePlayVersion(response.body, packageName);
-          if (newVersion != null) {
-            return InStoreAppVersionCheckerResponse.success(
-              currentVersion: currentVersion,
-              newVersion: newVersion,
-              appURL: uri.toString(),
-            );
-          }
-          primaryError = const FormatException(
-            'Google Play listing does not contain a version.',
-          );
-        } else {
-          primaryError = http.ClientException(
-            'Google Play lookup failed (HTTP ${response.statusCode}).',
-            uri,
-          );
-        }
-      } on Object catch (error) {
-        primaryError = error;
-      }
-
-      final apiUri = Uri.https(
-        'api.playstoreapi.com',
-        '/v1.2/apps/$packageName',
-      );
-
-      final apiResponse = await _httpClient
-          .get(apiUri)
-          .timeout(const Duration(seconds: 15));
-
-      if (apiResponse.statusCode == 200) {
-        final Object? data = jsonDecode(apiResponse.body);
-        if (data case {
-          'version': final String version,
-        } when version.trim().isNotEmpty) {
-          newVersion = version.trim();
-        } else {
-          throw const FormatException(
-            'PlayStoreApi response does not contain a version.',
-          );
-        }
-        url = 'https://play.google.com/store/apps/details?id=$packageName';
-        return InStoreAppVersionCheckerResponse.success(
-          currentVersion: currentVersion,
-          newVersion: newVersion,
-          appURL: url,
-        );
-      } else {
-        return InStoreAppVersionCheckerResponse.error(
-          currentVersion: currentVersion,
-          newVersion: newVersion,
-          appURL: url,
-          stackTrace: StackTrace.current,
-          errorMessage:
-              'PlayStoreApi error: ${apiResponse.statusCode} '
-              '${apiResponse.reasonPhrase}. '
-              'Google Play lookup: $primaryError',
-        );
-      }
-    } on Object catch (e, st) {
-      return InStoreAppVersionCheckerResponse.error(
-        currentVersion: currentVersion,
-        newVersion: newVersion,
-        appURL: url,
-        error: e,
-        stackTrace: st,
-        errorMessage: '$e Google Play lookup: $primaryError',
-      );
-    }
-  }
-
-  String? _parseGooglePlayVersion(String body, String packageName) {
-    final match = RegExp(
-      r"AF_initDataCallback\(\{key:\s*'ds:5',\s*hash:\s*'[^']*',"
-      r'\s*data:(.*?),\s*sideChannel:',
-      dotAll: true,
-    ).firstMatch(body);
-    if (match == null) return null;
-    final Object? data = jsonDecode(match.group(1)!);
-    if (_readGooglePlayValue(data, const [1, 2, 77, 0]) != packageName) {
-      return null;
-    }
-    // Google Play uses both indexed arrays and sparse fields in its web data.
-    for (final field in const [141, 140]) {
-      final value = _readGooglePlayValue(data, [1, 2, field, 0, 0, 0]);
-      if (value case final String version when version.trim().isNotEmpty) {
-        return version.trim();
-      }
-    }
-    return null;
-  }
-
-  Object? _readGooglePlayValue(Object? data, List<int> path) {
-    var value = data;
-    for (final index in path) {
-      switch (value) {
-        case final List<Object?> fields:
-          if (index < fields.length) {
-            value = fields[index];
-          } else if (fields.lastOrNull case final Map<String, Object?> sparse) {
-            value = sparse['$index'];
-          } else {
-            return null;
-          }
-        case final Map<String, Object?> fields:
-          value = fields['$index'];
-        default:
-          return null;
-      }
-    }
-    return value;
-  }
-
-  String _resolveLocaleForGooglePlay(String locale) {
-    final value = locale.trim();
-    final match = _localePattern.firstMatch(value);
-    if (match == null || match.end != value.length) return locale;
-
-    final scriptCode = match.group(2);
-    final countryCode = match.group(3);
-    return <String>[
-      match.group(1)!.toLowerCase(),
-      if (scriptCode != null)
-        '${scriptCode[0].toUpperCase()}${scriptCode.substring(1).toLowerCase()}',
-      if (countryCode != null) countryCode.toUpperCase(),
-    ].join('-');
-  }
-
-  String _resolveCountryForAppleStore(String locale) {
-    final value = locale.trim();
-    final match = _localePattern.firstMatch(value);
-    if (match != null && match.end == value.length) {
-      final countryCode = match.group(3);
-      if (countryCode != null && countryCode.length == 2) {
-        return countryCode.toLowerCase();
-      }
-      if (value.length == 2) return value.toLowerCase();
-    }
-
-    throw FormatException(
-      'Invalid locale "$locale" for the Apple Store. '
-      'Use language-REGION ("en-US"), language-Script-REGION '
-      '("zh-Hant-TW"), or a country code ("us"). '
-      'A two-letter storefront country is required.',
-      locale,
-    );
-  }
-
-  /// Check update in [ApkPure Store].
-  Future<InStoreAppVersionCheckerResponse> _checkPlayStore$ApkPure(
-    String currentVersion,
-    String packageName,
-  ) async {
-    String? newVersion, url;
-    try {
-      final uri = Uri.https('apkpure.com', '$packageName/$packageName');
-      final response = await _httpClient
-          .get(uri)
-          .timeout(const Duration(seconds: 15));
-      if (response.statusCode != 200) {
-        return InStoreAppVersionCheckerResponse.error(
-          currentVersion: currentVersion,
-          newVersion: newVersion,
-          appURL: url,
-          stackTrace: StackTrace.current,
-          errorMessage:
-              'Cannot find an app in the ApkPure Store with the id: $packageName',
-        );
-      } else {
-        newVersion = RegExp(
-          r'<div class="details-sdk"><span itemprop="version">(.*?)<\/span>for Android<\/div>',
-        ).firstMatch(response.body)?.group(1)?.trim();
-        if (newVersion == null || newVersion.isEmpty) {
-          throw const FormatException(
-            'ApkPure listing does not contain a version.',
-          );
-        }
-        return InStoreAppVersionCheckerResponse.success(
-          currentVersion: currentVersion,
-          newVersion: newVersion,
-          appURL: uri.toString(),
-        );
-      }
-    } on Object catch (e, st) {
-      return InStoreAppVersionCheckerResponse.error(
-        currentVersion: currentVersion,
-        newVersion: newVersion,
-        appURL: url,
-        error: e,
-        stackTrace: st,
-        errorMessage: e.toString(),
-      );
-    }
-  }
-
-  /// Check update in [RuStore].
-  Future<InStoreAppVersionCheckerResponse> _checkRuStore(
-    String currentVersion,
-    String packageName,
-  ) async {
-    String? newVersion, url;
-    try {
-      final listing = await RuStore(_httpClient).getListing(packageName);
-      newVersion = listing.version;
-      url = listing.appURL;
-      return InStoreAppVersionCheckerResponse.success(
-        currentVersion: currentVersion,
-        newVersion: newVersion,
-        appURL: url,
-      );
-    } on Object catch (error, stackTrace) {
-      return InStoreAppVersionCheckerResponse.error(
-        currentVersion: currentVersion,
-        newVersion: newVersion,
-        appURL: url,
-        error: error,
-        stackTrace: stackTrace,
-        errorMessage: error.toString(),
-      );
-    }
-  }
-
-  /// Check an arbitrary application in [AppGallery] by its store ID.
-  Future<InStoreAppVersionCheckerResponse> _checkAppGallery({
-    required String currentVersion,
-    required String locale,
-    required String? storeID,
-    String? expectedPackageName,
-  }) async {
-    String? newVersion, url;
-    try {
-      final resolvedStoreID = storeID?.trim();
-      if (resolvedStoreID == null ||
-          !RegExp(r'^C\d+$').hasMatch(resolvedStoreID)) {
-        throw FormatException(
-          'AppGallery web checks require storeID in the format "C107631977".',
-          storeID,
-        );
-      }
-
-      final listing = await AppGalleryWebStore(_httpClient).getListing(
-        storeID: resolvedStoreID,
-        locale: locale,
-        expectedPackageName: expectedPackageName,
-      );
-      newVersion = listing.version;
-      url = listing.appURL;
-      return InStoreAppVersionCheckerResponse.success(
-        currentVersion: currentVersion,
-        newVersion: newVersion,
-        appURL: url,
-      );
-    } on Object catch (error, stackTrace) {
-      return InStoreAppVersionCheckerResponse.error(
-        currentVersion: currentVersion,
-        newVersion: newVersion,
-        appURL: url,
-        error: error,
-        stackTrace: stackTrace,
-        errorMessage: error.toString(),
-      );
-    }
-  }
-
-  /// Check the installed application with Huawei `AppUpdateClient`.
-  Future<InStoreAppVersionCheckerResponse> _checkAppGallery$Native({
-    required String currentPackageName,
-    required String currentVersion,
-    required bool hasOverrides,
-  }) async {
-    String? newVersion, url;
-    try {
-      if (hasOverrides) {
-        throw ArgumentError(
-          'AppGallery native checks do not support packageName or '
-          'currentVersion overrides.',
-        );
-      }
-
-      final result = await AppGalleryNative.checkUpdate();
-      if (result.packageName != null &&
-          result.packageName != currentPackageName) {
-        throw StateError(
-          'Huawei AppUpdateClient returned package "${result.packageName}" '
-          'for installed package "$currentPackageName".',
-        );
-      }
-
-      newVersion = result.version;
-      final storeID = result.storeID;
-      if (storeID != null) {
-        url = Uri(
-          scheme: 'https',
-          host: 'appgallery.huawei.com',
-          path: '/',
-          fragment: '/app/$storeID',
-        ).toString();
-      }
-      return InStoreAppVersionCheckerResponse.success(
-        currentVersion: currentVersion,
-        newVersion: newVersion,
-        appURL: url,
-      );
-    } on Object catch (error, stackTrace) {
-      return InStoreAppVersionCheckerResponse.error(
-        currentVersion: currentVersion,
-        newVersion: newVersion,
-        appURL: url,
-        error: error,
-        stackTrace: stackTrace,
-        errorMessage: error.toString(),
       );
     }
   }

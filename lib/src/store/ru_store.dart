@@ -5,9 +5,12 @@
 
 import 'dart:convert';
 
+import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_response.dart';
 import 'package:http/http.dart' as http;
+import 'package:meta/meta.dart';
 
 /// Reads published application versions from public RuStore catalog pages.
+@internal
 final class RuStore {
   /// Creates a RuStore client.
   const RuStore(this._httpClient);
@@ -20,6 +23,33 @@ final class RuStore {
   );
 
   final http.Client _httpClient;
+
+  /// Checks the RuStore catalog page of [packageName].
+  Future<InStoreAppVersionCheckerResponse> checkUpdate(
+    String currentVersion,
+    String packageName,
+  ) async {
+    String? newVersion, url;
+    try {
+      final listing = await getListing(packageName);
+      newVersion = listing.version;
+      url = listing.appURL;
+      return InStoreAppVersionCheckerResponse.success(
+        currentVersion: currentVersion,
+        newVersion: newVersion,
+        appURL: url,
+      );
+    } on Object catch (error, stackTrace) {
+      return InStoreAppVersionCheckerResponse.error(
+        currentVersion: currentVersion,
+        newVersion: newVersion,
+        appURL: url,
+        error: error,
+        stackTrace: stackTrace,
+        errorMessage: error.toString(),
+      );
+    }
+  }
 
   /// Returns the version published for [packageName].
   Future<({String appURL, String version})> getListing(

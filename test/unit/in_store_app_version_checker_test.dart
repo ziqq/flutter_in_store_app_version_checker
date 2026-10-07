@@ -14,7 +14,7 @@ import 'package:http/http.dart' as http;
 import 'package:mockito/mockito.dart';
 
 import '../util/mocks.mocks.dart';
-import '../util/store_fixtures.dart';
+import '../util/fixtures.dart';
 
 void main() {
   group('InStoreAppVersionChecker - ', () {
