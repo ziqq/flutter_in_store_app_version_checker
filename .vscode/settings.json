@@ -60,7 +60,7 @@
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.patterns": {
-    "justfile": "mise.toml, mise.lock, .fvmrc",
+    "mise.toml": "mise.lock",
     "pubspec.yaml": ".flutter-plugins, .packages, .dart_tool, .flutter-plugins-dependencies, .metadata, .packages, pubspec.lock, build.yaml, analysis_options.yaml, all_lint_rules.yaml, dart*.yaml, flutter*.yaml, icons_launcher.yaml, devtools_options.yaml, l10n.yaml, codecov.yml, log.pana.json",
     ".gitignore": ".gitattributes, .gitmodules, .gitmessage, .mailmap, .git-blame*, .pubignore",
     "build.gradle": "settings.gradle, gradle.properties, gradle-wrapper.properties, local.properties, proguard-rules.pro",
