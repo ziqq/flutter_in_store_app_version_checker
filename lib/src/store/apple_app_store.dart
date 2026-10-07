@@ -5,8 +5,8 @@
 
 import 'dart:convert';
 
+import 'package:flutter_in_store_app_version_checker/src/constants.dart';
 import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_response.dart';
-import 'package:flutter_in_store_app_version_checker/src/util/store_locale.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
@@ -55,12 +55,12 @@ final class AppleAppStore {
               '(locale: "$locale").$countryGuidance',
         );
       } else {
-        final Object? data = jsonDecode(response.body);
-        if (data is! Map<String, Object?> ||
-            data['results'] is! List<Object?>) {
-          throw const FormatException('Apple Store returned invalid results.');
-        }
-        final results = data['results']! as List<Object?>;
+        final results = switch (jsonDecode(response.body)) {
+          {'results': final List<Object?> results} => results,
+          _ => throw const FormatException(
+            'Apple Store returned invalid results.',
+          ),
+        };
 
         if (results.isEmpty) {
           return InStoreAppVersionCheckerResponse.error(
@@ -116,7 +116,7 @@ final class AppleAppStore {
 
   static String _resolveCountry(String locale) {
     final value = locale.trim();
-    final match = storeLocalePattern.firstMatch(value);
+    final match = kStoreLocalePattern.firstMatch(value);
     if (match != null && match.end == value.length) {
       final countryCode = match.group(3);
       if (countryCode != null && countryCode.length == 2) {

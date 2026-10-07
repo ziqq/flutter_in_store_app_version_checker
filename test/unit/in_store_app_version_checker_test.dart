@@ -13,8 +13,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:mockito/mockito.dart';
 
-import '../util/mocks.mocks.dart';
 import '../util/fixtures.dart';
+import '../util/mocks.mocks.dart';
 
 void main() {
   group('InStoreAppVersionChecker - ', () {

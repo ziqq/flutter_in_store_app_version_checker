@@ -10,7 +10,7 @@ import 'package:meta/meta.dart';
 ///
 /// Groups: 1 — language, 2 — script, 3 — region.
 @internal
-final RegExp storeLocalePattern = RegExp(
+final RegExp kStoreLocalePattern = RegExp(
   '^([a-z]{2,3}|[a-z]{5,8})'
   '(?:[-_]([a-z]{4}))?'
   r'(?:[-_]([a-z]{2}|[0-9]{3}))?$',

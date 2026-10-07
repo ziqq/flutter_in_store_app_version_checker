@@ -5,8 +5,8 @@
 
 import 'dart:convert';
 
+import 'package:flutter_in_store_app_version_checker/src/constants.dart';
 import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_response.dart';
-import 'package:flutter_in_store_app_version_checker/src/util/store_locale.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
@@ -112,13 +112,13 @@ final class GooglePlayStore {
   }
 
   static String? _parseVersion(String body, String packageName) {
-    final match = RegExp(
+    final source = RegExp(
       r"AF_initDataCallback\(\{key:\s*'ds:5',\s*hash:\s*'[^']*',"
       r'\s*data:(.*?),\s*sideChannel:',
       dotAll: true,
-    ).firstMatch(body);
-    if (match == null) return null;
-    final Object? data = jsonDecode(match.group(1)!);
+    ).firstMatch(body)?.group(1);
+    if (source == null) return null;
+    final Object? data = jsonDecode(source);
     if (_readValue(data, const [1, 2, 77, 0]) != packageName) {
       return null;
     }
@@ -155,16 +155,22 @@ final class GooglePlayStore {
 
   static String _resolveLocale(String locale) {
     final value = locale.trim();
-    final match = storeLocalePattern.firstMatch(value);
+    final match = kStoreLocalePattern.firstMatch(value);
     if (match == null || match.end != value.length) return locale;
 
-    final scriptCode = match.group(2);
-    final countryCode = match.group(3);
-    return <String>[
-      match.group(1)!.toLowerCase(),
-      if (scriptCode != null)
-        '${scriptCode[0].toUpperCase()}${scriptCode.substring(1).toLowerCase()}',
-      if (countryCode != null) countryCode.toUpperCase(),
-    ].join('-');
+    return switch (match.groups(const [1, 2, 3])) {
+      [
+        final String languageCode,
+        final String? scriptCode,
+        final String? countryCode,
+      ] =>
+        <String>[
+          languageCode.toLowerCase(),
+          if (scriptCode != null)
+            '${scriptCode[0].toUpperCase()}${scriptCode.substring(1).toLowerCase()}',
+          if (countryCode != null) countryCode.toUpperCase(),
+        ].join('-'),
+      _ => locale,
+    };
   }
 }

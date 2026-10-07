@@ -66,43 +66,41 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
     InStoreAppVersionCheckerParams params,
   ) async {
     try {
-      final requiresAppMetadata =
-          params.packageName == null ||
-          params.currentVersion == null ||
-          (_isAndroid &&
-              params.androidStore ==
-                  InStoreAppVersionCheckerAndroidStoreType.appGalleryNative);
-      final appMetadata = requiresAppMetadata
-          ? await AppMetadata.fromPlatform()
-          : (packageName: params.packageName!, version: params.currentVersion!);
+      final isAppGalleryNative =
+          _isAndroid && params.androidStore == .appGalleryNative;
+      // HTTP checks skip installed-app metadata when both overrides are set;
+      // AppGallery native always checks the installed application.
+      final appMetadata = switch ((params.packageName, params.currentVersion)) {
+        (final String packageName, final String version)
+            when !isAppGalleryNative =>
+          (packageName: packageName, version: version),
+        _ => await AppMetadata.fromPlatform(),
+      };
       final packageName = params.packageName ?? appMetadata.packageName;
       final currentVersion = params.currentVersion ?? appMetadata.version;
       if (_isAndroid) {
         return await switch (params.androidStore) {
-          InStoreAppVersionCheckerAndroidStoreType.apkPure => ApkPureStore(
+          .apkPure => ApkPureStore(
             _httpClient,
           ).checkUpdate(currentVersion, packageName),
-          InStoreAppVersionCheckerAndroidStoreType.ruStore => RuStore(
+          .ruStore => RuStore(
             _httpClient,
           ).checkUpdate(currentVersion, packageName),
-          InStoreAppVersionCheckerAndroidStoreType.appGallery =>
-            AppGalleryWebStore(_httpClient).checkUpdate(
-              currentVersion: currentVersion,
-              expectedPackageName: params.packageName,
-              locale: params.locale,
-              storeID: params.storeID,
-            ),
-          InStoreAppVersionCheckerAndroidStoreType.appGalleryNative =>
-            const AppGalleryNativeStore().checkUpdate(
-              currentPackageName: appMetadata.packageName,
-              currentVersion: appMetadata.version,
-              hasOverrides:
-                  params.packageName != null || params.currentVersion != null,
-            ),
-          InStoreAppVersionCheckerAndroidStoreType.googlePlayStore =>
-            GooglePlayStore(
-              _httpClient,
-            ).checkUpdate(currentVersion, packageName, params.locale),
+          .appGallery => AppGalleryWebStore(_httpClient).checkUpdate(
+            currentVersion: currentVersion,
+            expectedPackageName: params.packageName,
+            locale: params.locale,
+            storeID: params.storeID,
+          ),
+          .appGalleryNative => const AppGalleryNativeStore().checkUpdate(
+            currentPackageName: appMetadata.packageName,
+            currentVersion: appMetadata.version,
+            hasOverrides:
+                params.packageName != null || params.currentVersion != null,
+          ),
+          .googlePlayStore => GooglePlayStore(
+            _httpClient,
+          ).checkUpdate(currentVersion, packageName, params.locale),
         };
       } else if (_isIOS) {
         return await AppleAppStore(
