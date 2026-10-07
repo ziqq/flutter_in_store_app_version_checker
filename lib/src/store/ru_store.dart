@@ -91,7 +91,7 @@ final class RuStore {
 
   static Map<String, Object?>? _findSoftwareApplication(Object? value) {
     switch (value) {
-      case final Map<String, Object?> map:
+      case Map<String, Object?> map:
         if (_isSoftwareApplicationType(map['@type'])) {
           return map;
         }
@@ -99,7 +99,7 @@ final class RuStore {
           final listing = _findSoftwareApplication(child);
           if (listing != null) return listing;
         }
-      case final Iterable<Object?> values:
+      case Iterable<Object?> values:
         for (final child in values) {
           final listing = _findSoftwareApplication(child);
           if (listing != null) return listing;

@@ -56,7 +56,7 @@ final class AppleAppStore {
         );
       } else {
         final results = switch (jsonDecode(response.body)) {
-          {'results': final List<Object?> results} => results,
+          {'results': List<Object?> results} => results,
           _ => throw const FormatException(
             'Apple Store returned invalid results.',
           ),
@@ -83,7 +83,7 @@ final class AppleAppStore {
             );
           }
           final app = listing.first;
-          if (app['version'] case final String version
+          if (app['version'] case String version
               when version.trim().isNotEmpty) {
             newVersion = version.trim();
           } else {
@@ -91,7 +91,7 @@ final class AppleAppStore {
               'Apple Store listing does not contain a version.',
             );
           }
-          if (app['trackViewUrl'] case final String appURL
+          if (app['trackViewUrl'] case String appURL
               when appURL.trim().isNotEmpty) {
             url = appURL.trim();
           }

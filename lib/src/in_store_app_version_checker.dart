@@ -52,12 +52,6 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
 
   static InStoreAppVersionChecker? _instance;
 
-  /// Whether the current platform is iOS.
-  bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
-
-  /// Whether the current platform is Android.
-  bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
-
   /// Check the current version of the app available in app stores
   /// such as `AppStore`, `Google Play`, `ApkPure`, `RuStore`, and `AppGallery`,
   /// comparing it with the installed version on the device.
@@ -66,56 +60,59 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
     InStoreAppVersionCheckerParams params,
   ) async {
     try {
+      final platform = defaultTargetPlatform;
       final isAppGalleryNative =
-          _isAndroid && params.androidStore == .appGalleryNative;
+          platform == .android && params.androidStore == .appGalleryNative;
       // HTTP checks skip installed-app metadata when both overrides are set;
       // AppGallery native always checks the installed application.
       final appMetadata = switch ((params.packageName, params.currentVersion)) {
-        (final String packageName, final String version)
-            when !isAppGalleryNative =>
-          (packageName: packageName, version: version),
+        (String packageName, String version) when !isAppGalleryNative => (
+          packageName: packageName,
+          version: version,
+        ),
         _ => await AppMetadata.fromPlatform(),
       };
       final packageName = params.packageName ?? appMetadata.packageName;
       final currentVersion = params.currentVersion ?? appMetadata.version;
-      if (_isAndroid) {
-        return await switch (params.androidStore) {
-          .apkPure => ApkPureStore(
+      switch (platform) {
+        case .android:
+          return await switch (params.androidStore) {
+            .apkPure => ApkPureStore(
+              _httpClient,
+            ).checkUpdate(currentVersion, packageName),
+            .ruStore => RuStore(
+              _httpClient,
+            ).checkUpdate(currentVersion, packageName),
+            .appGallery => AppGalleryWebStore(_httpClient).checkUpdate(
+              currentVersion: currentVersion,
+              expectedPackageName: params.packageName,
+              locale: params.locale,
+              storeID: params.storeID,
+            ),
+            .appGalleryNative => const AppGalleryNativeStore().checkUpdate(
+              currentPackageName: appMetadata.packageName,
+              currentVersion: appMetadata.version,
+              hasOverrides:
+                  params.packageName != null || params.currentVersion != null,
+            ),
+            .googlePlayStore => GooglePlayStore(
+              _httpClient,
+            ).checkUpdate(currentVersion, packageName, params.locale),
+          };
+        case .iOS:
+          return await AppleAppStore(
             _httpClient,
-          ).checkUpdate(currentVersion, packageName),
-          .ruStore => RuStore(
-            _httpClient,
-          ).checkUpdate(currentVersion, packageName),
-          .appGallery => AppGalleryWebStore(_httpClient).checkUpdate(
+          ).checkUpdate(currentVersion, packageName, params.locale);
+        default:
+          return InStoreAppVersionCheckerResponse.error(
             currentVersion: currentVersion,
-            expectedPackageName: params.packageName,
-            locale: params.locale,
-            storeID: params.storeID,
-          ),
-          .appGalleryNative => const AppGalleryNativeStore().checkUpdate(
-            currentPackageName: appMetadata.packageName,
-            currentVersion: appMetadata.version,
-            hasOverrides:
-                params.packageName != null || params.currentVersion != null,
-          ),
-          .googlePlayStore => GooglePlayStore(
-            _httpClient,
-          ).checkUpdate(currentVersion, packageName, params.locale),
-        };
-      } else if (_isIOS) {
-        return await AppleAppStore(
-          _httpClient,
-        ).checkUpdate(currentVersion, packageName, params.locale);
-      } else {
-        return InStoreAppVersionCheckerResponse.error(
-          currentVersion: currentVersion,
-          newVersion: null,
-          appURL: null,
-          errorMessage:
-              'This platform is not yet supported by this package. It supports only iOS and Android.',
-          stackTrace: StackTrace.current,
-          error: Exception('Unsupported platform'),
-        );
+            newVersion: null,
+            appURL: null,
+            errorMessage:
+                'This platform is not yet supported by this package. It supports only iOS and Android.',
+            stackTrace: StackTrace.current,
+            error: Exception('Unsupported platform'),
+          );
       }
     } on Object catch (e, s) {
       return InStoreAppVersionCheckerResponse.error(

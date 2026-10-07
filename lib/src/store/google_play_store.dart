@@ -73,7 +73,7 @@ final class GooglePlayStore {
       if (apiResponse.statusCode == 200) {
         final Object? data = jsonDecode(apiResponse.body);
         if (data case {
-          'version': final String version,
+          'version': String version,
         } when version.trim().isNotEmpty) {
           newVersion = version.trim();
         } else {
@@ -125,7 +125,7 @@ final class GooglePlayStore {
     // Google Play uses both indexed arrays and sparse fields in its web data.
     for (final field in const [141, 140]) {
       final value = _readValue(data, [1, 2, field, 0, 0, 0]);
-      if (value case final String version when version.trim().isNotEmpty) {
+      if (value case String version when version.trim().isNotEmpty) {
         return version.trim();
       }
     }
@@ -136,15 +136,15 @@ final class GooglePlayStore {
     var value = data;
     for (final index in path) {
       switch (value) {
-        case final List<Object?> fields:
+        case List<Object?> fields:
           if (index < fields.length) {
             value = fields[index];
-          } else if (fields.lastOrNull case final Map<String, Object?> sparse) {
+          } else if (fields.lastOrNull case Map<String, Object?> sparse) {
             value = sparse['$index'];
           } else {
             return null;
           }
-        case final Map<String, Object?> fields:
+        case Map<String, Object?> fields:
           value = fields['$index'];
         default:
           return null;
@@ -159,17 +159,12 @@ final class GooglePlayStore {
     if (match == null || match.end != value.length) return locale;
 
     return switch (match.groups(const [1, 2, 3])) {
-      [
-        final String languageCode,
-        final String? scriptCode,
-        final String? countryCode,
-      ] =>
-        <String>[
-          languageCode.toLowerCase(),
-          if (scriptCode != null)
-            '${scriptCode[0].toUpperCase()}${scriptCode.substring(1).toLowerCase()}',
-          if (countryCode != null) countryCode.toUpperCase(),
-        ].join('-'),
+      [String languageCode, String? scriptCode, String? countryCode] => <String>[
+        languageCode.toLowerCase(),
+        if (scriptCode != null)
+          '${scriptCode[0].toUpperCase()}${scriptCode.substring(1).toLowerCase()}',
+        if (countryCode != null) countryCode.toUpperCase(),
+      ].join('-'),
       _ => locale,
     };
   }

@@ -147,7 +147,7 @@ final class AppGalleryWebStore {
     }
 
     final Object? value = jsonDecode(response.body);
-    if (value case final String interfaceCode when interfaceCode.isNotEmpty) {
+    if (value case String interfaceCode when interfaceCode.isNotEmpty) {
       return interfaceCode;
     }
     throw FormatException(
@@ -192,7 +192,7 @@ final class AppGalleryWebStore {
 
   static Map<String, Object?> _decodeResponse(http.Response response) {
     final Object? value = jsonDecode(response.body);
-    if (value case final Map<String, Object?> data) return data;
+    if (value case Map<String, Object?> data) return data;
     throw FormatException(
       'AppGallery returned an invalid listing response.',
       response.body,
@@ -201,7 +201,7 @@ final class AppGalleryWebStore {
 
   static Map<String, Object?>? _findListing(Object? value, String storeID) {
     switch (value) {
-      case final Map<String, Object?> map:
+      case Map<String, Object?> map:
         if (map['appid']?.toString() == storeID && map['versionName'] != null) {
           return map;
         }
@@ -209,7 +209,7 @@ final class AppGalleryWebStore {
           final listing = _findListing(child, storeID);
           if (listing != null) return listing;
         }
-      case final Iterable<Object?> values:
+      case Iterable<Object?> values:
         for (final child in values) {
           final listing = _findListing(child, storeID);
           if (listing != null) return listing;
