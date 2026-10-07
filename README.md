@@ -78,7 +78,7 @@ Future<void> checkForUpdate() async {
 A typical "new version available" prompt, using [`url_launcher`](https://pub.dev/packages/url_launcher) to open the store page:
 
 ```dart
-Future<void> promptUpdate(BuildContext context) async {
+Future<void> showUpdateDialogIfNeeded(BuildContext context) async {
   final res = await InStoreAppVersionChecker.instance.checkUpdate(
     const InStoreAppVersionCheckerParams(locale: 'en-US'),
   );
