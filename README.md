@@ -16,6 +16,8 @@ final res = await InStoreAppVersionChecker.instance.checkUpdate(
 if (res.canUpdate) showUpdateDialog(res.newVersion, res.appURL);
 ```
 
+<img src="doc/screenshot.png" width="320" alt="Example app checking App Store versions of several apps">
+
 
 ## Features
 
