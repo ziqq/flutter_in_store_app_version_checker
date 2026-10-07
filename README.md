@@ -47,7 +47,7 @@ Requirements: Flutter `>=3.44.0`, Dart `>=3.12.0 <4.0.0`.
 Other platforms (Web, Windows, Linux, macOS) are not supported.
 
 
-## Usage
+## Examples
 
 ### Check for an update
 
