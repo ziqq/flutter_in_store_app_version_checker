@@ -6,15 +6,16 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:flutter_in_store_app_version_checker/src/store/app_store.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_interface.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_request.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
 /// Reads public AppGallery listing data through the AppGallery web client API.
 @internal
-final class AppStore$AppGalleryWeb implements AppStore {
+final class Store$AppGalleryWeb implements IStore {
   /// Creates an AppGallery web store client.
-  const AppStore$AppGalleryWeb(this._httpClient);
+  const Store$AppGalleryWeb(this._httpClient);
 
   static const _host = 'web-dre.hispace.dbankcloud.com';
   static const _timeout = Duration(seconds: 15);
@@ -28,7 +29,7 @@ final class AppStore$AppGalleryWeb implements AppStore {
   /// Reads an arbitrary AppGallery listing identified by `storeID`.
   @override
   Future<({String? version, String? appURL})> fetchListing(
-    AppStoreRequest request,
+    StoreRequest request,
   ) async {
     final storeID = switch (request.storeID?.trim()) {
       String storeID when _storeIDPattern.hasMatch(storeID) => storeID,

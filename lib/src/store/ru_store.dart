@@ -5,15 +5,16 @@
 
 import 'dart:convert';
 
-import 'package:flutter_in_store_app_version_checker/src/store/app_store.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_interface.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_request.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
 /// Reads published application versions from public RuStore catalog pages.
 @internal
-final class AppStore$RuStore implements AppStore {
+final class Store$RuStore implements IStore {
   /// Creates a RuStore client.
-  const AppStore$RuStore(this._httpClient);
+  const Store$RuStore(this._httpClient);
 
   static const _timeout = Duration(seconds: 15);
   static final _jsonLDPattern = RegExp(
@@ -30,7 +31,7 @@ final class AppStore$RuStore implements AppStore {
   /// Reads the RuStore catalog page of `packageName`.
   @override
   Future<({String? version, String? appURL})> fetchListing(
-    AppStoreRequest request,
+    StoreRequest request,
   ) async {
     final listing = await _getListing(request.packageName);
     return (version: listing.version, appURL: listing.appURL);
@@ -53,7 +54,8 @@ final class AppStore$RuStore implements AppStore {
     FormatException? decodeError;
     for (final match in _jsonLDPattern.allMatches(response.body)) {
       final source = match.group(1);
-      if (source == null) continue;
+      // The regexp's required capture group is present even for empty scripts.
+      if (source == null) continue; // coverage:ignore-line
       try {
         final Object? value = jsonDecode(source);
         final listing = _findSoftwareApplication(value);

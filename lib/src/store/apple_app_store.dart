@@ -6,15 +6,17 @@
 import 'dart:convert';
 
 import 'package:flutter_in_store_app_version_checker/src/constants.dart';
-import 'package:flutter_in_store_app_version_checker/src/store/app_store.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_exception.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_interface.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_request.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
 /// Reads published application versions through the Apple iTunes lookup API.
 @internal
-final class AppStore$Apple implements AppStore {
+final class Store$AppStore implements IStore {
   /// Creates an Apple App Store client.
-  const AppStore$Apple(this._httpClient);
+  const Store$AppStore(this._httpClient);
 
   final http.Client _httpClient;
 
@@ -24,9 +26,9 @@ final class AppStore$Apple implements AppStore {
   /// Reads the listing of `packageName` in the storefront selected by `locale`.
   @override
   Future<({String? version, String? appURL})> fetchListing(
-    AppStoreRequest request,
+    StoreRequest request,
   ) async {
-    final AppStoreRequest(:packageName, :locale) = request;
+    final StoreRequest(:packageName, :locale) = request;
     final countryCode = _resolveCountry(locale);
     final uri =
         Uri.https('itunes.apple.com', '/$countryCode/lookup', <String, Object?>{
@@ -42,10 +44,11 @@ final class AppStore$Apple implements AppStore {
                 'such as "en-US" or a country code such as "us"; '
                 'a language such as "en" does not identify a storefront.'
           : '';
-      throw AppStoreLookupException(
-        'Apple Store lookup failed (HTTP ${response.statusCode}) '
-        'for bundle ID "$packageName" in storefront "$countryCode" '
-        '(locale: "$locale").$countryGuidance',
+      throw AppStoreException(
+        message:
+            'Apple Store lookup failed (HTTP ${response.statusCode}) '
+            'for bundle ID "$packageName" in storefront "$countryCode" '
+            '(locale: "$locale").$countryGuidance',
       );
     }
 
@@ -54,10 +57,11 @@ final class AppStore$Apple implements AppStore {
       _ => throw const FormatException('Apple Store returned invalid results.'),
     };
     if (results.isEmpty) {
-      throw AppStoreLookupException(
-        'App "$packageName" was not found in the Apple Store '
-        'storefront "$countryCode" (locale: "$locale"). '
-        'Check the bundle ID and availability in this storefront.',
+      throw AppStoreException(
+        message:
+            'App "$packageName" was not found in the Apple Store '
+            'storefront "$countryCode" (locale: "$locale"). '
+            'Check the bundle ID and availability in this storefront.',
       );
     }
 

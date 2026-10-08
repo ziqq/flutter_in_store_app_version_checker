@@ -4,14 +4,15 @@
  */
 
 import 'package:flutter/services.dart' show MethodChannel, PlatformException;
-import 'package:flutter_in_store_app_version_checker/src/store/app_store.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_interface.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_request.dart';
 import 'package:meta/meta.dart';
 
 /// Checks the installed Android application through Huawei `AppUpdateClient`.
 @internal
-final class AppStore$AppGalleryNative implements AppStore {
+final class Store$AppGalleryNative implements IStore {
   /// Creates an AppGallery native client.
-  const AppStore$AppGalleryNative();
+  const Store$AppGalleryNative();
 
   static const _channel = MethodChannel(
     'github.com/ziqq/instoreappversionchecker/app_metadata',
@@ -30,7 +31,7 @@ final class AppStore$AppGalleryNative implements AppStore {
   /// Returns a `null` version when Huawei reports that no update exists.
   @override
   Future<({String? version, String? appURL})> fetchListing(
-    AppStoreRequest request,
+    StoreRequest request,
   ) async {
     if (request.hasOverrides) {
       throw ArgumentError(

@@ -239,7 +239,7 @@ void main() {
 
         expect(result.isError, isTrue);
         expect(result.error, isA<FormatException>());
-        expect(result.newVersion, anyOf(isNull, isEmpty));
+        expect(result.newVersion, isNull);
         expect(result.canUpdate, isFalse);
       });
     }

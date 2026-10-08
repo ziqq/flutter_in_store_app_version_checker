@@ -10,10 +10,12 @@ import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_ch
 import 'package:flutter_in_store_app_version_checker/src/store/apk_pure_store.dart';
 import 'package:flutter_in_store_app_version_checker/src/store/app_gallery_native_store.dart';
 import 'package:flutter_in_store_app_version_checker/src/store/app_gallery_web_store.dart';
-import 'package:flutter_in_store_app_version_checker/src/store/app_store.dart';
 import 'package:flutter_in_store_app_version_checker/src/store/apple_app_store.dart';
 import 'package:flutter_in_store_app_version_checker/src/store/google_play_store.dart';
 import 'package:flutter_in_store_app_version_checker/src/store/ru_store.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_extension.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_interface.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_request.dart';
 import 'package:flutter_in_store_app_version_checker/src/util/app_metadata.dart';
 import 'package:http/http.dart' as http;
 
@@ -74,7 +76,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
         _ => await AppMetadata.fromPlatform(),
       };
       // AppGallery native always reports the installed application.
-      final request = AppStoreRequest(
+      final request = StoreRequest(
         currentVersion: isAppGalleryNative
             ? appMetadata.version
             : params.currentVersion ?? appMetadata.version,
@@ -89,17 +91,17 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
       );
       final store = switch (platform) {
         .android => switch (params.androidStore) {
-          .googlePlayStore => AppStore$GooglePlay(_httpClient),
-          .apkPure => AppStore$ApkPure(_httpClient),
-          .ruStore => AppStore$RuStore(_httpClient),
-          .appGallery => AppStore$AppGalleryWeb(_httpClient),
-          .appGalleryNative => const AppStore$AppGalleryNative(),
+          .googlePlayStore => Store$GooglePlay(_httpClient),
+          .apkPure => Store$ApkPure(_httpClient),
+          .ruStore => Store$RuStore(_httpClient),
+          .appGallery => Store$AppGalleryWeb(_httpClient),
+          .appGalleryNative => const Store$AppGalleryNative(),
         },
-        .iOS => AppStore$Apple(_httpClient),
+        .iOS => Store$AppStore(_httpClient),
         _ => null,
       };
       return await switch (store) {
-        AppStore store => store.checkUpdate(request),
+        IStore store => store.checkUpdate(request),
         null => Future.value(
           InStoreAppVersionCheckerResponse.error(
             currentVersion: request.currentVersion,

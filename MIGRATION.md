@@ -3,6 +3,16 @@
 
 ## Unreleased
 
+### ApkPure empty version responses
+
+An ApkPure listing with an empty or whitespace-only version now returns
+`newVersion: null` instead of `newVersion: ''`. The response remains an error
+with the same `FormatException` and `errorMessage`; `canUpdate` remains `false`.
+
+Treat `null` and an empty string as an unavailable version when displaying
+legacy responses. Always check `isError` before deciding whether an update
+is available.
+
 ### Android package renamed
 
 The Android package, namespace, and Gradle group changed:

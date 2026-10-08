@@ -254,7 +254,7 @@ Huawei and ignore `storeID`.
 |------------------|-------------|
 | `isSuccess` / `isError` | Whether the lookup succeeded. |
 | `currentVersion` | Installed (or overridden) version. |
-| `newVersion`     | Version published in the store. |
+| `newVersion`     | Version published in the store, or `null` when unavailable. |
 | `canUpdate`      | `true` if the store version is newer. |
 | `appURL`         | Link to the store page. |
 | `errorMessage`, `error`, `stackTrace` | Details for error responses. |
@@ -318,11 +318,19 @@ check with `canUpdate == false`; missing or malformed version data is an error.
 Version names are not required to follow strict SemVer. Apple's optional
 listing URL remains `null` when absent, rather than the string `"null"`.
 
+An ApkPure listing with an empty or whitespace-only version returns an error
+with `newVersion == null` and `canUpdate == false`. Earlier versions could
+return `newVersion == ''` for this failure. Treat either value as an unavailable
+version when displaying the response; see the [migration guide](MIGRATION.md).
+
 Google Play HTML checks read the application's identified web data, not any
 version-like string on the page. This undocumented web structure can change;
 unrecognized data and primary HTTP/network failures trigger the existing
 third-party PlayStoreApi fallback. If that source also fails or omits the
 version, the response is an error with both attempts described.
+
+When the Google Play fallback throws a network or parsing exception, `error`
+and `stackTrace` retain the original fallback error and its stack trace.
 
 Apple HTTP errors include the status, original locale, and resolved storefront.
 HTTP 400 includes guidance to check the country code. A successful HTTP 200

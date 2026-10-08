@@ -141,11 +141,18 @@ class InStoreAppVersionCheckerResponse {
       final len = math.max(toksA.length, toksB.length);
 
       for (int i = 0; i < len; i++) {
-        if (i >= toksA.length && i < toksB.length) {
+        // If one list ends, the loop bound guarantees the other has a token.
+        if (i >= toksA.length &&
+            // coverage:ignore-start
+            i < toksB.length) {
+          // coverage:ignore-end
           // current shorter => current lower -> update
           return true;
         }
-        if (i >= toksB.length && i < toksA.length) {
+        if (i >= toksB.length &&
+            // coverage:ignore-start
+            i < toksA.length) {
+          // coverage:ignore-end
           // new shorter => new lower -> no update
           return false;
         }

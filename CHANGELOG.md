@@ -9,7 +9,7 @@
 - **CHANGED**: Rename the Android package, namespace, and Gradle group from `com.flutter.instoreappversionchecker` to `dev.ustinoff.instoreappversionchecker`
 - **CHANGED**: Move each store check into its own internal class under `lib/src/store/`
 - **CHANGED**: Update Codecov upload action to v5 while preserving the existing token
-- **CHANGED**: Route store checks through an internal `AppStore` contract with a single response mapping; error responses are unchanged ([#24](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/24))
+- **CHANGED**: Route store checks through an internal `IStore` contract with a single response mapping; preserve error diagnostics and normalize empty ApkPure versions to `null` ([#24](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/24))
 - **FIXED**: Preserve failing test exit codes in CI pipelines
 - **FIXED**: Classify Huawei update statuses and reject failed checks or invalid upgrade data without changing version-name comparison
 - **FIXED**: Read Google Play versions from identified application data and attempt fallback after primary network failures

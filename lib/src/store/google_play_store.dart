@@ -6,16 +6,18 @@
 import 'dart:convert';
 
 import 'package:flutter_in_store_app_version_checker/src/constants.dart';
-import 'package:flutter_in_store_app_version_checker/src/store/app_store.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_exception.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_interface.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_request.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
 /// Reads published application versions on Google Play, falling back to
 /// the third-party PlayStoreApi when the web listing cannot be read.
 @internal
-final class AppStore$GooglePlay implements AppStore {
+final class Store$GooglePlay implements IStore {
   /// Creates a Google Play client.
-  const AppStore$GooglePlay(this._httpClient);
+  const Store$GooglePlay(this._httpClient);
 
   final http.Client _httpClient;
 
@@ -28,9 +30,9 @@ final class AppStore$GooglePlay implements AppStore {
   /// primary lookup error.
   @override
   Future<({String? version, String? appURL})> fetchListing(
-    AppStoreRequest request,
+    StoreRequest request,
   ) async {
-    final AppStoreRequest(:packageName, :locale) = request;
+    final StoreRequest(:packageName, :locale) = request;
     Object? primaryError;
     try {
       final uri =
@@ -69,10 +71,11 @@ final class AppStore$GooglePlay implements AppStore {
           .get(apiUri)
           .timeout(const Duration(seconds: 15));
       if (apiResponse.statusCode != 200) {
-        throw AppStoreLookupException(
-          'PlayStoreApi error: ${apiResponse.statusCode} '
-          '${apiResponse.reasonPhrase}. '
-          'Google Play lookup: $primaryError',
+        throw AppStoreException(
+          message:
+              'PlayStoreApi error: ${apiResponse.statusCode} '
+              '${apiResponse.reasonPhrase}. '
+              'Google Play lookup: $primaryError',
         );
       }
       return (
@@ -85,12 +88,15 @@ final class AppStore$GooglePlay implements AppStore {
         },
         appURL: 'https://play.google.com/store/apps/details?id=$packageName',
       );
-    } on AppStoreLookupException {
+    } on AppStoreException {
       rethrow;
-    } on Object catch (error) {
-      throw AppStoreLookupException(
-        '$error Google Play lookup: $primaryError',
-        cause: error,
+    } on Object catch (error, stackTrace) {
+      Error.throwWithStackTrace(
+        AppStoreException(
+          message: '$error Google Play lookup: $primaryError',
+          error: error,
+        ),
+        stackTrace,
       );
     }
   }
@@ -139,7 +145,8 @@ final class AppStore$GooglePlay implements AppStore {
           '${scriptCode[0].toUpperCase()}${scriptCode.substring(1).toLowerCase()}',
         if (countryCode != null) countryCode.toUpperCase(),
       ].join('-'),
-      _ => locale,
+      // The regexp always returns three groups with a non-null language.
+      _ => locale, // coverage:ignore-line
     };
   }
 }
