@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
+import '../util/fixtures.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -13,7 +15,8 @@ void main() {
   );
   const appleResponse =
       '{"resultCount":1,"results":['
-      '{"version":"2.0.0","trackViewUrl":"https://apps.apple.com/app/id123"}]}';
+      '{"bundleId":"test.app","version":"2.0.0",'
+      '"trackViewUrl":"https://apps.apple.com/app/id123"}]}';
   late List<Uri> requests;
 
   setUp(() {
@@ -213,7 +216,7 @@ void main() {
       'en-US-u-ca-gregory': 'en-US-u-ca-gregory',
     }.entries) {
       test('${entry.key} preserves language, script, and region', () async {
-        final result = await check(entry.key, body: ',[[["2.0.0"]],');
+        final result = await check(entry.key, body: googlePlayListing('2.0.0'));
 
         expect(result.isSuccess, isTrue);
         expect(result.canUpdate, isTrue);

@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace  = 'com.flutter.instoreappversionchecker.example'
+    namespace  = 'dev.ustinoff.instoreappversionchecker.example'
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -19,7 +19,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.flutter.instoreappversionchecker.example"
+        applicationId = "dev.ustinoff.instoreappversionchecker.example"
         minSdk        = flutter.minSdkVersion
         targetSdk     = flutter.targetSdkVersion
         versionCode   = flutter.versionCode

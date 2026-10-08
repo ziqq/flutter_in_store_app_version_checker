@@ -125,11 +125,9 @@ class InStoreAppVersionCheckerResponse {
       if (a < b) return true;
     }
 
-    // Keep existing release vs pre-release rules
-    // current is pre, new is release -> no update
-    if (preA != null && preB == null) return false;
-    // current is release, new is pre -> update (legacy behavior)
-    if (preA == null && preB != null) return true;
+    // A release has higher precedence than its pre-release versions.
+    if (preA != null && preB == null) return true;
+    if (preA == null && preB != null) return false;
 
     // Improved numeric-aware comparison when both have pre-release
     if (preA != null && preB != null) {
@@ -189,18 +187,17 @@ class InStoreAppVersionCheckerResponse {
 
   @override
   int get hashCode =>
-      currentVersion.hashCode ^
-      newVersion.hashCode ^
-      canUpdate.hashCode ^
-      appURL.hashCode;
+      Object.hash(type, currentVersion, newVersion, appURL, errorMessage);
 
   @override
-  bool operator ==(covariant InStoreAppVersionCheckerResponse other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other.currentVersion == currentVersion &&
+    return other is InStoreAppVersionCheckerResponse &&
+        other.type == type &&
+        other.currentVersion == currentVersion &&
         other.newVersion == newVersion &&
-        other.canUpdate == canUpdate &&
-        other.appURL == appURL;
+        other.appURL == appURL &&
+        other.errorMessage == errorMessage;
   }
 
   @override

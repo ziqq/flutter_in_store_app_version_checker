@@ -31,7 +31,7 @@
       "name": "tests",
       "request": "launch",
       "type": "dart",
-      "program": "test/flutter_in_store_app_version_checker_test.dart",
+      "program": "test",
       "env": {
         "ENVIRONMENT": "test"
       },

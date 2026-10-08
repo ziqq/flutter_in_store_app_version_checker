@@ -7,7 +7,10 @@
 [![codecov](https://codecov.io/gh/ziqq/flutter_in_store_app_version_checker/graph/badge.svg?token=S5CVNZKDAE)](https://codecov.io/gh/ziqq/flutter_in_store_app_version_checker)
 [![GitHub stars](https://img.shields.io/github/stars/ziqq/flutter_in_store_app_version_checker?style=social)](https://github.com/ziqq/flutter_in_store_app_version_checker)
 
-Find out whether a newer version of your app is published on **Google Play**, **ApkPure** or the **Apple App Store** — with one call and no backend.
+
+## Description
+
+Find out whether a newer version of your app is published on **Google Play**, **RuStore**, **AppGallery**, **ApkPure** or the **Apple App Store** — with one call and no backend.
 
 ```dart
 final res = await InStoreAppVersionChecker.instance.checkUpdate(
@@ -20,7 +23,7 @@ if (res.canUpdate) showUpdateDialog(res.newVersion, res.appURL);
 ## Features
 
 - 🔍 **One call** — returns the installed version, the store version, the store URL and whether an update is available.
-- 🏪 **Google Play, ApkPure and App Store** out of the box.
+- 🏪 **Google Play, RuStore, AppGallery, ApkPure and App Store** out of the box.
 - 🌍 **Regional storefronts** — check the App Store / Google Play for a specific country and language.
 - 🧮 **Semver-aware comparison** — pre-releases, build metadata and `1.2` vs `1.2.0` are handled correctly.
 - 🪶 **Lightweight** — depends only on `http` and `meta`; installed app metadata is read by the plugin's own native code, no `package_info_plus` required.
@@ -39,15 +42,15 @@ Requirements: Flutter `>=3.44.0`, Dart `>=3.12.0 <4.0.0`.
 
 ### Supported platforms
 
-| Platform | Stores                |
-|----------|-----------------------|
-| Android  | Google Play, ApkPure  |
-| iOS      | Apple App Store       |
+| Platform | Stores                                     |
+|----------|--------------------------------------------|
+| Android  | Google Play, ApkPure, RuStore, AppGallery  |
+| iOS      | Apple App Store                            |
 
 Other platforms (Web, Windows, Linux, macOS) are not supported.
 
 
-## Usage
+## Examples
 
 ### Check for an update
 
@@ -115,6 +118,85 @@ const params = InStoreAppVersionCheckerParams(
 final res = await InStoreAppVersionChecker.instance.checkUpdate(params);
 ```
 
+### Use RuStore
+
+```dart
+const params = InStoreAppVersionCheckerParams(
+  locale: 'ru-RU',
+  packageName: 'ru.beautybox.twa',
+  currentVersion: '38.2.0',
+  androidStore: InStoreAppVersionCheckerAndroidStoreType.ruStore,
+);
+final res = await InStoreAppVersionChecker.instance.checkUpdate(params);
+```
+
+RuStore identifies public catalog pages by Android package name. The checker
+reads `SoftwareApplication.softwareVersion` from the page JSON-LD. Network
+restrictions, missing cards, and malformed metadata are returned as errors.
+
+### Use AppGallery for any app
+
+```dart
+const params = InStoreAppVersionCheckerParams(
+  locale: 'ru-RU',
+  packageName: 'ru.beautybox.twa',
+  storeID: 'C107631977',
+  currentVersion: '38.2.0',
+  androidStore: InStoreAppVersionCheckerAndroidStoreType.appGallery,
+);
+final res = await InStoreAppVersionChecker.instance.checkUpdate(params);
+```
+
+`packageName` and `storeID` are different identifiers. The package name comes
+from the Android application, while AppGallery assigns a listing ID such as
+`C107631977`. Store-specific builds may use different Android package names.
+
+This mode supports arbitrary applications, but it uses the same internal,
+undocumented web endpoint as the public AppGallery website. Huawei can change
+that endpoint or its response format without notice. The checker validates the
+returned App ID and, when `packageName` is explicitly supplied, its package.
+Endpoint failures and unexpected responses are returned as errors.
+
+### Use AppGallery for the installed app (official SDK)
+
+```dart
+const params = InStoreAppVersionCheckerParams(
+  locale: 'ru-RU',
+  androidStore: InStoreAppVersionCheckerAndroidStoreType.appGalleryNative,
+);
+final res = await InStoreAppVersionChecker.instance.checkUpdate(params);
+```
+
+This mode uses Huawei [`AppUpdateClient`](https://developer.huawei.com/consumer/de/doc/HMS-Guides/appgallerykit-upgrade-devguide)
+and is the recommended AppGallery option for the installed application. It does
+not support arbitrary applications or `packageName` and `currentVersion`
+overrides. When Huawei reports no update, the response is successful with
+`newVersion == null` and `canUpdate == false`.
+
+Only Huawei's `NO_UPGRADE_INFO` status means no update was found. Connection
+errors, failed checks, unknown statuses, and missing upgrade data return errors.
+As in the other modes, `canUpdate` compares version names; it does not compare
+Android `versionCode` values. Equal version names return `canUpdate == false`.
+
+The plugin includes `com.huawei.hms:appservice:6.16.2.300` and the Huawei Maven
+repository. Projects that enforce repositories in `settings.gradle` must also
+allow the Huawei repository:
+
+```groovy
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://developer.huawei.com/repo/' }
+    }
+}
+```
+
+Huawei documents that `checkAppUpdate` checks the AppGallery server even when
+the AppGallery client is not installed. The client is still required when the
+user proceeds to the AppGallery details and installation flow. See the
+[`AppUpdateClient` FAQ](https://developer.huawei.com/consumer/ru/doc/AppGallery-connect-Guides/appgallerykit-update-faq-0000001054802923).
+
 ### Check a specific App Store country
 
 ```dart
@@ -156,10 +238,15 @@ Entry point: [`InStoreAppVersionChecker.instance`](lib/src/in_store_app_version_
 |------------------|--------------------------------------------|-------------|
 | `locale`         | `String` (required)                        | Store language/region, e.g. `en-US`. See [Store locale](#store-locale). |
 | `packageName`    | `String?`                                  | Android package name / iOS bundle ID. Defaults to the installed app. |
+| `storeID`        | `String?`                                  | Store listing ID. Required only for AppGallery web checks, e.g. `C107631977`. |
 | `currentVersion` | `String?`                                  | Version to compare against. Defaults to the installed app version. |
-| `androidStore`   | `InStoreAppVersionCheckerAndroidStoreType` | `googlePlayStore` (default) or `apkPure`. |
+| `androidStore`   | `InStoreAppVersionCheckerAndroidStoreType` | `googlePlayStore` (default), `apkPure`, `ruStore`, `appGallery` or `appGalleryNative`. |
 
-If `packageName` or `currentVersion` is omitted, it is resolved from the installed app: on Android from the plugin's native implementation, on iOS from the bundle identifier and `CFBundleShortVersionString`.
+If `packageName` or `currentVersion` is omitted, it is resolved from the installed app: on Android from the plugin's native implementation, on iOS from the bundle identifier and `CFBundleShortVersionString`. HTTP checks skip the native metadata request when both overrides are supplied. AppGallery native always reads the installed application's metadata and rejects overrides.
+
+`storeID` is separate from `packageName`. It is required only for AppGallery web
+checks. AppGallery native checks obtain the installed application identity from
+Huawei and ignore `storeID`.
 
 ### Response — [`InStoreAppVersionCheckerResponse`](lib/src/in_store_app_version_checker_response.dart)
 
@@ -195,7 +282,9 @@ detect the country of the user's App Store account.
 Supported regional forms are `language-REGION` and `language-Script-REGION`.
 Underscores are accepted as separators; surrounding whitespace and letter case
 are normalized. On Google Play, other locale forms are passed through unchanged.
-ApkPure ignores `locale`.
+ApkPure and RuStore ignore `locale`. AppGallery web requests use it to localize
+the store response, but `storeID` remains the authoritative listing identifier.
+AppGallery native checks let Huawei select the locale.
 
 On iOS, existing two-letter country-only values such as `us`, `ae`, and `ru`
 remain supported. Short values are interpreted as countries: `ar` means
@@ -219,13 +308,38 @@ version also returns `canUpdate == false`; that alone does not mean the app is
 up to date. An error response may still report `canUpdate == true` if
 `newVersion` is greater.
 
-Errors are returned (not thrown) for: invalid iOS locale structure, HTTP/network
-failures, app not found in the selected storefront, and unsupported platforms.
+Errors are returned (not thrown) for: invalid parameters, HTTP/network failures,
+malformed store data, app not found in the selected storefront, native SDK
+failures, and unsupported platforms.
+
+HTTP modes return success only after reading a non-empty version string from
+the requested listing. An equal or older store version is still a successful
+check with `canUpdate == false`; missing or malformed version data is an error.
+Version names are not required to follow strict SemVer. Apple's optional
+listing URL remains `null` when absent, rather than the string `"null"`.
+
+Google Play HTML checks read the application's identified web data, not any
+version-like string on the page. This undocumented web structure can change;
+unrecognized data and primary HTTP/network failures trigger the existing
+third-party PlayStoreApi fallback. If that source also fails or omits the
+version, the response is an error with both attempts described.
 
 Apple HTTP errors include the status, original locale, and resolved storefront.
 HTTP 400 includes guidance to check the country code. A successful HTTP 200
 response with empty results instead reports that the app was not found in that
 storefront; check both its bundle ID and regional availability.
+
+Every HTTP request has a 15-second timeout. A Google Play fallback or an
+AppGallery web retry can make the total check longer than one request.
+AppGallery native has a 15-second SDK timeout that releases the callback, plus
+a 20-second Dart bridge safeguard. Timeout failures return error responses.
+Concurrent native calls share one in-flight check, including across checker
+instances; after success, failure, or timeout the next call starts a new check.
+
+Response equality and `hashCode` include status, versions, listing URL, and
+`errorMessage`. The identity of the diagnostic `error` and `stackTrace` objects
+is excluded. A success changing to an error therefore notifies a
+`ValueNotifier` even when the version fields have not changed.
 
 
 ## Version comparison
@@ -235,7 +349,7 @@ storefront; check both its bundle ID and regional availability.
 
 - Build metadata (`+build`) is ignored.
 - Trailing zero segments are normalized: `1.2` equals `1.2.0` (no update).
-- Release vs pre-release: a release is higher than a pre-release with the same core, so current release → new pre-release is treated as an update (legacy-compatible).
+- Release vs pre-release: a release is higher than a pre-release with the same core. `3.1.0-dev.1` to `3.1.0` is an update; the reverse is not.
 - Pre-release tokens are compared after the core version; numeric tokens numerically, mixed/alphanumeric tokens token-by-token with numeric-aware ordering.
 - Fully non-numeric current vs numeric new → update; fully non-numeric new vs numeric current → no update.
 - Whitespace is trimmed and non-alphanumeric symbols are stripped.
@@ -248,12 +362,38 @@ See the unit tests in [test/unit](test/unit) for the authoritative behavior.
 ## Platform integration notes
 
 - Android uses Flutter 3.44+ built-in Kotlin support.
+- AppGallery native checks use Huawei App Service SDK `6.16.2.300`.
 - iOS supports both Swift Package Manager (with the required `FlutterFramework` dependency in `Package.swift`) and CocoaPods.
 
 
-## Migrating from 2.x
+## Migration
 
-The factory-based API from 2.0.x has been removed. Use `InStoreAppVersionChecker.instance` or `InStoreAppVersionChecker.instanceFor(...)` together with `InStoreAppVersionCheckerParams`. `InStoreAppVersionChecker.custom(...)` is deprecated and forwards to `instanceFor(...)`. See the [Changelog](https://github.com/ziqq/flutter_in_store_app_version_checker/blob/main/CHANGELOG.md) for all release notes.
+See [MIGRATION.md](MIGRATION.md) for upgrade notes, including the Android package rename and the 3.0 API changes. All release notes are in the [Changelog](https://github.com/ziqq/flutter_in_store_app_version_checker/blob/main/CHANGELOG.md).
+
+
+## Development
+
+The repository uses [mise](https://mise.jdx.dev/) for pinned SDKs and
+[Just](https://just.systems/) for commands, following the same setup as
+`tetradka_app`. `mise.toml` is the source of truth and `mise.lock` records
+download URLs and checksums. Dart comes from the pinned Flutter SDK; the
+package's minimum supported SDK versions remain unchanged.
+
+```sh
+mise trust
+mise install
+mise exec -- just precommit
+```
+
+With mise activated in your shell, use plain `just`, `flutter`, and `dart`.
+VS Code resolves Flutter through `mise where flutter` without a local FVM path.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for native build prerequisites and the
+CocoaPods/SPM checks.
+
+Native plugin tests run with `mise exec -- just test-android-native` and, on
+macOS, `mise exec -- just test-ios-native`. CI uploads Dart, Kotlin, and Swift
+coverage separately to Codecov. The Android suite substitutes the Huawei SDK
+client; it does not prove live AppGallery behavior on a physical Huawei device.
 
 
 ## Contributing

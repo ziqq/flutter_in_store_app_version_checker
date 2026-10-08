@@ -41,15 +41,17 @@
     "**.endpoint.dart",
     "**_endpoint.dart"
   ],
-  "dart.flutterSdkPath": ".fvm/versions/stable",
+  "dart.getFlutterSdkCommand": {
+    "args": ["where", "flutter"],
+    "executable": "mise",
+    "cwd": "."
+  },
   "search.exclude": {
-    "**/.fvm": true,
     ".dart_tool": true,
     "coverage": true,
     "build": true
   },
   "files.watcherExclude": {
-    "**/.fvm": true,
     ".dart_tool": true,
     "coverage": true,
     "build": true
@@ -58,8 +60,11 @@
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.patterns": {
-    "pubspec.yaml": ".flutter-plugins, .packages, .dart_tool, .flutter-plugins-dependencies, .metadata, .packages, pubspec.lock, build.yaml, analysis_options.yaml, all_lint_rules.yaml, dart*.yaml, flutter*.yaml, icons_launcher.yaml, devtools_options.yaml, l10n.yaml",
-    ".gitignore": ".gitattributes, .gitmodules, .gitmessage, .mailmap, .git-blame*",
+    "mise.toml": "mise.lock",
+    "pubspec.yaml": ".flutter-plugins, .packages, .dart_tool, .flutter-plugins-dependencies, .metadata, .packages, pubspec.lock, build.yaml, analysis_options.yaml, all_lint_rules.yaml, dart*.yaml, flutter*.yaml, icons_launcher.yaml, devtools_options.yaml, l10n.yaml, codecov.yml, log.pana.json",
+    ".gitignore": ".gitattributes, .gitmodules, .gitmessage, .mailmap, .git-blame*, .pubignore",
+    "build.gradle": "settings.gradle, gradle.properties, gradle-wrapper.properties, local.properties, proguard-rules.pro",
+    "*.podspec": "Package.swift, Package.resolved",
     "readme*": "authors, backers.md, changelog*, citation*, code_of_conduct.md, codeowners, contributing.md, contributors, copying, credits, governance.md, history.md, license*, maintainers, readme*, security.md, sponsors.md",
     "*.dart": "$(capture).g.dart, $(capture).gr.dart, $(capture).freezed.dart, $(capture).config.dart, $(capture).mocks.dart, $(capture).router.dart, $(capture).locator.dart, $(capture)_skeleton.dart"
   },

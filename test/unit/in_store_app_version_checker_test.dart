@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:mockito/mockito.dart';
 
+import '../util/fixtures.dart';
 import '../util/mocks.mocks.dart';
 
 void main() {
@@ -45,7 +46,7 @@ void main() {
         debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
         when(mockHttpClient.get(any)).thenAnswer(
           (_) async => http.Response(
-            '{"results":[{"version":"1.2.3","trackViewUrl":"https://apps.apple.com/app/id123"}]}',
+            '{"results":[{"bundleId":"test.app","version":"1.2.3","trackViewUrl":"https://apps.apple.com/app/id123"}]}',
             200,
           ),
         );
@@ -85,11 +86,11 @@ void main() {
         expect(r.canUpdate, isFalse);
       });
 
-      test('trackViewUrl null -> "null" string (bug reproduced)', () async {
+      test('trackViewUrl null stays null', () async {
         debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
         when(mockHttpClient.get(any)).thenAnswer(
           (_) async => http.Response(
-            '{"results":[{"version":"2.0.0","trackViewUrl":null}]}',
+            '{"results":[{"bundleId":"test.app","version":"2.0.0","trackViewUrl":null}]}',
             200,
           ),
         );
@@ -97,20 +98,25 @@ void main() {
           httpClient: mockHttpClient,
         ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
         expect(r.newVersion, '2.0.0');
-        expect(r.appURL, 'null');
+        expect(r.isSuccess, isTrue);
+        expect(r.appURL, isNull);
         expect(r.canUpdate, isTrue);
       });
 
-      test('missing trackViewUrl key -> "null" (bug reproduced)', () async {
+      test('missing trackViewUrl stays null', () async {
         debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
         when(mockHttpClient.get(any)).thenAnswer(
-          (_) async => http.Response('{"results":[{"version":"3.0.0"}]}', 200),
+          (_) async => http.Response(
+            '{"results":[{"bundleId":"test.app","version":"3.0.0"}]}',
+            200,
+          ),
         );
         final r = await InStoreAppVersionChecker.instanceFor(
           httpClient: mockHttpClient,
         ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
         expect(r.newVersion, '3.0.0');
-        expect(r.appURL, 'null');
+        expect(r.isSuccess, isTrue);
+        expect(r.appURL, isNull);
         expect(r.canUpdate, isTrue);
       });
 
@@ -139,7 +145,7 @@ void main() {
     });
 
     group('Play Store (HTML + fallback, shared mock)', () {
-      test('primary regex match', () async {
+      test('identified HTML listing version', () async {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
         when(
           mockHttpClient.get(
@@ -147,7 +153,9 @@ void main() {
               isA<Uri>().having((u) => u.host, 'host', 'play.google.com'),
             ),
           ),
-        ).thenAnswer((_) async => http.Response(',[[["3.2.1"]],', 200));
+        ).thenAnswer(
+          (_) async => http.Response(googlePlayListing('3.2.1'), 200),
+        );
         final r = await InStoreAppVersionChecker.instanceFor(
           httpClient: mockHttpClient,
         ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
@@ -155,7 +163,7 @@ void main() {
         expect(r.canUpdate, isTrue);
       });
 
-      test('secondary regex match', () async {
+      test('an arbitrary quoted version is not listing metadata', () async {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
         when(
           mockHttpClient.get(any),
@@ -163,8 +171,9 @@ void main() {
         final r = await InStoreAppVersionChecker.instanceFor(
           httpClient: mockHttpClient,
         ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
-        expect(r.newVersion, '5.4.3');
-        expect(r.canUpdate, isTrue);
+        expect(r.isError, isTrue);
+        expect(r.newVersion, isNull);
+        expect(r.canUpdate, isFalse);
       });
 
       test('no match -> fallback API success', () async {
@@ -190,7 +199,7 @@ void main() {
         expect(r.canUpdate, isTrue);
       });
 
-      test('fallback API missing version -> success null newVersion', () async {
+      test('fallback API missing version -> error', () async {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
         when(
           mockHttpClient.get(
@@ -209,7 +218,8 @@ void main() {
         final r = await InStoreAppVersionChecker.instanceFor(
           httpClient: mockHttpClient,
         ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
-        expect(r.isSuccess, isTrue);
+        expect(r.isError, isTrue);
+        expect(r.error, isA<FormatException>());
         expect(r.newVersion, isNull);
         expect(r.canUpdate, isFalse);
       });
@@ -305,7 +315,7 @@ void main() {
         expect(r.canUpdate, isFalse);
       });
 
-      test('parse fail -> success null newVersion', () async {
+      test('parse fail -> error', () async {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
         when(
           mockHttpClient.get(any),
@@ -319,7 +329,8 @@ void main() {
                 androidStore: InStoreAppVersionCheckerAndroidStoreType.apkPure,
               ),
             );
-        expect(r.isSuccess, isTrue);
+        expect(r.isError, isTrue);
+        expect(r.error, isA<FormatException>());
         expect(r.newVersion, isNull);
         expect(r.canUpdate, isFalse);
       });
@@ -362,7 +373,7 @@ void main() {
         debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
         when(mockHttpClient.get(any)).thenAnswer(
           (_) async => http.Response(
-            '{"results":[{"version":"2.0.0","trackViewUrl":"https://x"}]}',
+            '{"results":[{"bundleId":"custom.pkg","version":"2.0.0","trackViewUrl":"https://x"}]}',
             200,
           ),
         );
@@ -394,9 +405,9 @@ void main() {
 
       test('custom factory forwards custom client', () async {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
-        when(
-          mockHttpClient.get(any),
-        ).thenAnswer((_) async => http.Response(',[[["1.0.1"]],', 200));
+        when(mockHttpClient.get(any)).thenAnswer(
+          (_) async => http.Response(googlePlayListing('1.0.1'), 200),
+        );
 
         final result = await InStoreAppVersionChecker.custom(
           httpClient: mockHttpClient,
@@ -425,7 +436,7 @@ void main() {
         var first = true;
         when(mockHttpClient.get(any)).thenAnswer(
           (_) async =>
-              http.Response(first ? ',[[["1.0.1"]],' : ',[[["1.0.2"]],', 200),
+              http.Response(googlePlayListing(first ? '1.0.1' : '1.0.2'), 200),
         );
         final checker = InStoreAppVersionChecker.instanceFor(
           httpClient: mockHttpClient,
@@ -524,11 +535,11 @@ void main() {
           );
       test(
         'pre -> release',
-        () => expect(s('1.0.0-beta', '1.0.0').canUpdate, isFalse),
+        () => expect(s('1.0.0-beta', '1.0.0').canUpdate, isTrue),
       );
       test(
         'release -> pre',
-        () => expect(s('1.0.0', '1.0.0-beta').canUpdate, isTrue),
+        () => expect(s('1.0.0', '1.0.0-beta').canUpdate, isFalse),
       );
       test(
         'alpha -> beta',
@@ -662,7 +673,7 @@ void main() {
         expect(a == b, isFalse);
       });
 
-      test('error responses only message differs -> equal', () {
+      test('error responses only message differs -> not equal', () {
         const a = InStoreAppVersionCheckerResponse.error(
           currentVersion: '1.0.0',
           newVersion: '1.1.0',
@@ -673,8 +684,7 @@ void main() {
           newVersion: '1.1.0',
           errorMessage: 'B',
         );
-        expect(a, equals(b));
-        expect(a.hashCode, b.hashCode);
+        expect(a, isNot(equals(b)));
       });
     });
 
@@ -759,11 +769,11 @@ void main() {
       });
 
       group('Apple Store additional parsing cases', () {
-        test('trackViewUrl empty string stays empty', () async {
+        test('trackViewUrl empty string becomes null', () async {
           debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
           when(mockHttpClient.get(any)).thenAnswer(
             (_) async => http.Response(
-              '{"results":[{"version":"1.0.1","trackViewUrl":""}]}',
+              '{"results":[{"bundleId":"test.app","version":"1.0.1","trackViewUrl":""}]}',
               200,
             ),
           );
@@ -771,22 +781,24 @@ void main() {
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'us'));
           expect(res.newVersion, '1.0.1');
-          expect(res.appURL, '');
+          expect(res.isSuccess, isTrue);
+          expect(res.appURL, isNull);
           expect(res.canUpdate, isTrue);
         });
 
-        test('trackViewUrl whitespace preserved', () async {
+        test('trackViewUrl whitespace becomes null', () async {
           debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
           when(mockHttpClient.get(any)).thenAnswer(
             (_) async => http.Response(
-              '{"results":[{"version":"1.0.2","trackViewUrl":"   "}]}',
+              '{"results":[{"bundleId":"test.app","version":"1.0.2","trackViewUrl":"   "}]}',
               200,
             ),
           );
           final res = await InStoreAppVersionChecker.instanceFor(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'us'));
-          expect(res.appURL, '   ');
+          expect(res.isSuccess, isTrue);
+          expect(res.appURL, isNull);
           expect(res.canUpdate, isTrue);
         });
 
@@ -794,7 +806,7 @@ void main() {
           debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
           when(mockHttpClient.get(any)).thenAnswer(
             (_) async => http.Response(
-              '{"results":[{"version":"1.0.0+42","trackViewUrl":"https://x"}]}',
+              '{"results":[{"bundleId":"test.app","version":"1.0.0+42","trackViewUrl":"https://x"}]}',
               200,
             ),
           );
@@ -817,7 +829,7 @@ void main() {
             debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
             when(mockHttpClient.get(any)).thenAnswer(
               (_) async => http.Response(
-                '{"results":[{"version":"2025.11","trackViewUrl":"https://x"}]}',
+                '{"results":[{"bundleId":"test.app","version":"2025.11","trackViewUrl":"https://x"}]}',
                 200,
               ),
             );
@@ -836,8 +848,8 @@ void main() {
         );
       });
 
-      group('Play Store HTML regex edge cases', () {
-        test('HTML only secondary regex used when primary absent', () async {
+      group('Play Store HTML parsing edge cases', () {
+        test('rejects arbitrary quoted versions in HTML', () async {
           debugDefaultTargetPlatformOverride = TargetPlatform.android;
           when(
             mockHttpClient.get(any),
@@ -845,15 +857,16 @@ void main() {
           final res = await InStoreAppVersionChecker.instanceFor(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
-          expect(res.newVersion, '2.3.4');
-          expect(res.canUpdate, isTrue);
+          expect(res.isError, isTrue);
+          expect(res.newVersion, isNull);
+          expect(res.canUpdate, isFalse);
         });
 
-        test('Primary regex with commas returns raw captured string', () async {
+        test('identified version names are not restricted to SemVer', () async {
           debugDefaultTargetPlatformOverride = TargetPlatform.android;
-          when(
-            mockHttpClient.get(any),
-          ).thenAnswer((_) async => http.Response(',[[["3,2,1"]],', 200));
+          when(mockHttpClient.get(any)).thenAnswer(
+            (_) async => http.Response(googlePlayListing('3,2,1'), 200),
+          );
           final res = await InStoreAppVersionChecker.instanceFor(
             httpClient: mockHttpClient,
           ).checkUpdate(const InStoreAppVersionCheckerParams(locale: 'en'));
@@ -895,41 +908,40 @@ void main() {
           expect(res.canUpdate, isTrue);
         });
 
-        test(
-          'No HTML match and API missing version -> newVersion null',
-          () async {
-            debugDefaultTargetPlatformOverride = TargetPlatform.android;
-            when(
-              mockHttpClient.get(
-                argThat(
-                  isA<Uri>().having((u) => u.host, 'host', 'play.google.com'),
+        test('No HTML match and API missing version -> error', () async {
+          debugDefaultTargetPlatformOverride = TargetPlatform.android;
+          when(
+            mockHttpClient.get(
+              argThat(
+                isA<Uri>().having((u) => u.host, 'host', 'play.google.com'),
+              ),
+            ),
+          ).thenAnswer((_) async => http.Response('<html>none</html>', 200));
+          when(
+            mockHttpClient.get(
+              argThat(
+                isA<Uri>().having(
+                  (u) => u.host,
+                  'host',
+                  'api.playstoreapi.com',
                 ),
               ),
-            ).thenAnswer((_) async => http.Response('<html>none</html>', 200));
-            when(
-              mockHttpClient.get(
-                argThat(
-                  isA<Uri>().having(
-                    (u) => u.host,
-                    'host',
-                    'api.playstoreapi.com',
-                  ),
+            ),
+          ).thenAnswer((_) async => http.Response('{"name":"App"}', 200));
+          final res =
+              await InStoreAppVersionChecker.instanceFor(
+                httpClient: mockHttpClient,
+              ).checkUpdate(
+                const InStoreAppVersionCheckerParams(
+                  locale: 'en',
+                  currentVersion: '1.0.0',
                 ),
-              ),
-            ).thenAnswer((_) async => http.Response('{"name":"App"}', 200));
-            final res =
-                await InStoreAppVersionChecker.instanceFor(
-                  httpClient: mockHttpClient,
-                ).checkUpdate(
-                  const InStoreAppVersionCheckerParams(
-                    locale: 'en',
-                    currentVersion: '1.0.0',
-                  ),
-                );
-            expect(res.newVersion, isNull);
-            expect(res.canUpdate, isFalse);
-          },
-        );
+              );
+          expect(res.isError, isTrue);
+          expect(res.error, isA<FormatException>());
+          expect(res.newVersion, isNull);
+          expect(res.canUpdate, isFalse);
+        });
       });
 
       group('Play Store fallback API error path', () {
@@ -1071,7 +1083,7 @@ void main() {
           int calls = 0;
           when(mockHttpClient.get(any)).thenAnswer((_) async {
             calls++;
-            return http.Response(',[[["1.0.$calls"]],', 200);
+            return http.Response(googlePlayListing('1.0.$calls'), 200);
           });
           final checker = InStoreAppVersionChecker.instanceFor(
             httpClient: mockHttpClient,
@@ -1088,9 +1100,9 @@ void main() {
         });
 
         test('Mixed platform switches (sequential)', () async {
-          when(
-            mockHttpClient.get(any),
-          ).thenAnswer((_) async => http.Response(',[[["2.0.0"]],', 200));
+          when(mockHttpClient.get(any)).thenAnswer(
+            (_) async => http.Response(googlePlayListing('2.0.0'), 200),
+          );
           debugDefaultTargetPlatformOverride = TargetPlatform.android;
           final androidRes =
               await InStoreAppVersionChecker.instanceFor(
@@ -1106,7 +1118,7 @@ void main() {
           debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
           when(mockHttpClient.get(any)).thenAnswer(
             (_) async => http.Response(
-              '{"results":[{"version":"3.0.0","trackViewUrl":"https://x"}]}',
+              '{"results":[{"bundleId":"test.app","version":"3.0.0","trackViewUrl":"https://x"}]}',
               200,
             ),
           );
@@ -1157,7 +1169,7 @@ void main() {
           when(mockHttpClient.get(any)).thenAnswer((invocation) async {
             captured = invocation.positionalArguments.first as Uri;
             return http.Response(
-              '{"results":[{"version":"1.1.0","trackViewUrl":"https://x"}]}',
+              '{"results":[{"bundleId":"test.app","version":"1.1.0","trackViewUrl":"https://x"}]}',
               200,
             );
           });
@@ -1172,7 +1184,7 @@ void main() {
           late Uri captured;
           when(mockHttpClient.get(any)).thenAnswer((invocation) async {
             captured = invocation.positionalArguments.first as Uri;
-            return http.Response(',[[["1.0.1"]],', 200);
+            return http.Response(googlePlayListing('1.0.1'), 200);
           });
           await InStoreAppVersionChecker.instanceFor(
             httpClient: mockHttpClient,
@@ -1221,10 +1233,9 @@ void main() {
           expect(canUpdate, anyOf(isTrue, isFalse)); // placeholder flexibility
         });
 
-        test('release vs release-0 (current treats -0 as pre-release)', () {
+        test('release vs release-0 does not update to a pre-release', () {
           final canUpdate = r('1.0.0', '1.0.0-0').canUpdate;
-          // Provide explicit check: most logic counts release -> pre as update.
-          expect(canUpdate, isTrue);
+          expect(canUpdate, isFalse);
         });
       });
 
