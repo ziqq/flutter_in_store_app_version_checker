@@ -6,112 +6,86 @@
 import 'dart:convert';
 
 import 'package:flutter_in_store_app_version_checker/src/constants.dart';
-import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_response.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_exception.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_interface.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_request.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
-/// Checks published application versions through the Apple iTunes lookup API.
+/// Reads published application versions through the Apple iTunes lookup API.
 @internal
-final class AppleAppStore {
+final class Store$AppStore implements IStore {
   /// Creates an Apple App Store client.
-  const AppleAppStore(this._httpClient);
+  const Store$AppStore(this._httpClient);
 
   final http.Client _httpClient;
 
-  /// Checks the App Store storefront selected by [locale] for [packageName].
-  Future<InStoreAppVersionCheckerResponse> checkUpdate(
-    String currentVersion,
-    String packageName,
-    String locale,
+  @override
+  String get name => 'Apple App Store';
+
+  /// Reads the listing of `packageName` in the storefront selected by `locale`.
+  @override
+  Future<({String? version, String? appURL})> fetchListing(
+    StoreRequest request,
   ) async {
-    String? newVersion, url;
-    try {
-      final countryCode = _resolveCountry(locale);
-      final uri = Uri.https(
-        'itunes.apple.com',
-        '/$countryCode/lookup',
-        <String, Object?>{
+    final StoreRequest(:packageName, :locale) = request;
+    final countryCode = _resolveCountry(locale);
+    final uri =
+        Uri.https('itunes.apple.com', '/$countryCode/lookup', <String, Object?>{
           'bundleId': packageName,
           '_ts': DateTime.now().toUtc().millisecondsSinceEpoch.toString(),
-        },
-      );
-      final response = await _httpClient
-          .get(uri)
-          .timeout(const Duration(seconds: 15));
-      if (response.statusCode != 200) {
-        final countryGuidance = response.statusCode == 400
-            ? ' Check the storefront country code. Use a regional locale '
-                  'such as "en-US" or a country code such as "us"; '
-                  'a language such as "en" does not identify a storefront.'
-            : '';
-        return InStoreAppVersionCheckerResponse.error(
-          currentVersion: currentVersion,
-          newVersion: newVersion,
-          appURL: url,
-          stackTrace: StackTrace.current,
-          errorMessage:
-              'Apple Store lookup failed (HTTP ${response.statusCode}) '
-              'for bundle ID "$packageName" in storefront "$countryCode" '
-              '(locale: "$locale").$countryGuidance',
-        );
-      } else {
-        final results = switch (jsonDecode(response.body)) {
-          {'results': List<Object?> results} => results,
-          _ => throw const FormatException(
-            'Apple Store returned invalid results.',
-          ),
-        };
-
-        if (results.isEmpty) {
-          return InStoreAppVersionCheckerResponse.error(
-            currentVersion: currentVersion,
-            newVersion: newVersion,
-            appURL: url,
-            stackTrace: StackTrace.current,
-            errorMessage:
-                'App "$packageName" was not found in the Apple Store '
-                'storefront "$countryCode" (locale: "$locale"). '
-                'Check the bundle ID and availability in this storefront.',
-          );
-        } else {
-          final listing = results.whereType<Map<String, Object?>>().where(
-            (item) => item['bundleId'] == packageName,
-          );
-          if (listing.isEmpty) {
-            throw FormatException(
-              'Apple Store results do not contain bundle ID "$packageName".',
-            );
-          }
-          final app = listing.first;
-          if (app['version'] case String version
-              when version.trim().isNotEmpty) {
-            newVersion = version.trim();
-          } else {
-            throw const FormatException(
-              'Apple Store listing does not contain a version.',
-            );
-          }
-          if (app['trackViewUrl'] case String appURL
-              when appURL.trim().isNotEmpty) {
-            url = appURL.trim();
-          }
-          return InStoreAppVersionCheckerResponse.success(
-            currentVersion: currentVersion,
-            newVersion: newVersion,
-            appURL: url,
-          );
-        }
-      }
-    } on Object catch (e, st) {
-      return InStoreAppVersionCheckerResponse.error(
-        currentVersion: currentVersion,
-        newVersion: newVersion,
-        appURL: url,
-        error: e,
-        stackTrace: st,
-        errorMessage: e.toString(),
+        });
+    final response = await _httpClient
+        .get(uri)
+        .timeout(const Duration(seconds: 15));
+    if (response.statusCode != 200) {
+      final countryGuidance = response.statusCode == 400
+          ? ' Check the storefront country code. Use a regional locale '
+                'such as "en-US" or a country code such as "us"; '
+                'a language such as "en" does not identify a storefront.'
+          : '';
+      throw AppStoreException(
+        message:
+            'Apple Store lookup failed (HTTP ${response.statusCode}) '
+            'for bundle ID "$packageName" in storefront "$countryCode" '
+            '(locale: "$locale").$countryGuidance',
       );
     }
+
+    final results = switch (jsonDecode(response.body)) {
+      {'results': List<Object?> results} => results,
+      _ => throw const FormatException('Apple Store returned invalid results.'),
+    };
+    if (results.isEmpty) {
+      throw AppStoreException(
+        message:
+            'App "$packageName" was not found in the Apple Store '
+            'storefront "$countryCode" (locale: "$locale"). '
+            'Check the bundle ID and availability in this storefront.',
+      );
+    }
+
+    final app = results
+        .whereType<Map<String, Object?>>()
+        .where((item) => item['bundleId'] == packageName)
+        .firstOrNull;
+    if (app == null) {
+      throw FormatException(
+        'Apple Store results do not contain bundle ID "$packageName".',
+      );
+    }
+    return (
+      version: switch (app['version']) {
+        String version when version.trim().isNotEmpty => version.trim(),
+        _ => throw const FormatException(
+          'Apple Store listing does not contain a version.',
+        ),
+      },
+      appURL: switch (app['trackViewUrl']) {
+        String appURL when appURL.trim().isNotEmpty => appURL.trim(),
+        _ => null,
+      },
+    );
   }
 
   static String _resolveCountry(String locale) {
