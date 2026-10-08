@@ -6,26 +6,31 @@
 import 'dart:convert';
 
 import 'package:flutter_in_store_app_version_checker/src/constants.dart';
-import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_response.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/app_store.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
-/// Checks published application versions on Google Play, falling back to
+/// Reads published application versions on Google Play, falling back to
 /// the third-party PlayStoreApi when the web listing cannot be read.
 @internal
-final class GooglePlayStore {
+final class AppStore$GooglePlay implements AppStore {
   /// Creates a Google Play client.
-  const GooglePlayStore(this._httpClient);
+  const AppStore$GooglePlay(this._httpClient);
 
   final http.Client _httpClient;
 
-  /// Checks the Google Play listing of [packageName] in [locale].
-  Future<InStoreAppVersionCheckerResponse> checkUpdate(
-    String currentVersion,
-    String packageName,
-    String locale,
+  @override
+  String get name => 'Google Play';
+
+  /// Reads the Google Play listing of `packageName` in `locale`.
+  ///
+  /// Failures after the primary lookup are reported together with the
+  /// primary lookup error.
+  @override
+  Future<({String? version, String? appURL})> fetchListing(
+    AppStoreRequest request,
   ) async {
-    String? newVersion, url;
+    final AppStoreRequest(:packageName, :locale) = request;
     Object? primaryError;
     try {
       final uri =
@@ -40,13 +45,8 @@ final class GooglePlayStore {
             .get(uri)
             .timeout(const Duration(seconds: 15));
         if (response.statusCode == 200) {
-          newVersion = _parseVersion(response.body, packageName);
-          if (newVersion != null) {
-            return InStoreAppVersionCheckerResponse.success(
-              currentVersion: currentVersion,
-              newVersion: newVersion,
-              appURL: uri.toString(),
-            );
+          if (_parseVersion(response.body, packageName) case String version) {
+            return (version: version, appURL: uri.toString());
           }
           primaryError = const FormatException(
             'Google Play listing does not contain a version.',
@@ -65,48 +65,32 @@ final class GooglePlayStore {
         'api.playstoreapi.com',
         '/v1.2/apps/$packageName',
       );
-
       final apiResponse = await _httpClient
           .get(apiUri)
           .timeout(const Duration(seconds: 15));
-
-      if (apiResponse.statusCode == 200) {
-        final Object? data = jsonDecode(apiResponse.body);
-        if (data case {
-          'version': String version,
-        } when version.trim().isNotEmpty) {
-          newVersion = version.trim();
-        } else {
-          throw const FormatException(
-            'PlayStoreApi response does not contain a version.',
-          );
-        }
-        url = 'https://play.google.com/store/apps/details?id=$packageName';
-        return InStoreAppVersionCheckerResponse.success(
-          currentVersion: currentVersion,
-          newVersion: newVersion,
-          appURL: url,
-        );
-      } else {
-        return InStoreAppVersionCheckerResponse.error(
-          currentVersion: currentVersion,
-          newVersion: newVersion,
-          appURL: url,
-          stackTrace: StackTrace.current,
-          errorMessage:
-              'PlayStoreApi error: ${apiResponse.statusCode} '
-              '${apiResponse.reasonPhrase}. '
-              'Google Play lookup: $primaryError',
+      if (apiResponse.statusCode != 200) {
+        throw AppStoreLookupException(
+          'PlayStoreApi error: ${apiResponse.statusCode} '
+          '${apiResponse.reasonPhrase}. '
+          'Google Play lookup: $primaryError',
         );
       }
-    } on Object catch (e, st) {
-      return InStoreAppVersionCheckerResponse.error(
-        currentVersion: currentVersion,
-        newVersion: newVersion,
-        appURL: url,
-        error: e,
-        stackTrace: st,
-        errorMessage: '$e Google Play lookup: $primaryError',
+      return (
+        version: switch (jsonDecode(apiResponse.body)) {
+          {'version': String version} when version.trim().isNotEmpty =>
+            version.trim(),
+          _ => throw const FormatException(
+            'PlayStoreApi response does not contain a version.',
+          ),
+        },
+        appURL: 'https://play.google.com/store/apps/details?id=$packageName',
+      );
+    } on AppStoreLookupException {
+      rethrow;
+    } on Object catch (error) {
+      throw AppStoreLookupException(
+        '$error Google Play lookup: $primaryError',
+        cause: error,
       );
     }
   }

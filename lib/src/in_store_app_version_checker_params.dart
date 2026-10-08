@@ -42,8 +42,7 @@ class InStoreAppVersionCheckerParams {
     this.packageName,
     this.storeID,
     this.currentVersion,
-    this.androidStore =
-        InStoreAppVersionCheckerAndroidStoreType.googlePlayStore,
+    this.androidStore = .googlePlayStore,
   });
 
   /// The locale used for store requests, for example `en-US` or `zh-Hant-TW`.

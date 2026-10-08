@@ -6,65 +6,47 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_response.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/app_store.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
 /// Reads public AppGallery listing data through the AppGallery web client API.
 @internal
-final class AppGalleryWebStore {
+final class AppStore$AppGalleryWeb implements AppStore {
   /// Creates an AppGallery web store client.
-  const AppGalleryWebStore(this._httpClient);
+  const AppStore$AppGalleryWeb(this._httpClient);
 
   static const _host = 'web-dre.hispace.dbankcloud.com';
   static const _timeout = Duration(seconds: 15);
+  static final _storeIDPattern = RegExp(r'^C\d+$');
 
   final http.Client _httpClient;
 
-  /// Checks an arbitrary AppGallery listing identified by [storeID].
-  Future<InStoreAppVersionCheckerResponse> checkUpdate({
-    required String currentVersion,
-    required String locale,
-    required String? storeID,
-    String? expectedPackageName,
-  }) async {
-    String? newVersion, url;
-    try {
-      final resolvedStoreID = storeID?.trim();
-      if (resolvedStoreID == null ||
-          !RegExp(r'^C\d+$').hasMatch(resolvedStoreID)) {
-        throw FormatException(
-          'AppGallery web checks require storeID in the format "C107631977".',
-          storeID,
-        );
-      }
+  @override
+  String get name => 'AppGallery';
 
-      final listing = await getListing(
-        storeID: resolvedStoreID,
-        locale: locale,
-        expectedPackageName: expectedPackageName,
-      );
-      newVersion = listing.version;
-      url = listing.appURL;
-      return InStoreAppVersionCheckerResponse.success(
-        currentVersion: currentVersion,
-        newVersion: newVersion,
-        appURL: url,
-      );
-    } on Object catch (error, stackTrace) {
-      return InStoreAppVersionCheckerResponse.error(
-        currentVersion: currentVersion,
-        newVersion: newVersion,
-        appURL: url,
-        error: error,
-        stackTrace: stackTrace,
-        errorMessage: error.toString(),
-      );
-    }
+  /// Reads an arbitrary AppGallery listing identified by `storeID`.
+  @override
+  Future<({String? version, String? appURL})> fetchListing(
+    AppStoreRequest request,
+  ) async {
+    final storeID = switch (request.storeID?.trim()) {
+      String storeID when _storeIDPattern.hasMatch(storeID) => storeID,
+      _ => throw FormatException(
+        'AppGallery web checks require storeID in the format "C107631977".',
+        request.storeID,
+      ),
+    };
+    final listing = await _getListing(
+      storeID: storeID,
+      locale: request.locale,
+      expectedPackageName: request.expectedPackageName,
+    );
+    return (version: listing.version, appURL: listing.appURL);
   }
 
   /// Returns the published version and package for [storeID].
-  Future<({String appURL, String packageName, String version})> getListing({
+  Future<({String appURL, String packageName, String version})> _getListing({
     required String storeID,
     required String locale,
     String? expectedPackageName,

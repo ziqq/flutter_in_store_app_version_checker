@@ -5,15 +5,15 @@
 
 import 'dart:convert';
 
-import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_response.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/app_store.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
 /// Reads published application versions from public RuStore catalog pages.
 @internal
-final class RuStore {
+final class AppStore$RuStore implements AppStore {
   /// Creates a RuStore client.
-  const RuStore(this._httpClient);
+  const AppStore$RuStore(this._httpClient);
 
   static const _timeout = Duration(seconds: 15);
   static final _jsonLDPattern = RegExp(
@@ -24,35 +24,20 @@ final class RuStore {
 
   final http.Client _httpClient;
 
-  /// Checks the RuStore catalog page of [packageName].
-  Future<InStoreAppVersionCheckerResponse> checkUpdate(
-    String currentVersion,
-    String packageName,
+  @override
+  String get name => 'RuStore';
+
+  /// Reads the RuStore catalog page of `packageName`.
+  @override
+  Future<({String? version, String? appURL})> fetchListing(
+    AppStoreRequest request,
   ) async {
-    String? newVersion, url;
-    try {
-      final listing = await getListing(packageName);
-      newVersion = listing.version;
-      url = listing.appURL;
-      return InStoreAppVersionCheckerResponse.success(
-        currentVersion: currentVersion,
-        newVersion: newVersion,
-        appURL: url,
-      );
-    } on Object catch (error, stackTrace) {
-      return InStoreAppVersionCheckerResponse.error(
-        currentVersion: currentVersion,
-        newVersion: newVersion,
-        appURL: url,
-        error: error,
-        stackTrace: stackTrace,
-        errorMessage: error.toString(),
-      );
-    }
+    final listing = await _getListing(request.packageName);
+    return (version: listing.version, appURL: listing.appURL);
   }
 
   /// Returns the version published for [packageName].
-  Future<({String appURL, String version})> getListing(
+  Future<({String appURL, String version})> _getListing(
     String packageName,
   ) async {
     final uri = Uri.https('www.rustore.ru', '/catalog/app/$packageName');
