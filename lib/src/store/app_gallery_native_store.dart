@@ -4,14 +4,15 @@
  */
 
 import 'package:flutter/services.dart' show MethodChannel, PlatformException;
-import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_response.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_interface.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_request.dart';
 import 'package:meta/meta.dart';
 
 /// Checks the installed Android application through Huawei `AppUpdateClient`.
 @internal
-final class AppGalleryNativeStore {
+final class Store$AppGalleryNative implements IStore {
   /// Creates an AppGallery native client.
-  const AppGalleryNativeStore();
+  const Store$AppGalleryNative();
 
   static const _channel = MethodChannel(
     'github.com/ziqq/instoreappversionchecker/app_metadata',
@@ -22,57 +23,45 @@ final class AppGalleryNativeStore {
   static Future<({String? packageName, String? storeID, String? version})>?
   _pendingCheck;
 
+  @override
+  String get name => 'AppGallery native';
+
   /// Checks AppGallery for an update to the installed application.
-  Future<InStoreAppVersionCheckerResponse> checkUpdate({
-    required String currentPackageName,
-    required String currentVersion,
-    required bool hasOverrides,
-  }) async {
-    String? newVersion, url;
-    try {
-      if (hasOverrides) {
-        throw ArgumentError(
-          'AppGallery native checks do not support packageName or '
-          'currentVersion overrides.',
-        );
-      }
+  ///
+  /// Returns a `null` version when Huawei reports that no update exists.
+  @override
+  Future<({String? version, String? appURL})> fetchListing(
+    StoreRequest request,
+  ) async {
+    if (request.hasOverrides) {
+      throw ArgumentError(
+        'AppGallery native checks do not support packageName or '
+        'currentVersion overrides.',
+      );
+    }
 
-      final result = await (_pendingCheck ??= _invokeNative().whenComplete(() {
-        _pendingCheck = null;
-      }));
-      if (result.packageName != null &&
-          result.packageName != currentPackageName) {
-        throw StateError(
-          'Huawei AppUpdateClient returned package "${result.packageName}" '
-          'for installed package "$currentPackageName".',
-        );
-      }
-
-      newVersion = result.version;
-      final storeID = result.storeID;
-      if (storeID != null) {
-        url = Uri(
+    final result = await (_pendingCheck ??= _invokeNative().whenComplete(() {
+      _pendingCheck = null;
+    }));
+    if (result.packageName case String packageName
+        when packageName != request.packageName) {
+      throw StateError(
+        'Huawei AppUpdateClient returned package "$packageName" '
+        'for installed package "${request.packageName}".',
+      );
+    }
+    return (
+      version: result.version,
+      appURL: switch (result.storeID) {
+        String storeID => Uri(
           scheme: 'https',
           host: 'appgallery.huawei.com',
           path: '/',
           fragment: '/app/$storeID',
-        ).toString();
-      }
-      return InStoreAppVersionCheckerResponse.success(
-        currentVersion: currentVersion,
-        newVersion: newVersion,
-        appURL: url,
-      );
-    } on Object catch (error, stackTrace) {
-      return InStoreAppVersionCheckerResponse.error(
-        currentVersion: currentVersion,
-        newVersion: newVersion,
-        appURL: url,
-        error: error,
-        stackTrace: stackTrace,
-        errorMessage: error.toString(),
-      );
-    }
+        ).toString(),
+        null => null,
+      },
+    );
   }
 
   static Future<({String? packageName, String? storeID, String? version})>

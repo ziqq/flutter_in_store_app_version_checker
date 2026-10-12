@@ -13,6 +13,9 @@ import 'package:flutter_in_store_app_version_checker/src/store/app_gallery_web_s
 import 'package:flutter_in_store_app_version_checker/src/store/apple_app_store.dart';
 import 'package:flutter_in_store_app_version_checker/src/store/google_play_store.dart';
 import 'package:flutter_in_store_app_version_checker/src/store/ru_store.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_extension.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_interface.dart';
+import 'package:flutter_in_store_app_version_checker/src/store/store_request.dart';
 import 'package:flutter_in_store_app_version_checker/src/util/app_metadata.dart';
 import 'package:http/http.dart' as http;
 
@@ -72,40 +75,36 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
         ),
         _ => await AppMetadata.fromPlatform(),
       };
-      final packageName = params.packageName ?? appMetadata.packageName;
-      final currentVersion = params.currentVersion ?? appMetadata.version;
-      return await switch (platform) {
+      // AppGallery native always reports the installed application.
+      final request = StoreRequest(
+        currentVersion: isAppGalleryNative
+            ? appMetadata.version
+            : params.currentVersion ?? appMetadata.version,
+        packageName: isAppGalleryNative
+            ? appMetadata.packageName
+            : params.packageName ?? appMetadata.packageName,
+        locale: params.locale,
+        storeID: params.storeID,
+        expectedPackageName: params.packageName,
+        hasOverrides:
+            params.packageName != null || params.currentVersion != null,
+      );
+      final store = switch (platform) {
         .android => switch (params.androidStore) {
-          .apkPure => ApkPureStore(
-            _httpClient,
-          ).checkUpdate(currentVersion, packageName),
-          .ruStore => RuStore(
-            _httpClient,
-          ).checkUpdate(currentVersion, packageName),
-          .appGallery => AppGalleryWebStore(_httpClient).checkUpdate(
-            currentVersion: currentVersion,
-            expectedPackageName: params.packageName,
-            locale: params.locale,
-            storeID: params.storeID,
-          ),
-          .appGalleryNative => const AppGalleryNativeStore().checkUpdate(
-            currentPackageName: appMetadata.packageName,
-            currentVersion: appMetadata.version,
-            hasOverrides:
-                params.packageName != null || params.currentVersion != null,
-          ),
-          .googlePlayStore => GooglePlayStore(
-            _httpClient,
-          ).checkUpdate(currentVersion, packageName, params.locale),
+          .googlePlayStore => Store$GooglePlay(_httpClient),
+          .apkPure => Store$ApkPure(_httpClient),
+          .ruStore => Store$RuStore(_httpClient),
+          .appGallery => Store$AppGalleryWeb(_httpClient),
+          .appGalleryNative => const Store$AppGalleryNative(),
         },
-        .iOS => AppleAppStore(
-          _httpClient,
-        ).checkUpdate(currentVersion, packageName, params.locale),
-        _ => Future.value(
+        .iOS => Store$AppStore(_httpClient),
+        _ => null,
+      };
+      return await switch (store) {
+        IStore store => store.checkUpdate(request),
+        null => Future.value(
           InStoreAppVersionCheckerResponse.error(
-            currentVersion: currentVersion,
-            newVersion: null,
-            appURL: null,
+            currentVersion: request.currentVersion,
             errorMessage:
                 'This platform is not yet supported by this package. It supports only iOS and Android.',
             stackTrace: StackTrace.current,
