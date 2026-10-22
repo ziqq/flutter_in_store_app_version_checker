@@ -68,15 +68,16 @@ semantic version tag such as `v3.1.0` is pushed. The release is named
 Existing releases are left unchanged, so rerunning the workflow is safe.
 
 The release workflow runs independently from the pub.dev publication workflow.
-Both are triggered by the version tag created and pushed with
-`mise exec -- just tag`.
+Both require the `release` environment and are triggered by the version tag
+created and pushed with `mise exec -- just tag`.
 
 ## Pinned SDK and CI reports
 
 Checkout, Android/iOS builds, and pub.dev validation/publication install tools
-from `mise.toml` and `mise.lock` using `jdx/mise-action`. Dart comes from Flutter;
-the workflows do not independently install a different Dart SDK. Local
-validation runs with `mise exec -- just precommit`.
+from `mise.toml` and `mise.lock` using `jdx/mise-action`. Validation and publication
+use the Dart SDK bundled with Flutter. The OIDC setup step receives that exact
+Dart version, and publication runs through `flutter pub`. Local validation runs
+with `mise exec -- just precommit`.
 
 The Checkout job explicitly uses Bash with `pipefail`, so piping test output
 through `tee` cannot hide a failing test exit code. Test artifacts are uploaded
@@ -88,12 +89,22 @@ creation. No PR head runs with `pull_request_target` privileges.
 
 The repository-local publish workflow preserves the 110-point pana gate and
 requires the exact tag, pubspec version, and first changelog version to match.
-It uses the existing `PUB_CREDENTIAL_JSON` secret with the pinned Dart CLI,
-rather than a Docker publisher that installs a separate SDK. Credentials are
-written only to the ephemeral runner's Dart config with owner-only permissions,
-never printed, and removed after the publication step. No new secret or pub.dev
-account configuration is required. Actual publication is not part of local
-validation; `just publish-check` performs a dry run.
+Publication runs only on pushed version tags. The publish job uses
+`environment: release`, job-scoped `id-token: write`, and SHA-pinned
+`dart-lang/setup-dart` to configure short-lived pub.dev OIDC credentials after
+validation. It no longer reads `PUB_CREDENTIAL_JSON` or the legacy OAuth secrets;
+existing repository secrets are retained.
+
+After merging the workflow changes, configure the GitHub `release` environment
+with reviewer approval and a `v*` tag-only policy. On the package's pub.dev Admin
+page, enable automated publishing from
+`ziqq/flutter_in_store_app_version_checker`, set the tag pattern to
+`v{{version}}`, and require the GitHub environment `release`. Configure branch
+and tag protection separately before creating a release tag. See the
+[pub.dev automated publishing guide](https://dart.dev/tools/pub/automated-publishing).
+
+Actual publication is not part of local validation;
+`just publish-check` performs a dry run.
 
 ## Notifications
 

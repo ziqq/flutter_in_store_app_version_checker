@@ -91,12 +91,12 @@ jobs:
     steps:
       - name: Checkout repository
         id: checkout_repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Check content
         id: check_content
         timeout-minutes: 1
-        uses: andstor/file-existence-action@v2
+        uses: andstor/file-existence-action@20b4d2e596410855db8f9ca21e96fbe18e12930b # v2
         with:
           files: "README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE, example"
 
@@ -109,7 +109,7 @@ jobs:
           grep -q Example README.md
 
       - name: Install pinned toolchain
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4
         id: install_toolchain
         with:
           version: '2026.9.15'
@@ -164,7 +164,7 @@ jobs:
       - name: Upload test report
         id: upload_test_report
         timeout-minutes: 1
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: ${{ !cancelled() && hashFiles('reports/tests.json') != '' }}
         with:
           name: test-results
@@ -178,7 +178,7 @@ jobs:
       - name: Test report
         id: test_report
         timeout-minutes: 1
-        uses: dorny/test-reporter@v2
+        uses: dorny/test-reporter@df6247429542221bc30d46a036ee47af1102c451 # v2
         if: >-
           !cancelled() &&
           steps.upload_test_report.outputs.artifact-id != '' &&
@@ -207,10 +207,10 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Install pinned toolchain
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4
         with:
           version: '2026.9.15'
           install_args: flutter java just
@@ -228,7 +228,7 @@ jobs:
 
       - name: Upload Android native test reports
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: android-native-tests
           path: |
@@ -253,10 +253,10 @@ jobs:
         swift-package-manager: [false, true]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Install pinned toolchain
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4
         with:
           version: '2026.9.15'
           install_args: flutter just ruby cocoapods
@@ -285,7 +285,7 @@ jobs:
 
       - name: Upload iOS native test reports
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ios-native-tests-${{ matrix.swift-package-manager && 'spm' || 'cocoapods' }}
           path: |
