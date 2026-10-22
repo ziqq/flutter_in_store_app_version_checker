@@ -1,7 +1,23 @@
 # Migration guide
 
 
-## Unreleased
+## 4.0.0
+
+### Android store selection
+
+`InStoreAppVersionCheckerAndroidStoreType` adds `ruStore`, `appGallery`, and
+`appGalleryNative`. Update exhaustive `switch` statements and expressions to
+handle these values when upgrading from `3.0.1`.
+
+AppGallery web checks require the optional `storeID` parameter and use an
+undocumented public endpoint. Native checks use Huawei `AppUpdateClient` for
+the installed application, do not support `packageName` or `currentVersion`
+overrides, and compare version names rather than Android `versionCode` values.
+
+The Android plugin now depends on Huawei App Service `6.16.2.300`, including
+when native AppGallery checks are not selected. Projects that enforce
+repositories in `settings.gradle` must allow `https://developer.huawei.com/repo/`
+as shown in the [AppGallery setup](README.md#use-appgallery-for-the-installed-app-official-sdk).
 
 ### ApkPure empty version responses
 
@@ -26,8 +42,8 @@ The plugin class is now
 
 **Most apps need no changes.** Flutter registers the plugin through the
 generated `GeneratedPluginRegistrant`, which picks up the new package
-automatically after `flutter pub get` and a rebuild. The Dart API and the
-method channel name are unchanged.
+automatically after `flutter pub get` and a rebuild. The Dart entry points,
+`checkUpdate` signature, and method channel name are unchanged.
 
 Update your project only if it refers to the old package directly, for example:
 

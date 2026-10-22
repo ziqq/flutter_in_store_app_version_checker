@@ -1,12 +1,17 @@
 # Changelog
 
 
-## Unreleased
+## 4.0.0
+- **ADDED**: RuStore version checks through public catalog JSON-LD ([#20](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/20))
+- **ADDED**: AppGallery web checks for arbitrary applications through the optional `storeID` parameter
+- **ADDED**: Official AppGallery native checks through Huawei `AppUpdateClient`
 - **ADDED**: Native Android and iOS plugin tests with JaCoCo/Swift coverage and separate Dart, Android, and iOS Codecov reports
+- **CHANGED**: Extend `InStoreAppVersionCheckerAndroidStoreType` with `ruStore`, `appGallery`, and `appGalleryNative`; exhaustive switches must handle the new values ([migration guide](MIGRATION.md#android-store-selection))
 - **CHANGED**: Validate package, tool, and example code in CI and build Android and iOS examples with CocoaPods and Swift Package Manager
 - **CHANGED**: Replace FVM and Make with pinned mise toolchains and Just commands for local development, VS Code, CI, publishing, and tagging
 - **CHANGED**: Align documented minimum SDK versions with `pubspec.yaml`
-- **CHANGED**: Rename the Android package, namespace, and Gradle group from `com.flutter.instoreappversionchecker` to `dev.ustinoff.instoreappversionchecker`
+- **CHANGED**: Rename the Android package, namespace, and Gradle group from `com.flutter.instoreappversionchecker` to `dev.ustinoff.instoreappversionchecker` ([migration guide](MIGRATION.md#android-package-renamed))
+- **CHANGED**: Add Huawei App Service `6.16.2.300` and its Maven repository to the Android plugin dependencies
 - **CHANGED**: Move each store check into its own internal class under `lib/src/store/`
 - **CHANGED**: Update Codecov upload action to v5 while preserving the existing token
 - **CHANGED**: Route store checks through an internal `IStore` contract with a single response mapping; preserve error diagnostics and normalize empty ApkPure versions to `null` ([#24](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/24))
