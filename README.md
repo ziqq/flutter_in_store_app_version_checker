@@ -22,12 +22,12 @@ if (res.canUpdate) showUpdateDialog(res.newVersion, res.appURL);
 
 ## Features
 
-- 🔍 **One call** — returns the installed version, the store version, the store URL and whether an update is available.
-- 🏪 **Google Play, RuStore, AppGallery, ApkPure and App Store** out of the box.
-- 🌍 **Regional storefronts** — check the App Store / Google Play for a specific country and language.
-- 🧮 **Semver-aware comparison** — pre-releases, build metadata and `1.2` vs `1.2.0` are handled correctly.
-- 🪶 **Lightweight** — depends only on `http` and `meta`; installed app metadata is read by the plugin's own native code, no `package_info_plus` required.
-- 🧪 **Testable** — inject your own `http.Client`; well covered by unit tests.
+- **One call** — returns the installed version, the store version, the store URL and whether an update is available.
+- **Google Play, RuStore, AppGallery, ApkPure and App Store** out of the box.
+- **Regional storefronts** — check the App Store / Google Play for a specific country and language.
+- **Semver-aware comparison** — pre-releases, build metadata and `1.2` vs `1.2.0` are handled correctly.
+- **Lightweight** — depends only on `http` and `meta`; installed app metadata is read by the plugin's own native code, no `package_info_plus` required.
+- **Testable** — inject your own `http.Client`; well covered by unit tests.
 
 
 ## Getting started
