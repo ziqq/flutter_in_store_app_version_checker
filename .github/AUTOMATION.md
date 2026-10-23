@@ -87,6 +87,14 @@ still run checks/tests and upload reports but cannot create write-token checks.
 Its job-scoped token permits only repository reads, artifact reads, and check
 creation. No PR head runs with `pull_request_target` privileges.
 
+The Checkout workflow runs for every pull request to its configured target
+branches, including documentation-only changes. Its `Repository checks` job
+waits for Checkout, Android build, and both iOS matrix variants. It succeeds
+only when every prerequisite succeeds; failure, cancellation, or a skipped job
+fails the gate. Notifications do not affect this required check. Configure
+`Repository checks` as the required status check after merging this workflow.
+Push-trigger path filters remain unchanged.
+
 The repository-local publish workflow preserves the 110-point pana gate and
 requires the exact tag, pubspec version, and first changelog version to match.
 Publication runs only on pushed version tags. The publish job uses
