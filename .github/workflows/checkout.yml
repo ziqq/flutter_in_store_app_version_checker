@@ -40,23 +40,6 @@ on:
       - "bugfix/**"
       - "hotfix/**"
       - "support/**"
-    paths:
-      - "lib/**.dart"
-      - "test/**.dart"
-      - "example/**.dart"
-      - "android/**"
-      - "ios/**"
-      - "example/android/**"
-      - "example/ios/**"
-      - "tool/**"
-      - .github/workflows/*.yml
-      - "pubspec.yaml"
-      - "example/pubspec.yaml"
-      - "analysis_options.yaml"
-      - "codecov.yml"
-      - "justfile"
-      - "mise.toml"
-      - "mise.lock"
 
 
 concurrency:
@@ -298,6 +281,25 @@ jobs:
           files: ./coverage/ios.lcov.info
           flags: ios
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  repository-checks:
+    name: Repository checks
+    if: ${{ always() }}
+    needs: [checkout, android, ios]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Require all checks to pass
+        env:
+          CHECKOUT_RESULT: ${{ needs.checkout.result }}
+          ANDROID_RESULT: ${{ needs.android.result }}
+          IOS_RESULT: ${{ needs.ios.result }}
+        run: |
+          if [[ "$CHECKOUT_RESULT" != "success" || "$ANDROID_RESULT" != "success" || "$IOS_RESULT" != "success" ]]; then
+            echo "::error::Required CI jobs did not all succeed: Checkout=$CHECKOUT_RESULT, Android=$ANDROID_RESULT, iOS=$IOS_RESULT."
+            exit 1
+          fi
 
   notify:
     name: Notify CI result
