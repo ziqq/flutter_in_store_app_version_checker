@@ -27,6 +27,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Validate release source
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF_TYPE" != tag ]]; then
+            echo "::error::Releases require an existing tag."
+            exit 1
+          fi
+          git fetch --no-tags origin "$GITHUB_REF"
+          tag_commit="$(git rev-parse 'FETCH_HEAD^{commit}')"
+          test "$(git rev-parse HEAD)" = "$tag_commit"
+          git fetch --no-tags origin refs/heads/main
+          git merge-base --is-ancestor "$tag_commit" FETCH_HEAD
+
       - name: Validate release version
         run: |
           if [[ "$GITHUB_REF_TYPE" != "tag" ]]; then
