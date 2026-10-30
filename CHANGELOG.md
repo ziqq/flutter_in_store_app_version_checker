@@ -1,6 +1,10 @@
 # Changelog
 
 
+## Unreleased
+- **FIXED**: Remove the `REQUEST_INSTALL_PACKAGES` permission that Huawei App Service adds to host applications ([#31](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/31))
+
+
 ## 4.0.0
 - **ADDED**: RuStore version checks through public catalog JSON-LD ([#20](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/20))
 - **ADDED**: AppGallery web checks for arbitrary applications through the optional `storeID` parameter

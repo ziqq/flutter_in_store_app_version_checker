@@ -206,6 +206,9 @@ jobs:
         working-directory: example
         run: flutter build apk --debug --no-pub
 
+      - name: Check Android merged manifest
+        run: just check-android-manifest debug
+
       - name: Run Android native tests with coverage
         run: just test-android-native
 

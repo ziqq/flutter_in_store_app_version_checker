@@ -192,6 +192,11 @@ dependencyResolutionManagement {
 }
 ```
 
+Huawei App Service declares `android.permission.REQUEST_INSTALL_PACKAGES` for
+its update installer, which the plugin never starts. Google Play restricts this
+permission, so the plugin manifest removes it from the merged manifest. An
+application that needs it can still declare it in its own `AndroidManifest.xml`.
+
 Huawei documents that `checkAppUpdate` checks the AppGallery server even when
 the AppGallery client is not installed. The client is still required when the
 user proceeds to the AppGallery details and installation flow. See the
