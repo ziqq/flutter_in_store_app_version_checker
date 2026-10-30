@@ -95,7 +95,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
           .apkPure => Store$ApkPure(_httpClient),
           .ruStore => Store$RuStore(_httpClient),
           .appGallery => Store$AppGalleryWeb(_httpClient),
-          .appGalleryNative => const Store$AppGalleryNative(),
+          .appGalleryNative => Store$AppGalleryNative(_httpClient),
         },
         .iOS => Store$AppStore(_httpClient),
         _ => null,
