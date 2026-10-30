@@ -4,7 +4,6 @@
  */
 
 import 'package:flutter_in_store_app_version_checker/src/store/apk_pure_store.dart';
-import 'package:flutter_in_store_app_version_checker/src/store/app_gallery_native_store.dart';
 import 'package:flutter_in_store_app_version_checker/src/store/app_gallery_web_store.dart';
 import 'package:flutter_in_store_app_version_checker/src/store/apple_app_store.dart';
 import 'package:flutter_in_store_app_version_checker/src/store/google_play_store.dart';
@@ -25,7 +24,6 @@ void main() {
       Store$ApkPure(client),
       Store$RuStore(client),
       Store$AppGalleryWeb(client),
-      const Store$AppGalleryNative(),
     ];
 
     expect(stores.map((store) => store.name), <String>[
@@ -34,7 +32,6 @@ void main() {
       'ApkPure',
       'RuStore',
       'AppGallery',
-      'AppGallery native',
     ]);
   });
 }

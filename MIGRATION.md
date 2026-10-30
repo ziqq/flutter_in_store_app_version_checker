@@ -1,6 +1,33 @@
 # Migration guide
 
 
+## 4.0.1
+
+### AppGallery without the Huawei SDK
+
+The Android plugin no longer depends on Huawei App Service. Its permissions,
+including `REQUEST_INSTALL_PACKAGES`, and its R8 warnings no longer reach host
+applications. Projects can remove `https://developer.huawei.com/repo/` from
+`settings.gradle` if nothing else needs it. The plugin declares
+`android.permission.INTERNET`, which the Huawei SDK added before.
+
+`appGallery` no longer requires `storeID`: without it, the checker finds the
+listing by the installed package name or the `packageName` override.
+`appGalleryNative` is deprecated and checks AppGallery the same way. Replace it
+with `appGallery` before 5.0.0:
+
+```dart
+const params = InStoreAppVersionCheckerParams(
+  locale: 'ru-RU',
+  androidStore: InStoreAppVersionCheckerAndroidStoreType.appGallery,
+);
+```
+
+`appGalleryNative` now accepts `packageName` and `currentVersion` overrides and
+returns the published version even when it is not newer. An application that
+is not published in AppGallery returns an error.
+
+
 ## 4.0.0
 
 ### Android store selection
@@ -17,7 +44,7 @@ overrides, and compare version names rather than Android `versionCode` values.
 The Android plugin now depends on Huawei App Service `6.16.2.300`, including
 when native AppGallery checks are not selected. Projects that enforce
 repositories in `settings.gradle` must allow `https://developer.huawei.com/repo/`
-as shown in the [AppGallery setup](README.md#use-appgallery-for-the-installed-app-official-sdk).
+in 4.0.0. 4.0.1 removes this dependency.
 
 ### ApkPure empty version responses
 

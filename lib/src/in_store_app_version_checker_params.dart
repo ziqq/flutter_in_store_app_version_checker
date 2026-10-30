@@ -20,15 +20,15 @@ enum InStoreAppVersionCheckerAndroidStoreType {
 
   /// Huawei AppGallery public web listing.
   ///
-  /// This mode supports arbitrary applications and requires
-  /// [InStoreAppVersionCheckerParams.storeID].
+  /// The listing is found by [InStoreAppVersionCheckerParams.storeID] when it
+  /// is supplied, and by the package name otherwise.
   appGallery,
 
   /// Huawei AppGallery listing of the installed application.
-  ///
-  /// This mode finds the listing by the installed package name through the
-  /// AppGallery web client API and does not support package or version
-  /// overrides.
+  @Deprecated(
+    'Use appGallery, which finds the listing by package name. '
+    'This value will be removed in 5.0.0.',
+  )
   appGalleryNative,
 }
 
@@ -80,10 +80,9 @@ class InStoreAppVersionCheckerParams {
 
   /// The identifier of the application listing in the selected store.
   ///
-  /// AppGallery web checks require an ID such as `C107631977`. Stores whose
-  /// listing identifier is the Android package name do not require this value.
-  /// AppGallery native checks find the installed application by its package
-  /// name and ignore this value.
+  /// AppGallery checks accept an ID such as `C107631977` and find the
+  /// listing by the package name when it is null. Stores whose listing
+  /// identifier is the Android package name ignore this value.
   final String? storeID;
 
   /// The current version of the app.

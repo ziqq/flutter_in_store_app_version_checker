@@ -12,6 +12,9 @@ import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
 /// Reads public AppGallery listing data through the AppGallery web client API.
+///
+/// Listings are found by App ID when `storeID` is supplied, and by package
+/// name otherwise.
 @internal
 final class Store$AppGalleryWeb implements IStore {
   /// Creates an AppGallery web store client.
@@ -26,18 +29,25 @@ final class Store$AppGalleryWeb implements IStore {
   @override
   String get name => 'AppGallery';
 
-  /// Reads an arbitrary AppGallery listing identified by `storeID`.
+  /// Reads the AppGallery listing identified by `storeID`, or by the package
+  /// name when `storeID` is not supplied.
   @override
   Future<({String? version, String? appURL})> fetchListing(
     StoreRequest request,
+  ) => switch (request.storeID?.trim()) {
+    null || '' => _fetchListingByPackageName(request),
+    String storeID when _storeIDPattern.hasMatch(storeID) =>
+      _fetchListingByStoreID(request, storeID),
+    _ => throw FormatException(
+      'AppGallery web checks require storeID in the format "C107631977".',
+      request.storeID,
+    ),
+  };
+
+  Future<({String? version, String? appURL})> _fetchListingByStoreID(
+    StoreRequest request,
+    String storeID,
   ) async {
-    final storeID = switch (request.storeID?.trim()) {
-      String storeID when _storeIDPattern.hasMatch(storeID) => storeID,
-      _ => throw FormatException(
-        'AppGallery web checks require storeID in the format "C107631977".',
-        request.storeID,
-      ),
-    };
     final listing = await _getListing(
       uri: 'app|$storeID',
       lookup: 'store ID "$storeID"',
@@ -56,8 +66,7 @@ final class Store$AppGalleryWeb implements IStore {
     return (version: listing.version, appURL: _buildAppURL(storeID));
   }
 
-  /// Reads the AppGallery listing of the package in [request].
-  Future<({String? version, String? appURL})> fetchListingByPackageName(
+  Future<({String? version, String? appURL})> _fetchListingByPackageName(
     StoreRequest request,
   ) async {
     final packageName = request.packageName;

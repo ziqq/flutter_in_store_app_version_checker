@@ -8,7 +8,6 @@ import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_ch
 import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_params.dart';
 import 'package:flutter_in_store_app_version_checker/src/in_store_app_version_checker_response.dart';
 import 'package:flutter_in_store_app_version_checker/src/store/apk_pure_store.dart';
-import 'package:flutter_in_store_app_version_checker/src/store/app_gallery_native_store.dart';
 import 'package:flutter_in_store_app_version_checker/src/store/app_gallery_web_store.dart';
 import 'package:flutter_in_store_app_version_checker/src/store/apple_app_store.dart';
 import 'package:flutter_in_store_app_version_checker/src/store/google_play_store.dart';
@@ -64,38 +63,28 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
   ) async {
     try {
       final platform = defaultTargetPlatform;
-      final isAppGalleryNative =
-          platform == .android && params.androidStore == .appGalleryNative;
-      // HTTP checks skip installed-app metadata when both overrides are set;
-      // AppGallery native always checks the installed application.
+      // HTTP checks skip installed-app metadata when both overrides are set.
       final appMetadata = switch ((params.packageName, params.currentVersion)) {
-        (String packageName, String version) when !isAppGalleryNative => (
+        (String packageName, String version) => (
           packageName: packageName,
           version: version,
         ),
         _ => await AppMetadata.fromPlatform(),
       };
-      // AppGallery native always reports the installed application.
       final request = StoreRequest(
-        currentVersion: isAppGalleryNative
-            ? appMetadata.version
-            : params.currentVersion ?? appMetadata.version,
-        packageName: isAppGalleryNative
-            ? appMetadata.packageName
-            : params.packageName ?? appMetadata.packageName,
+        currentVersion: params.currentVersion ?? appMetadata.version,
+        packageName: params.packageName ?? appMetadata.packageName,
         locale: params.locale,
         storeID: params.storeID,
         expectedPackageName: params.packageName,
-        hasOverrides:
-            params.packageName != null || params.currentVersion != null,
       );
       final store = switch (platform) {
         .android => switch (params.androidStore) {
           .googlePlayStore => Store$GooglePlay(_httpClient),
           .apkPure => Store$ApkPure(_httpClient),
           .ruStore => Store$RuStore(_httpClient),
-          .appGallery => Store$AppGalleryWeb(_httpClient),
-          .appGalleryNative => Store$AppGalleryNative(_httpClient),
+          // ignore: deprecated_member_use_from_same_package
+          .appGallery || .appGalleryNative => Store$AppGalleryWeb(_httpClient),
         },
         .iOS => Store$AppStore(_httpClient),
         _ => null,

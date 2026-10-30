@@ -2,7 +2,11 @@
 
 
 ## 4.0.1
-- **FIXED**: Remove the `REQUEST_INSTALL_PACKAGES` permission that Huawei App Service adds to host applications ([#31](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/31)). The removal also applies to other libraries that declare this permission; applications that install APK files must declare it in their own `AndroidManifest.xml` ([details](README.md#use-appgallery-for-the-installed-app-official-sdk))
+- **FIXED**: Remove the Huawei App Service dependency, so its `REQUEST_INSTALL_PACKAGES` and other permissions, R8 missing-class errors, and Maven repository no longer reach host applications ([#31](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/31), [#33](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/33))
+- **ADDED**: AppGallery checks find the listing by package name when `storeID` is not supplied
+- **CHANGED**: Declare `android.permission.INTERNET` in the plugin manifest, which the Huawei SDK added before
+- **CHANGED**: Check the merged manifest and build the Android example in release mode in CI
+- **DEPRECATED**: `InStoreAppVersionCheckerAndroidStoreType.appGalleryNative` checks AppGallery the same way as `appGallery` and will be removed in 5.0.0 ([migration guide](MIGRATION.md#appgallery-without-the-huawei-sdk))
 
 
 ## 4.0.0
