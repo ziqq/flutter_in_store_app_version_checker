@@ -83,8 +83,7 @@ final class InStoreAppVersionChecker implements IInStoreAppVersionChecker {
           .googlePlayStore => Store$GooglePlay(_httpClient),
           .apkPure => Store$ApkPure(_httpClient),
           .ruStore => Store$RuStore(_httpClient),
-          // ignore: deprecated_member_use_from_same_package
-          .appGallery || .appGalleryNative => Store$AppGalleryWeb(_httpClient),
+          .appGallery => Store$AppGalleryWeb(_httpClient),
         },
         .iOS => Store$AppStore(_httpClient),
         _ => null,

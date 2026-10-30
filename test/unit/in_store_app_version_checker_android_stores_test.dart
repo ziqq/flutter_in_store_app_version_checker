@@ -520,25 +520,6 @@ void main() {
       expect(requests.last.url.queryParameters['uri'], 'package|test.app');
     });
 
-    test('deprecated appGalleryNative uses the same lookup', () async {
-      final requests = <http.Request>[];
-
-      final result = await check(
-        appGalleryClient(appGalleryDetail(), requests: requests),
-        const InStoreAppVersionCheckerParams(
-          locale: 'ru-RU',
-          androidStore:
-              // ignore: deprecated_member_use_from_same_package
-              InStoreAppVersionCheckerAndroidStoreType.appGalleryNative,
-        ),
-      );
-
-      expect(result.isSuccess, isTrue, reason: result.errorMessage);
-      expect(result.newVersion, '2.0.0');
-      expect(result.appURL, 'https://appgallery.huawei.com/#/app/C107631977');
-      expect(requests.last.url.queryParameters['uri'], 'package|test.app');
-    });
-
     test('ignores listings of other packages', () async {
       final result = await check(
         appGalleryClient(appGalleryDetail(packageName: 'another.app')),

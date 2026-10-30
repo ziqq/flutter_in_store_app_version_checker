@@ -150,9 +150,7 @@ void main() {
               '<script type="application/ld+json">'
                   ' {"@type":"SoftwareApplication","softwareVersion":"2.0.0"} '
                   ' </script>',
-            InStoreAppVersionCheckerAndroidStoreType.appGallery ||
-            // ignore: deprecated_member_use_from_same_package
-            InStoreAppVersionCheckerAndroidStoreType.appGalleryNative =>
+            InStoreAppVersionCheckerAndroidStoreType.appGallery =>
               request.method == 'POST'
                   ? jsonEncode('token')
                   : jsonEncode(<String, Object?>{

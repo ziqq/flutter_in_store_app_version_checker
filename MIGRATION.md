@@ -13,8 +13,9 @@ applications. Projects can remove `https://developer.huawei.com/repo/` from
 
 `appGallery` no longer requires `storeID`: without it, the checker finds the
 listing by the installed package name or the `packageName` override.
-`appGalleryNative` is deprecated and checks AppGallery the same way. Replace it
-with `appGallery` before 5.0.0:
+`appGalleryNative` is removed from `InStoreAppVersionCheckerAndroidStoreType`.
+Replace it with `appGallery`, and remove its case from exhaustive `switch`
+statements and expressions:
 
 ```dart
 const params = InStoreAppVersionCheckerParams(
@@ -23,9 +24,10 @@ const params = InStoreAppVersionCheckerParams(
 );
 ```
 
-`appGalleryNative` now accepts `packageName` and `currentVersion` overrides and
-returns the published version even when it is not newer. An application that
-is not published in AppGallery returns an error.
+Unlike `appGalleryNative`, `appGallery` accepts `packageName` and
+`currentVersion` overrides and returns the published version even when it is
+not newer. An application that is not published in AppGallery returns an
+error.
 
 
 ## 4.0.0

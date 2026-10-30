@@ -23,13 +23,6 @@ enum InStoreAppVersionCheckerAndroidStoreType {
   /// The listing is found by [InStoreAppVersionCheckerParams.storeID] when it
   /// is supplied, and by the package name otherwise.
   appGallery,
-
-  /// Huawei AppGallery listing of the installed application.
-  @Deprecated(
-    'Use appGallery, which finds the listing by package name. '
-    'This value will be removed in 5.0.0.',
-  )
-  appGalleryNative,
 }
 
 /// {@template in_store_app_version_checker_params}

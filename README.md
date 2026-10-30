@@ -171,9 +171,6 @@ public AppGallery website, with no Huawei SDK. Huawei can change that endpoint
 or its response format without notice. Endpoint failures and unexpected
 responses are returned as errors.
 
-`appGalleryNative` is deprecated and checks AppGallery the same way as
-`appGallery`. It will be removed in 5.0.0.
-
 ### Check a specific App Store country
 
 ```dart

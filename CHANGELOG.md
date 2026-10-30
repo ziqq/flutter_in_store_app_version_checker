@@ -6,7 +6,7 @@
 - **ADDED**: AppGallery checks find the listing by package name when `storeID` is not supplied
 - **CHANGED**: Declare `android.permission.INTERNET` in the plugin manifest, which the Huawei SDK added before
 - **CHANGED**: Check the merged manifest and build the Android example in release mode in CI
-- **DEPRECATED**: `InStoreAppVersionCheckerAndroidStoreType.appGalleryNative` checks AppGallery the same way as `appGallery` and will be removed in 5.0.0 ([migration guide](MIGRATION.md#appgallery-without-the-huawei-sdk))
+- **REMOVED**: `InStoreAppVersionCheckerAndroidStoreType.appGalleryNative`; use `appGallery`, which finds the installed application by package name ([migration guide](MIGRATION.md#appgallery-without-the-huawei-sdk))
 
 
 ## 4.0.0
