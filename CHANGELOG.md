@@ -2,7 +2,7 @@
 
 
 ## 4.0.1
-- **FIXED**: Remove the `REQUEST_INSTALL_PACKAGES` permission that Huawei App Service adds to host applications ([#31](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/31))
+- **FIXED**: Remove the `REQUEST_INSTALL_PACKAGES` permission that Huawei App Service adds to host applications ([#31](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/31)). The removal also applies to other libraries that declare this permission; applications that install APK files must declare it in their own `AndroidManifest.xml` ([details](README.md#use-appgallery-for-the-installed-app-official-sdk))
 
 
 ## 4.0.0
