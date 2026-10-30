@@ -3,6 +3,8 @@
 
 ## 4.0.1
 - **FIXED**: Remove the `REQUEST_INSTALL_PACKAGES` permission that Huawei App Service adds to host applications ([#31](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/31))
+- **FIXED**: Suppress R8 missing-class errors from Huawei App Service in release builds ([#33](https://github.com/ziqq/flutter_in_store_app_version_checker/issues/33))
+- **CHANGED**: Build the Android example in release mode in CI
 
 
 ## 4.0.0

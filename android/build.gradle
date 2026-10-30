@@ -39,6 +39,7 @@ android {
 
     defaultConfig {
         minSdk = flutter.minSdkVersion
+        consumerProguardFiles 'consumer-rules.pro'
     }
 
     testOptions {
