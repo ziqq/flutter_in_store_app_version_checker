@@ -12,6 +12,9 @@ import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
 /// Reads public AppGallery listing data through the AppGallery web client API.
+///
+/// Listings are found by App ID when `storeID` is supplied, and by package
+/// name otherwise.
 @internal
 final class Store$AppGalleryWeb implements IStore {
   /// Creates an AppGallery web store client.
@@ -26,31 +29,73 @@ final class Store$AppGalleryWeb implements IStore {
   @override
   String get name => 'AppGallery';
 
-  /// Reads an arbitrary AppGallery listing identified by `storeID`.
+  /// Reads the AppGallery listing identified by `storeID`, or by the package
+  /// name when `storeID` is not supplied.
   @override
   Future<({String? version, String? appURL})> fetchListing(
     StoreRequest request,
+  ) => switch (request.storeID?.trim()) {
+    null || '' => _fetchListingByPackageName(request),
+    String storeID when _storeIDPattern.hasMatch(storeID) =>
+      _fetchListingByStoreID(request, storeID),
+    _ => throw FormatException(
+      'AppGallery web checks require storeID in the format "C107631977".',
+      request.storeID,
+    ),
+  };
+
+  Future<({String? version, String? appURL})> _fetchListingByStoreID(
+    StoreRequest request,
+    String storeID,
   ) async {
-    final storeID = switch (request.storeID?.trim()) {
-      String storeID when _storeIDPattern.hasMatch(storeID) => storeID,
-      _ => throw FormatException(
-        'AppGallery web checks require storeID in the format "C107631977".',
-        request.storeID,
-      ),
-    };
     final listing = await _getListing(
-      storeID: storeID,
+      uri: 'app|$storeID',
+      lookup: 'store ID "$storeID"',
+      subject: 'listing "$storeID"',
       locale: request.locale,
-      expectedPackageName: request.expectedPackageName,
+      matches: (listing) => listing['appid']?.toString() == storeID,
     );
-    return (version: listing.version, appURL: listing.appURL);
+    final packageName = listing.packageName;
+    if (request.expectedPackageName case String expectedPackageName
+        when packageName != expectedPackageName) {
+      throw StateError(
+        'AppGallery listing "$storeID" belongs to package '
+        '"$packageName", not "$expectedPackageName".',
+      );
+    }
+    return (version: listing.version, appURL: _buildAppURL(storeID));
   }
 
-  /// Returns the published version and package for [storeID].
-  Future<({String appURL, String packageName, String version})> _getListing({
-    required String storeID,
+  Future<({String? version, String? appURL})> _fetchListingByPackageName(
+    StoreRequest request,
+  ) async {
+    final packageName = request.packageName;
+    final listing = await _getListing(
+      uri: 'package|$packageName',
+      lookup: 'package "$packageName"',
+      subject: 'listing of package "$packageName"',
+      locale: request.locale,
+      matches: (listing) => listing['package']?.toString() == packageName,
+    );
+    final storeID = switch (listing.storeID) {
+      String storeID when _storeIDPattern.hasMatch(storeID) => storeID,
+      final storeID => throw FormatException(
+        'AppGallery listing of package "$packageName" does not contain a '
+        'valid App ID.',
+        storeID,
+      ),
+    };
+    return (version: listing.version, appURL: _buildAppURL(storeID));
+  }
+
+  /// Returns the published version, package, and App ID of the first listing
+  /// in the response for [uri] that [matches].
+  Future<({String packageName, String? storeID, String version})> _getListing({
+    required String uri,
+    required String lookup,
+    required String subject,
     required String locale,
-    String? expectedPackageName,
+    required bool Function(Map<String, Object?> listing) matches,
   }) async {
     final identityID = _createIdentityID();
     var interfaceCode = await _getInterfaceCode(identityID);
@@ -58,7 +103,7 @@ final class Store$AppGalleryWeb implements IStore {
       identityID: identityID,
       interfaceCode: interfaceCode,
       locale: locale,
-      storeID: storeID,
+      uri: uri,
     );
     var data = _decodeResponse(response);
     var resultCode = _toIntOrNull(data['rtnCode']);
@@ -68,7 +113,7 @@ final class Store$AppGalleryWeb implements IStore {
         identityID: identityID,
         interfaceCode: interfaceCode,
         locale: locale,
-        storeID: storeID,
+        uri: uri,
       );
       data = _decodeResponse(response);
       resultCode = _toIntOrNull(data['rtnCode']);
@@ -76,14 +121,14 @@ final class Store$AppGalleryWeb implements IStore {
     if (resultCode != 0) {
       throw StateError(
         'AppGallery lookup failed with result code '
-        '${resultCode ?? 'unknown'} for store ID "$storeID".',
+        '${resultCode ?? 'unknown'} for $lookup.',
       );
     }
 
-    final listing = _findListing(data, storeID);
+    final listing = _findListing(data, matches);
     if (listing == null) {
       throw FormatException(
-        'AppGallery response does not contain listing "$storeID".',
+        'AppGallery response does not contain $subject.',
         response.body,
       );
     }
@@ -92,26 +137,20 @@ final class Store$AppGalleryWeb implements IStore {
     final packageName = listing['package']?.toString().trim();
     if (version == null || version.isEmpty) {
       throw FormatException(
-        'AppGallery listing "$storeID" does not contain a version.',
+        'AppGallery $subject does not contain a version.',
         response.body,
       );
     }
     if (packageName == null || packageName.isEmpty) {
       throw FormatException(
-        'AppGallery listing "$storeID" does not contain a package name.',
+        'AppGallery $subject does not contain a package name.',
         response.body,
-      );
-    }
-    if (expectedPackageName != null && packageName != expectedPackageName) {
-      throw StateError(
-        'AppGallery listing "$storeID" belongs to package '
-        '"$packageName", not "$expectedPackageName".',
       );
     }
 
     return (
-      appURL: _buildAppURL(storeID),
       packageName: packageName,
+      storeID: listing['appid']?.toString().trim(),
       version: version,
     );
   }
@@ -143,20 +182,20 @@ final class Store$AppGalleryWeb implements IStore {
     required String identityID,
     required String interfaceCode,
     required String locale,
-    required String storeID,
+    required String uri,
   }) async {
-    final uri = Uri.https(_host, '/edge/uowap/index', <String, String>{
+    final url = Uri.https(_host, '/edge/uowap/index', <String, String>{
       'method': 'internal.getTabDetail',
       'serviceType': '20',
       'reqPageNum': '1',
-      'uri': 'app|$storeID',
+      'uri': uri,
       'maxResults': '25',
       'zone': '',
       'locale': locale.trim().replaceAll('-', '_'),
     });
     final response = await _httpClient
         .get(
-          uri,
+          url,
           headers: <String, String>{
             'Identity-Id': identityID,
             'Interface-Code':
@@ -167,7 +206,7 @@ final class Store$AppGalleryWeb implements IStore {
     if (response.statusCode != 200) {
       throw http.ClientException(
         'AppGallery listing request failed (HTTP ${response.statusCode}).',
-        uri,
+        url,
       );
     }
     return response;
@@ -182,22 +221,22 @@ final class Store$AppGalleryWeb implements IStore {
     );
   }
 
-  static Map<String, Object?>? _findListing(Object? value, String storeID) =>
-      switch (value) {
-        Map<String, Object?> map
-            when map['appid']?.toString() == storeID &&
-                map['versionName'] != null =>
-          map,
-        Map<String, Object?> map => _findFirstListing(map.values, storeID),
-        Iterable<Object?> values => _findFirstListing(values, storeID),
-        _ => null,
-      };
+  static Map<String, Object?>? _findListing(
+    Object? value,
+    bool Function(Map<String, Object?> listing) matches,
+  ) => switch (value) {
+    Map<String, Object?> map when map['versionName'] != null && matches(map) =>
+      map,
+    Map<String, Object?> map => _findFirstListing(map.values, matches),
+    Iterable<Object?> values => _findFirstListing(values, matches),
+    _ => null,
+  };
 
   /// Returns the first listing found in [values], searching lazily.
   static Map<String, Object?>? _findFirstListing(
     Iterable<Object?> values,
-    String storeID,
-  ) => values.map((child) => _findListing(child, storeID)).nonNulls.firstOrNull;
+    bool Function(Map<String, Object?> listing) matches,
+  ) => values.map((child) => _findListing(child, matches)).nonNulls.firstOrNull;
 
   static int? _toIntOrNull(Object? value) => switch (value) {
     num number when number.isFinite && number == number.truncateToDouble() =>

@@ -65,6 +65,10 @@ test-android-native:
     @cd example && flutter pub get
     @cd example/android && ./gradlew :flutter_in_store_app_version_checker:nativeCoverage --console=plain
 
+# Check the merged manifest of a built Android example for forbidden permissions.
+check-android-manifest variant="debug":
+    @bash tool/check_android_manifest.sh {{variant}}
+
 # Run iOS plugin XCTest on an available simulator and export Swift coverage.
 [macos]
 test-ios-native:

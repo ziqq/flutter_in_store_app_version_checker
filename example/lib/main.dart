@@ -102,7 +102,7 @@ class _ExampleState extends State<Example> {
       _ozon,
       _ruStore,
       _appGallery,
-      _appGalleryNative;
+      _appGalleryByPackage;
 
   /// Whether the app is running on Android.
   bool get _isAndroid => defaultTargetPlatform == .android;
@@ -185,11 +185,13 @@ class _ExampleState extends State<Example> {
               .checkUpdate(
                 InStoreAppVersionCheckerParams(
                   locale: _locale,
+                  packageName: _tetradkaPackageName,
+                  currentVersion: _tetradkaCurrentVersion,
                   androidStore:
-                      InStoreAppVersionCheckerAndroidStoreType.appGalleryNative,
+                      InStoreAppVersionCheckerAndroidStoreType.appGallery,
                 ),
               )
-              .then((r) => _appGalleryNative = r),
+              .then((r) => _appGalleryByPackage = r),
         ],
       ].wait;
     } on Object catch (e) {
@@ -305,12 +307,12 @@ class _ExampleState extends State<Example> {
                         item: _ruStore,
                       ),
                       StoreResultSection(
-                        title: 'Tetradka · AppGallery web',
+                        title: 'Tetradka · AppGallery by store ID',
                         item: _appGallery,
                       ),
                       StoreResultSection(
-                        title: 'Installed app · AppGallery native',
-                        item: _appGalleryNative,
+                        title: 'Tetradka · AppGallery by package',
+                        item: _appGalleryByPackage,
                       ),
                     ],
                   ],

@@ -13,19 +13,9 @@ void main() {
   const channel = MethodChannel(
     'github.com/ziqq/instoreappversionchecker/app_metadata',
   );
-  Object? nativeResult;
-  PlatformException? nativeError;
-  var nativeCalls = 0;
 
   setUp(() {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
-    nativeResult = <String, Object?>{
-      'storeID': 'C107631977',
-      'packageName': 'test.app',
-      'version': '2.0.0',
-    };
-    nativeError = null;
-    nativeCalls = 0;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (call) async {
           switch (call.method) {
@@ -34,10 +24,6 @@ void main() {
                 'packageName': 'test.app',
                 'version': '1.0.0',
               };
-            case 'checkAppGalleryUpdate':
-              nativeCalls++;
-              if (nativeError case final PlatformException error) throw error;
-              return nativeResult;
           }
           return null;
         });
@@ -472,149 +458,131 @@ void main() {
     });
   });
 
-  group('AppGallery native', () {
-    MockClient unusedClient() => MockClient(
-      (_) async => throw StateError('Native mode must not use HTTP.'),
-    );
+  group('AppGallery by package name', () {
+    test('finds the installed application without storeID', () async {
+      final requests = <http.Request>[];
 
-    test('returns update data from Huawei AppUpdateClient', () async {
       final result = await check(
-        unusedClient(),
+        appGalleryClient(appGalleryDetail(), requests: requests),
         const InStoreAppVersionCheckerParams(
           locale: 'ru-RU',
-          storeID: 'ignored-by-native-mode',
-          androidStore:
-              InStoreAppVersionCheckerAndroidStoreType.appGalleryNative,
+          androidStore: InStoreAppVersionCheckerAndroidStoreType.appGallery,
         ),
       );
 
-      expect(nativeCalls, 1);
-      expect(result.isSuccess, isTrue);
+      expect(result.isSuccess, isTrue, reason: result.errorMessage);
       expect(result.currentVersion, '1.0.0');
       expect(result.newVersion, '2.0.0');
       expect(result.canUpdate, isTrue);
       expect(result.appURL, 'https://appgallery.huawei.com/#/app/C107631977');
+      expect(requests.last.url.queryParameters['uri'], 'package|test.app');
     });
 
-    test('returns success without a version when no update exists', () async {
-      nativeResult = <String, Object?>{
-        'storeID': null,
-        'packageName': null,
-        'version': null,
-      };
+    test('finds an overridden package name', () async {
+      final requests = <http.Request>[];
 
       final result = await check(
-        unusedClient(),
+        appGalleryClient(
+          appGalleryDetail(packageName: 'ru.beautybox.twa', version: '38.3.0'),
+          requests: requests,
+        ),
         const InStoreAppVersionCheckerParams(
           locale: 'ru-RU',
-          androidStore:
-              InStoreAppVersionCheckerAndroidStoreType.appGalleryNative,
+          packageName: 'ru.beautybox.twa',
+          currentVersion: '38.2.0',
+          androidStore: InStoreAppVersionCheckerAndroidStoreType.appGallery,
         ),
       );
 
-      expect(result.isSuccess, isTrue);
-      expect(result.newVersion, isNull);
-      expect(result.appURL, isNull);
-      expect(result.canUpdate, isFalse);
+      expect(result.isSuccess, isTrue, reason: result.errorMessage);
+      expect(result.newVersion, '38.3.0');
+      expect(result.canUpdate, isTrue);
+      expect(result.appURL, 'https://appgallery.huawei.com/#/app/C107631977');
+      expect(
+        requests.last.url.queryParameters['uri'],
+        'package|ru.beautybox.twa',
+      );
     });
 
-    for (final params in <InStoreAppVersionCheckerParams>[
-      const InStoreAppVersionCheckerParams(
-        locale: 'ru-RU',
-        packageName: 'other.app',
-        androidStore: InStoreAppVersionCheckerAndroidStoreType.appGalleryNative,
-      ),
-      const InStoreAppVersionCheckerParams(
-        locale: 'ru-RU',
-        currentVersion: '0.9.0',
-        androidStore: InStoreAppVersionCheckerAndroidStoreType.appGalleryNative,
-      ),
-    ]) {
-      test('rejects package and version overrides: $params', () async {
-        final result = await check(unusedClient(), params);
-
-        expect(nativeCalls, 0);
-        expect(result.isError, isTrue);
-        expect(result.error, isA<ArgumentError>());
-        expect(result.errorMessage, contains('do not support'));
-      });
-    }
-
-    test('rejects a package returned for another application', () async {
-      nativeResult = <String, Object?>{
-        'storeID': 'C107631977',
-        'packageName': 'another.app',
-        'version': '2.0.0',
-      };
+    test('treats a blank storeID as absent', () async {
+      final requests = <http.Request>[];
 
       final result = await check(
-        unusedClient(),
+        appGalleryClient(appGalleryDetail(), requests: requests),
         const InStoreAppVersionCheckerParams(
           locale: 'ru-RU',
-          androidStore:
-              InStoreAppVersionCheckerAndroidStoreType.appGalleryNative,
+          storeID: ' ',
+          androidStore: InStoreAppVersionCheckerAndroidStoreType.appGallery,
+        ),
+      );
+
+      expect(result.isSuccess, isTrue, reason: result.errorMessage);
+      expect(requests.last.url.queryParameters['uri'], 'package|test.app');
+    });
+
+    test('ignores listings of other packages', () async {
+      final result = await check(
+        appGalleryClient(appGalleryDetail(packageName: 'another.app')),
+        const InStoreAppVersionCheckerParams(
+          locale: 'ru-RU',
+          androidStore: InStoreAppVersionCheckerAndroidStoreType.appGallery,
         ),
       );
 
       expect(result.isError, isTrue);
-      expect(result.errorMessage, contains('another.app'));
-      expect(result.errorMessage, contains('test.app'));
+      expect(
+        result.errorMessage,
+        contains('does not contain listing of package "test.app"'),
+      );
     });
 
-    test('returns native platform failures', () async {
-      nativeError = PlatformException(
-        code: 'app_gallery_update_error',
-        message: 'Huawei failure',
-      );
-
+    test('returns an error when the application is not published', () async {
       final result = await check(
-        unusedClient(),
+        appGalleryClient(
+          jsonEncode(<String, Object?>{
+            'rtnCode': 0,
+            'layoutData': <Object?>[],
+          }),
+        ),
         const InStoreAppVersionCheckerParams(
           locale: 'ru-RU',
-          androidStore:
-              InStoreAppVersionCheckerAndroidStoreType.appGalleryNative,
+          androidStore: InStoreAppVersionCheckerAndroidStoreType.appGallery,
         ),
       );
 
       expect(result.isError, isTrue);
-      expect(result.errorMessage, contains('Huawei failure'));
+      expect(result.error, isA<FormatException>());
+      expect(
+        result.errorMessage,
+        contains('does not contain listing of package "test.app"'),
+      );
     });
 
-    test('rejects an empty native response', () async {
-      nativeResult = null;
-
+    test('requires a valid App ID in the listing', () async {
       final result = await check(
-        unusedClient(),
+        appGalleryClient(appGalleryDetail(storeID: '107631977')),
         const InStoreAppVersionCheckerParams(
           locale: 'ru-RU',
-          androidStore:
-              InStoreAppVersionCheckerAndroidStoreType.appGalleryNative,
+          androidStore: InStoreAppVersionCheckerAndroidStoreType.appGallery,
         ),
       );
 
       expect(result.isError, isTrue);
-      expect(result.errorMessage, contains('returned no result'));
+      expect(result.errorMessage, contains('valid App ID'));
     });
 
-    test('normalizes empty native values to null', () async {
-      nativeResult = <String, Object?>{
-        'storeID': ' ',
-        'packageName': '',
-        'version': ' ',
-      };
-
+    test('names the package in result code errors', () async {
       final result = await check(
-        unusedClient(),
+        appGalleryClient(appGalleryDetail(resultCode: 1)),
         const InStoreAppVersionCheckerParams(
           locale: 'ru-RU',
-          androidStore:
-              InStoreAppVersionCheckerAndroidStoreType.appGalleryNative,
+          androidStore: InStoreAppVersionCheckerAndroidStoreType.appGallery,
         ),
       );
 
-      expect(result.isSuccess, isTrue);
-      expect(result.newVersion, isNull);
-      expect(result.appURL, isNull);
+      expect(result.isError, isTrue);
+      expect(result.errorMessage, contains('result code 1'));
+      expect(result.errorMessage, contains('package "test.app"'));
     });
   });
 }

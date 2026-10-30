@@ -134,7 +134,19 @@ RuStore identifies public catalog pages by Android package name. The checker
 reads `SoftwareApplication.softwareVersion` from the page JSON-LD. Network
 restrictions, missing cards, and malformed metadata are returned as errors.
 
-### Use AppGallery for any app
+### Use AppGallery
+
+```dart
+const params = InStoreAppVersionCheckerParams(
+  locale: 'ru-RU',
+  androidStore: InStoreAppVersionCheckerAndroidStoreType.appGallery,
+);
+final res = await InStoreAppVersionChecker.instance.checkUpdate(params);
+```
+
+Without `storeID`, the checker finds the AppGallery listing by the package
+name: the installed application's, or the `packageName` override. To check a
+listing by its AppGallery App ID instead, pass `storeID`:
 
 ```dart
 const params = InStoreAppVersionCheckerParams(
@@ -150,52 +162,14 @@ final res = await InStoreAppVersionChecker.instance.checkUpdate(params);
 `packageName` and `storeID` are different identifiers. The package name comes
 from the Android application, while AppGallery assigns a listing ID such as
 `C107631977`. Store-specific builds may use different Android package names.
+With `storeID`, the checker validates the returned App ID and, when
+`packageName` is explicitly supplied, its package. An application that is not
+published in AppGallery returns an error.
 
-This mode supports arbitrary applications, but it uses the same internal,
-undocumented web endpoint as the public AppGallery website. Huawei can change
-that endpoint or its response format without notice. The checker validates the
-returned App ID and, when `packageName` is explicitly supplied, its package.
-Endpoint failures and unexpected responses are returned as errors.
-
-### Use AppGallery for the installed app (official SDK)
-
-```dart
-const params = InStoreAppVersionCheckerParams(
-  locale: 'ru-RU',
-  androidStore: InStoreAppVersionCheckerAndroidStoreType.appGalleryNative,
-);
-final res = await InStoreAppVersionChecker.instance.checkUpdate(params);
-```
-
-This mode uses Huawei [`AppUpdateClient`](https://developer.huawei.com/consumer/de/doc/HMS-Guides/appgallerykit-upgrade-devguide)
-and is the recommended AppGallery option for the installed application. It does
-not support arbitrary applications or `packageName` and `currentVersion`
-overrides. When Huawei reports no update, the response is successful with
-`newVersion == null` and `canUpdate == false`.
-
-Only Huawei's `NO_UPGRADE_INFO` status means no update was found. Connection
-errors, failed checks, unknown statuses, and missing upgrade data return errors.
-As in the other modes, `canUpdate` compares version names; it does not compare
-Android `versionCode` values. Equal version names return `canUpdate == false`.
-
-The plugin includes `com.huawei.hms:appservice:6.16.2.300` and the Huawei Maven
-repository. Projects that enforce repositories in `settings.gradle` must also
-allow the Huawei repository:
-
-```groovy
-dependencyResolutionManagement {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url 'https://developer.huawei.com/repo/' }
-    }
-}
-```
-
-Huawei documents that `checkAppUpdate` checks the AppGallery server even when
-the AppGallery client is not installed. The client is still required when the
-user proceeds to the AppGallery details and installation flow. See the
-[`AppUpdateClient` FAQ](https://developer.huawei.com/consumer/ru/doc/AppGallery-connect-Guides/appgallerykit-update-faq-0000001054802923).
+AppGallery checks use the same internal, undocumented web endpoint as the
+public AppGallery website, with no Huawei SDK. Huawei can change that endpoint
+or its response format without notice. Endpoint failures and unexpected
+responses are returned as errors.
 
 ### Check a specific App Store country
 
@@ -238,15 +212,15 @@ Entry point: [`InStoreAppVersionChecker.instance`](lib/src/in_store_app_version_
 |------------------|--------------------------------------------|-------------|
 | `locale`         | `String` (required)                        | Store language/region, e.g. `en-US`. See [Store locale](#store-locale). |
 | `packageName`    | `String?`                                  | Android package name / iOS bundle ID. Defaults to the installed app. |
-| `storeID`        | `String?`                                  | Store listing ID. Required only for AppGallery web checks, e.g. `C107631977`. |
+| `storeID`        | `String?`                                  | Store listing ID used by AppGallery checks, e.g. `C107631977`. Defaults to a lookup by package name. |
 | `currentVersion` | `String?`                                  | Version to compare against. Defaults to the installed app version. |
-| `androidStore`   | `InStoreAppVersionCheckerAndroidStoreType` | `googlePlayStore` (default), `apkPure`, `ruStore`, `appGallery` or `appGalleryNative`. |
+| `androidStore`   | `InStoreAppVersionCheckerAndroidStoreType` | `googlePlayStore` (default), `apkPure`, `ruStore` or `appGallery`. |
 
-If `packageName` or `currentVersion` is omitted, it is resolved from the installed app: on Android from the plugin's native implementation, on iOS from the bundle identifier and `CFBundleShortVersionString`. HTTP checks skip the native metadata request when both overrides are supplied. AppGallery native always reads the installed application's metadata and rejects overrides.
+If `packageName` or `currentVersion` is omitted, it is resolved from the installed app: on Android from the plugin's native implementation, on iOS from the bundle identifier and `CFBundleShortVersionString`. Checks skip the native metadata request when both overrides are supplied.
 
-`storeID` is separate from `packageName`. It is required only for AppGallery web
-checks. AppGallery native checks obtain the installed application identity from
-Huawei and ignore `storeID`.
+`storeID` is separate from `packageName`. AppGallery checks find the listing by
+`storeID` when it is supplied, and by the package name otherwise. Other stores
+ignore `storeID`.
 
 ### Response — [`InStoreAppVersionCheckerResponse`](lib/src/in_store_app_version_checker_response.dart)
 
@@ -282,9 +256,9 @@ detect the country of the user's App Store account.
 Supported regional forms are `language-REGION` and `language-Script-REGION`.
 Underscores are accepted as separators; surrounding whitespace and letter case
 are normalized. On Google Play, other locale forms are passed through unchanged.
-ApkPure and RuStore ignore `locale`. AppGallery web requests use it to localize
-the store response, but `storeID` remains the authoritative listing identifier.
-AppGallery native checks let Huawei select the locale.
+ApkPure and RuStore ignore `locale`. AppGallery requests use it to localize the
+store response, but `storeID` or the package name remains the authoritative
+listing identifier.
 
 On iOS, existing two-letter country-only values such as `us`, `ae`, and `ru`
 remain supported. Short values are interpreted as countries: `ar` means
@@ -309,8 +283,8 @@ up to date. An error response may still report `canUpdate == true` if
 `newVersion` is greater.
 
 Errors are returned (not thrown) for: invalid parameters, HTTP/network failures,
-malformed store data, app not found in the selected storefront, native SDK
-failures, and unsupported platforms.
+malformed store data, app not found in the selected storefront, and
+unsupported platforms.
 
 HTTP modes return success only after reading a non-empty version string from
 the requested listing. An equal or older store version is still a successful
@@ -338,11 +312,8 @@ response with empty results instead reports that the app was not found in that
 storefront; check both its bundle ID and regional availability.
 
 Every HTTP request has a 15-second timeout. A Google Play fallback or an
-AppGallery web retry can make the total check longer than one request.
-AppGallery native has a 15-second SDK timeout that releases the callback, plus
-a 20-second Dart bridge safeguard. Timeout failures return error responses.
-Concurrent native calls share one in-flight check, including across checker
-instances; after success, failure, or timeout the next call starts a new check.
+AppGallery retry can make the total check longer than one request. Timeout
+failures return error responses.
 
 Response equality and `hashCode` include status, versions, listing URL, and
 `errorMessage`. The identity of the diagnostic `error` and `stackTrace` objects
@@ -370,7 +341,7 @@ See the unit tests in [test/unit](test/unit) for the authoritative behavior.
 ## Platform integration notes
 
 - Android uses Flutter 3.44+ built-in Kotlin support.
-- AppGallery native checks use Huawei App Service SDK `6.16.2.300`.
+- The Android plugin has no third-party SDK dependencies and declares only `android.permission.INTERNET`.
 - iOS supports both Swift Package Manager (with the required `FlutterFramework` dependency in `Package.swift`) and CocoaPods.
 
 
@@ -400,8 +371,7 @@ CocoaPods/SPM checks.
 
 Native plugin tests run with `mise exec -- just test-android-native` and, on
 macOS, `mise exec -- just test-ios-native`. CI uploads Dart, Kotlin, and Swift
-coverage separately to Codecov. The Android suite substitutes the Huawei SDK
-client; it does not prove live AppGallery behavior on a physical Huawei device.
+coverage separately to Codecov.
 
 
 ## Contributing

@@ -43,9 +43,8 @@ mise exec -- just test-android-native
 IOS_SIMULATOR_ID=<dedicated-test-simulator-udid> mise exec -- just test-ios-native
 ```
 
-Android tests use JUnit/Robolectric and replace only the Huawei SDK client. They
-execute the plugin's method handler, Android intents, and main-looper timeout
-logic without a device or a live AppGallery request. The JaCoCo XML report is
+Android tests use JUnit/Robolectric. They execute the plugin's method handler
+and channel registration without a device. The JaCoCo XML report is
 written to
 `example/build/flutter_in_store_app_version_checker/reports/jacoco/nativeCoverage.xml`.
 
@@ -59,8 +58,7 @@ Swift coverage is exported to `coverage/ios.lcov.info`.
 
 Codecov receives separate `dart`, `android`, and `ios` reports, restricted to
 the plugin's source files. SDKs, generated files, and the example application are
-not counted as plugin coverage. Native unit coverage does not replace runtime
-verification of Huawei `AppUpdateClient` on a physical Huawei device.
+not counted as plugin coverage.
 
 
 ## iOS: testing (CocoaPods and Swift Package Manager)

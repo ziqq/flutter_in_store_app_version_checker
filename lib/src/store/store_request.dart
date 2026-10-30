@@ -16,7 +16,6 @@ final class StoreRequest {
     required this.locale,
     this.storeID,
     this.expectedPackageName,
-    this.hasOverrides = false,
   });
 
   /// The installed or overridden application version.
@@ -28,12 +27,9 @@ final class StoreRequest {
   /// The requested store locale.
   final String locale;
 
-  /// The store listing identifier, required by AppGallery web checks.
+  /// The store listing identifier, if any.
   final String? storeID;
 
   /// The package name explicitly supplied by the caller, if any.
   final String? expectedPackageName;
-
-  /// Whether the caller supplied `packageName` or `currentVersion` overrides.
-  final bool hasOverrides;
 }

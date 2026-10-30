@@ -16,16 +16,12 @@ void main() {
     'github.com/ziqq/instoreappversionchecker/app_metadata',
   );
   var metadataCalls = 0;
-  var nativeCalls = 0;
   var metadataFails = false;
-  late Completer<Object?> nativeResult;
 
   setUp(() {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     metadataCalls = 0;
-    nativeCalls = 0;
     metadataFails = false;
-    nativeResult = Completer<Object?>();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (call) async {
           if (call.method == 'getAppMetadata') {
@@ -35,10 +31,6 @@ void main() {
               'packageName': 'installed.app',
               'version': '1.0.0',
             };
-          }
-          if (call.method == 'checkAppGalleryUpdate') {
-            nativeCalls++;
-            return nativeResult.future;
           }
           throw StateError('Unexpected method: ${call.method}');
         });
@@ -55,17 +47,8 @@ void main() {
     return InStoreAppVersionChecker.instanceFor(httpClient: client);
   }
 
-  const nativeParams = InStoreAppVersionCheckerParams(
-    locale: 'ru-RU',
-    androidStore: InStoreAppVersionCheckerAndroidStoreType.appGalleryNative,
-  );
-  Map<String, Object?> nativeListing() => <String, Object?>{
-    'packageName': 'installed.app',
-    'storeID': 'C107631977',
-    'version': '2.0.0',
-  };
   MockClient noHTTP() => MockClient(
-    (_) async => throw StateError('Native mode must not use HTTP'),
+    (_) async => throw StateError('Metadata errors must stop HTTP checks'),
   );
 
   group('release precedence', () {
@@ -153,10 +136,7 @@ void main() {
   });
 
   group('metadata resolution', () {
-    for (final store in InStoreAppVersionCheckerAndroidStoreType.values.where(
-      (store) =>
-          store != InStoreAppVersionCheckerAndroidStoreType.appGalleryNative,
-    )) {
+    for (final store in InStoreAppVersionCheckerAndroidStoreType.values) {
       test('$store skips metadata when both overrides are supplied', () async {
         metadataFails = true;
         final client = MockClient((request) async {
@@ -181,8 +161,6 @@ void main() {
                         'versionName': '2.0.0',
                       },
                     }),
-            InStoreAppVersionCheckerAndroidStoreType.appGalleryNative =>
-              throw StateError('Native mode is not an HTTP store'),
           };
           return http.Response(body, 200);
         });
@@ -244,23 +222,6 @@ void main() {
         },
       );
     }
-
-    test('native mode still reads metadata with both overrides', () async {
-      final response = await checker(noHTTP()).checkUpdate(
-        const InStoreAppVersionCheckerParams(
-          locale: 'ru-RU',
-          packageName: 'target.app',
-          currentVersion: '0.9.0',
-          androidStore:
-              InStoreAppVersionCheckerAndroidStoreType.appGalleryNative,
-        ),
-      );
-      expect(response.isError, isTrue);
-      expect(response.error, isA<ArgumentError>());
-      expect(response.currentVersion, '1.0.0');
-      expect(metadataCalls, 1);
-      expect(nativeCalls, 0);
-    });
   });
 
   group('bounded checks', () {
@@ -289,74 +250,5 @@ void main() {
         debugDefaultTargetPlatformOverride = null;
       });
     }
-
-    testWidgets('native calls share success and the next check starts fresh', (
-      tester,
-    ) async {
-      nativeResult = Completer<Object?>();
-      final first = checker(noHTTP()).checkUpdate(nativeParams);
-      final second = checker(noHTTP()).checkUpdate(nativeParams);
-      await tester.pump();
-      expect(nativeCalls, 1);
-      nativeResult.complete(nativeListing());
-      await tester.pump();
-      expect((await first).canUpdate, isTrue);
-      expect((await second).canUpdate, isTrue);
-      nativeResult = Completer<Object?>();
-      final next = checker(noHTTP()).checkUpdate(nativeParams);
-      await tester.pump();
-      expect(nativeCalls, 2);
-      nativeResult.complete(nativeListing());
-      await tester.pump();
-      expect((await next).isSuccess, isTrue);
-      debugDefaultTargetPlatformOverride = null;
-    });
-
-    testWidgets('native failures are shared and allow retry', (tester) async {
-      nativeResult = Completer<Object?>();
-      final first = checker(noHTTP()).checkUpdate(nativeParams);
-      final second = checker(noHTTP()).checkUpdate(nativeParams);
-      await tester.pump();
-      expect(nativeCalls, 1);
-      nativeResult.completeError(
-        PlatformException(code: 'app_gallery_update_failed'),
-      );
-      await tester.pump();
-      expect((await first).isError, isTrue);
-      expect((await second).isError, isTrue);
-      nativeResult = Completer<Object?>();
-      final next = checker(noHTTP()).checkUpdate(nativeParams);
-      await tester.pump();
-      expect(nativeCalls, 2);
-      nativeResult.complete(nativeListing());
-      await tester.pump();
-      expect((await next).isSuccess, isTrue);
-      debugDefaultTargetPlatformOverride = null;
-    });
-
-    testWidgets(
-      'native bridge timeout clears shared state and ignores late data',
-      (tester) async {
-        nativeResult = Completer<Object?>();
-        final first = checker(noHTTP()).checkUpdate(nativeParams);
-        final second = checker(noHTTP()).checkUpdate(nativeParams);
-        await tester.pump();
-        final oldResult = nativeResult;
-        await tester.pump(const Duration(seconds: 20));
-        expect((await first).error, isA<TimeoutException>());
-        expect((await second).error, isA<TimeoutException>());
-        expect(nativeCalls, 1);
-        nativeResult = Completer<Object?>();
-        final next = checker(noHTTP()).checkUpdate(nativeParams);
-        await tester.pump();
-        expect(nativeCalls, 2);
-        oldResult.complete(nativeListing());
-        await tester.pump();
-        nativeResult.complete(nativeListing());
-        await tester.pump();
-        expect((await next).isSuccess, isTrue);
-        debugDefaultTargetPlatformOverride = null;
-      },
-    );
   });
 }
